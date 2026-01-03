@@ -1,0 +1,13 @@
+name: x402
+description: Unified package for the x402 protocol with support for multiple blockchains.
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  x402_core: ^0.1.0
+  x402_evm: ^0.1.0
+  x402_solana: ^0.1.0
+
+resolution: workspace

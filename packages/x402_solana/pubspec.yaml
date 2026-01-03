@@ -1,5 +1,6 @@
 name: x402_solana
 description: Solana blockchain implementation of the x402 protocol.
+version: 0.1.0
 
 environment:
   sdk: ^3.10.0

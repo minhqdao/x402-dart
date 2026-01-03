@@ -1,5 +1,6 @@
 name: x402_core
 description: Core protocol definitions and shared logic for the x402 protocol, providing blockchain-agnostic interfaces and data structures.
+version: 0.1.0
 
 environment:
   sdk: ^3.10.0
