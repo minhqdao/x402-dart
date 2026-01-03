@@ -10,4 +10,5 @@ workspace:
   - packages/x402_solana
 
 dev_dependencies:
+  lint: ^2.8.0
   melos: ^7.3.0
