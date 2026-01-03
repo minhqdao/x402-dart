@@ -1,0 +1,7 @@
+name: x402_solana
+description: Solana blockchain implementation of the x402 protocol.
+
+environment:
+  sdk: ^3.10.0
+
+resolution: workspace

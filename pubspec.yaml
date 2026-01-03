@@ -1,0 +1,13 @@
+name: x402
+description: Dart implementation of the x402 protocol for multiple blockchains.
+
+environment:
+  sdk: ^3.10.0
+
+workspace:
+  - packages/x402_core
+  - packages/x402_evm
+  - packages/x402_solana
+
+dev_dependencies:
+  melos: ^7.3.0
