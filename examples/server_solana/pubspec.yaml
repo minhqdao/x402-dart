@@ -1,5 +1,5 @@
-name: x402_example_server
-description: A simple server demonstrating x402 payment protection.
+name: server_solana
+description: x402 Solana Server Example
 version: 1.0.0
 publish_to: none
 
@@ -14,7 +14,6 @@ dependencies:
   shelf_cors_headers: ^0.1.5
   shelf_router: ^1.1.4
   x402_core:
-  x402_evm:
   x402_solana:
 
 dev_dependencies:

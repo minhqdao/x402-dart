@@ -1,5 +1,5 @@
-name: x402_example_client
-description: A simple client demonstrating x402 payment protection.
+name: client_evm
+description: x402 EVM Client Example
 version: 1.0.0
 publish_to: none
 
@@ -11,7 +11,6 @@ resolution: workspace
 dependencies:
   args: ^2.4.2
   http: ^1.1.0
-  solana: ^0.32.0
   web3dart: ^2.7.3
   x402:
 

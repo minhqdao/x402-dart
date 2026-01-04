@@ -1,6 +1,5 @@
-// ignore_for_file: avoid_print
-
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:shelf/shelf.dart';
@@ -8,45 +7,27 @@ import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_cors_headers/shelf_cors_headers.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_evm/x402_evm.dart';
 import 'package:x402_solana/x402_solana.dart';
 
 // Constants
 const _hostname = '0.0.0.0';
-const _evmAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e'; // Test address
-const _solanaAddress = 'GsbwXfJ3G9K7pM6f8h2wJ5kQ9z8y7v4x3n2m1l0k'; // Test address
-const _usdcAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e'; // Mock USDC
-const _usdcName = 'USD Coin';
-const _usdcVersion = '2';
-const _chainId = 8453; // Base
+const _solanaAddress = 'mvines9iiHiQTysrwkTjMcDYC5WzZhVp85694463d74'; // Test address
+const _usdcAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'; // Mainnet USDC
 
 void main(List<String> args) async {
-  final parser = ArgParser()..addOption('port', abbr: 'p', defaultsTo: '8080');
+  final parser = ArgParser()..addOption('port', abbr: 'p', defaultsTo: '8081');
   final result = parser.parse(args);
   final port = int.parse(result['port'] as String);
 
-  // Initialize schemes
-  final evmScheme = ExactEvmSchemeServer();
+  // Initialize scheme
   final solanaScheme = ExactSolanaSchemeServer();
 
   // Define requirements
   const requirements = [
     PaymentRequirements(
-      network: 'eip155:$_chainId',
+      network: 'solana:mainnet',
       asset: _usdcAddress,
       maxAmountRequired: '1000000', // 1 USDC
-      maxTimeoutSeconds: 3600,
-      payTo: _evmAddress,
-      scheme: 'exact',
-      resource: '/premium-content',
-      description: 'Premium content access',
-      mimeType: 'application/json',
-      extra: {'name': _usdcName, 'version': _usdcVersion},
-    ),
-    PaymentRequirements(
-      network: 'solana:mainnet',
-      asset: _usdcAddress, // Mock
-      maxAmountRequired: '1000000',
       maxTimeoutSeconds: 3600,
       payTo: _solanaAddress,
       scheme: 'exact',
@@ -80,40 +61,35 @@ void main(List<String> args) async {
             ),
       );
 
-      bool isValid = false;
-      if (payload.scheme == 'exact' && payload.network.startsWith('eip155')) {
-        isValid = await evmScheme.verifyPayload(payload, requirement);
-      } else if (payload.scheme == 'exact' &&
-          payload.network.startsWith('solana')) {
-        isValid = await solanaScheme.verifyPayload(payload, requirement);
-      }
+      final isValid = await solanaScheme.verifyPayload(payload, requirement);
 
       if (isValid) {
         return Response.ok(
-          jsonEncode({'content': 'Here is your premium content! 🚀'}),
+          jsonEncode({'content': 'Here is your premium Solana content! ☀️'}),
           headers: const {'content-type': 'application/json'},
         );
       } else {
         return Response.forbidden('Invalid payment signature');
       }
     } catch (e) {
-      print('Error verifying payment: $e');
+      stdout.writeln('Error verifying payment: $e');
       return Response.forbidden('Invalid payment payload');
     }
   });
 
   // CORS middleware
-  final handler = const Pipeline().addMiddleware(corsHeaders()).addHandler(app.call);
+  final handler = const Pipeline()
+      .addMiddleware(corsHeaders())
+      .addHandler(app.call);
 
   final server = await io.serve(handler, _hostname, port);
-  print('Serving at http://${server.address.host}:${server.port}');
+  stdout.writeln(
+    'Solana Server serving at http://${server.address.host}:${server.port}',
+  );
 }
 
 Response _paymentRequired(List<PaymentRequirements> requirements) {
-  final response = PaymentRequiredResponse(
-    x402Version: 1,
-    accepts: requirements,
-  );
+  final response = PaymentRequiredResponse(x402Version: 1, accepts: requirements);
 
   return Response(
     402,

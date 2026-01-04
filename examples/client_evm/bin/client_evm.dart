@@ -1,40 +1,35 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:args/args.dart';
 import 'package:http/http.dart' as http;
-import 'package:solana/solana.dart';
+import 'package:web3dart/web3dart.dart';
 import 'package:x402/x402.dart';
 
 // Constants
-const _defaultHost = 'http://127.0.0.1:8081';
-const _solanaRpcUrl = 'https://api.devnet.solana.com';
-const _solanaWsUrl = 'wss://api.devnet.solana.com';
+const _defaultHost = 'http://127.0.0.1:8080';
 
 void main(List<String> args) async {
   final parser = ArgParser()
     ..addOption('host', abbr: 'h', defaultsTo: _defaultHost)
-    ..addOption('seed', abbr: 's', help: 'Solana Wallet Seed (mnemonic)');
+    ..addOption('private-key', abbr: 'k', help: 'EVM Private key (hex)');
 
   final result = parser.parse(args);
   final host = result['host'] as String;
-  final seed = result['seed'] as String?;
+  final privateKeyHex = result['private-key'] as String?;
 
   // Initialize wallet
-  final Ed25519HDKeyPair signer;
-  if (seed != null) {
-    signer = await Ed25519HDKeyPair.fromMnemonic(seed);
+  final EthPrivateKey privateKey;
+  if (privateKeyHex != null) {
+    privateKey = EthPrivateKey.fromHex(privateKeyHex);
   } else {
-    // Generate random wallet for demo
-    signer = await Ed25519HDKeyPair.random();
+    // Generate random key for demo
+    final rng = Random.secure();
+    privateKey = EthPrivateKey.createRandom(rng);
   }
 
-  stdout.writeln('Using address: ${signer.address}');
-
-  final solanaClient = SolanaClient(
-    rpcUrl: Uri.parse(_solanaRpcUrl),
-    websocketUrl: Uri.parse(_solanaWsUrl),
-  );
+  stdout.writeln('Using address: ${privateKey.address.hex}');
 
   final client = http.Client();
   try {
@@ -59,28 +54,23 @@ void main(List<String> args) async {
       jsonDecode(response.body) as Map<String, dynamic>,
     );
 
-    // Find Solana requirement
-    final solReq = paymentResponse.accepts.firstWhere(
-      (req) => req.scheme == 'exact' && req.network.startsWith('solana'),
-      orElse: () => throw Exception('No supported Solana payment method found'),
+    // Find EVM requirement
+    final evmReq = paymentResponse.accepts.firstWhere(
+      (req) => req.scheme == 'exact' && req.network.startsWith('eip155'),
+      orElse: () => throw Exception('No supported EVM payment method found'),
     );
 
-    stdout.writeln('Found Solana requirement for ${solReq.network}');
-    stdout.writeln('Asset: ${solReq.asset}');
-    stdout.writeln('Amount: ${solReq.maxAmountRequired}');
+    stdout.writeln('Found EVM requirement for ${evmReq.network}');
+    stdout.writeln('Asset: ${evmReq.asset}');
+    stdout.writeln('Amount: ${evmReq.maxAmountRequired}');
 
     // 3. Create payment payload
-    final schemeClient = ExactSolanaSchemeClient(
-      signer: signer,
-      solanaClient: solanaClient,
-    );
-    final paymentPayload = await schemeClient.createPaymentPayload(solReq);
+    final schemeClient = ExactEvmSchemeClient(privateKey: privateKey);
+    final paymentPayload = await schemeClient.createPaymentPayload(evmReq);
 
     // 4. Retry with authorization
     stdout.writeln('Generated payment payload. Retrying request...');
-    final token = base64Encode(
-      utf8.encode(jsonEncode(paymentPayload.toJson())),
-    );
+    final token = base64Encode(utf8.encode(jsonEncode(paymentPayload.toJson())));
 
     final authResponse = await client.get(
       Uri.parse('$host/premium-content'),

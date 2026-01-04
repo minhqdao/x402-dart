@@ -8,8 +8,10 @@ environment:
   sdk: ^3.10.0
 
 workspace:
-  - examples/client
-  - examples/server
+  - examples/client_evm
+  - examples/client_solana
+  - examples/server_evm
+  - examples/server_solana
   - packages/x402
   - packages/x402_core
   - packages/x402_evm
