@@ -8,15 +8,15 @@ environment:
   sdk: ^3.10.0
 
 workspace:
-  - examples/client_evm
-  - examples/client_svm
-  - examples/server_evm
-  - examples/server_svm
-  - examples/server_facilitator
   - packages/x402
   - packages/x402_core
   - packages/x402_evm
   - packages/x402_svm
+  - examples/client_evm
+  - examples/client_svm
+  - examples/server_evm
+  - examples/server_svm
+  - examples/facilitator
 
 dev_dependencies:
   lint: ^2.8.0
