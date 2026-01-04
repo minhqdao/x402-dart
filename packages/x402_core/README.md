@@ -11,7 +11,7 @@ Core protocol definitions and shared logic for the x402 protocol, providing bloc
 - **Constants**: Standard headers, status codes, and protocol version
 - **Exceptions**: Typed errors for payment operations
 
-This package is chain-agnostic and contains no blockchain-specific implementation. Chain-specific logic should be implemented in separate packages (`x402_evm`, `x402_solana`, etc.).
+This package is chain-agnostic and contains no blockchain-specific implementation. Chain-specific logic should be implemented in separate packages (`x402_evm`, `x402_svm`, etc.).
 
 ## What is x402?
 
@@ -19,7 +19,7 @@ x402 is an open-source payments protocol built on HTTP that enables:
 - **Low-cost micropayments**: Near-zero fees with $0.001 minimum payments
 - **Fast settlement**: ~1 second transaction finality
 - **HTTP-native**: Uses standard HTTP 402 status code
-- **Chain-agnostic**: Works across EVM, Solana, and other blockchains
+- **Chain-agnostic**: Works across EVM, SVM, and other blockchains
 - **Agent-friendly**: Perfect for AI agents and programmatic payments
 
 ## Installation
@@ -129,7 +129,7 @@ Networks use the CAIP-2 format:
   - Base: `eip155:8453`
   - Ethereum: `eip155:1`
   - Base Sepolia: `eip155:84532`
-- **Solana**: `solana:{genesisHash}`
+- **SVM**: `svm:{genesisHash}`
 
 ## Schemes
 
@@ -179,7 +179,7 @@ try {
 This package is typically not used directly. Instead, use:
 
 - **`x402_evm`**: For EVM-compatible chains (Ethereum, Base, Polygon, etc.)
-- **`x402_solana`**: For Solana blockchain
+- **`x402_svm`**: For SVM blockchain
 - **`x402`**: Convenience package that includes all implementations
 
 For implementation examples, see the chain-specific packages.

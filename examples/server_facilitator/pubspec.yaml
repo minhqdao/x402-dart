@@ -15,7 +15,7 @@ dependencies:
   shelf_router: ^1.1.4
   x402_core:
   x402_evm:
-  x402_solana:
+  x402_svm:
 
 dev_dependencies:
   lint: ^2.0.0

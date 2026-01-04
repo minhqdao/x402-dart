@@ -1,13 +1,13 @@
 import 'package:solana/solana.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_solana/src/utils/transaction_builder.dart';
+import 'package:x402_svm/src/utils/transaction_builder.dart';
 
-/// Client-side implementation of the exact scheme for Solana
-class ExactSolanaSchemeClient implements SchemeClient {
+/// Client-side implementation of the exact scheme for SVM
+class ExactSvmSchemeClient implements SchemeClient {
   final Ed25519HDKeyPair signer;
   final SolanaClient solanaClient;
 
-  ExactSolanaSchemeClient({required this.signer, required this.solanaClient});
+  ExactSvmSchemeClient({required this.signer, required this.solanaClient});
 
   @override
   String get scheme => 'exact';
@@ -19,11 +19,11 @@ class ExactSolanaSchemeClient implements SchemeClient {
       throw UnsupportedSchemeException('Expected scheme "$scheme", got "${requirements.scheme}"');
     }
 
-    // Parse network (format: solana:genesisHash)
+    // Parse network (format: svm:genesisHash)
     final networkParts = requirements.network.split(':');
-    if (networkParts.length != 2 || networkParts[0] != 'solana') {
+    if (networkParts.length != 2 || networkParts[0] != 'svm') {
       throw InvalidPayloadException(
-        'Invalid network format. Expected "solana:genesisHash", got "${requirements.network}"',
+        'Invalid network format. Expected "svm:genesisHash", got "${requirements.network}"',
       );
     }
 
@@ -31,7 +31,7 @@ class ExactSolanaSchemeClient implements SchemeClient {
     final amount = BigInt.parse(requirements.maxAmountRequired);
 
     // Build transfer transaction
-    final encodedTransaction = await SolanaTransactionBuilder.createTransferTransaction(
+    final encodedTransaction = await SvmTransactionBuilder.createTransferTransaction(
       signer: signer,
       recipient: requirements.payTo,
       amount: amount,

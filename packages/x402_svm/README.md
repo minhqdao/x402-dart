@@ -1,6 +1,6 @@
-# x402_solana
+# x402_svm
 
-Solana blockchain implementation of the x402 protocol.
+SVM blockchain implementation of the x402 protocol.
 
 ## Features
 
@@ -14,16 +14,16 @@ Solana blockchain implementation of the x402 protocol.
 
 ## Supported Networks
 
-Works on any Solana cluster:
-- **Mainnet** (`solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`)
-- **Devnet** (`solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`)
-- **Testnet** (`solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z`)
+Works on any SVM cluster:
+- **Mainnet** (`svm:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`)
+- **Devnet** (`svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`)
+- **Testnet** (`svm:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z`)
 
 ## Installation
 
 ```yaml
 dependencies:
-  x402_solana: ^0.1.0
+  x402_svm: ^0.1.0
 ```
 
 ## Quick Start
@@ -33,9 +33,9 @@ dependencies:
 ```dart
 import 'package:solana/solana.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_solana/x402_solana.dart';
+import 'package:x402_svm/x402_svm.dart';
 
-// Initialize Solana client
+// Initialize SVM client
 final solanaClient = SolanaClient(
   rpcUrl: Uri.parse('https://api.devnet.solana.com'),
   websocketUrl: Uri.parse('wss://api.devnet.solana.com'),
@@ -46,7 +46,7 @@ final signer = await Ed25519HDKeyPair.fromPrivateKeyBytes(
   privateKeyBytes: yourPrivateKeyBytes,
 );
 
-final client = ExactSolanaSchemeClient(
+final client = ExactSVMSchemeClient(
   signer: signer,
   solanaClient: solanaClient,
 );
@@ -54,7 +54,7 @@ final client = ExactSolanaSchemeClient(
 // Get payment requirements from server (via 402 response)
 final requirements = PaymentRequirements(
   scheme: 'exact',
-  network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1', // Devnet
+  network: 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1', // Devnet
   maxAmountRequired: '10000', // 0.01 USDC (6 decimals)
   resource: 'https://api.example.com/premium-data',
   description: 'Access to premium data',
@@ -86,29 +86,29 @@ final response = await http.get(
 ```dart
 import 'package:shelf/shelf.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_solana/x402_solana.dart';
+import 'package:x402_svm/x402_svm.dart';
 
 // Initialize verifier
-final server = ExactSolanaSchemeServer();
+final server = ExactSVMSchemeServer();
 
-// Or with Solana client for transaction submission
+// Or with SVM client for transaction submission
 final solanaClient = SolanaClient(
   rpcUrl: Uri.parse('https://api.devnet.solana.com'),
   websocketUrl: Uri.parse('wss://api.devnet.solana.com'),
 );
-final serverWithClient = ExactSolanaSchemeServer(
+final serverWithClient = ExactSVMSchemeServer(
   solanaClient: solanaClient,
 );
 
 // Your payment requirements
 final requirements = PaymentRequirements(
   scheme: 'exact',
-  network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+  network: 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
   maxAmountRequired: '10000',
   resource: '/premium-data',
   description: 'Premium data access',
   mimeType: 'application/json',
-  payTo: 'YourSolanaAddress',
+  payTo: 'YourSVMAddress',
   maxTimeoutSeconds: 60,
   asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
 );
@@ -163,12 +163,12 @@ Handler paymentHandler(Handler innerHandler) {
 
 ## Network Format
 
-Networks use CAIP-2 format: `solana:{genesisHash}`
+Networks use CAIP-2 format: `svm:{genesisHash}`
 
 Common networks:
-- Mainnet: `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`
-- Devnet: `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`
-- Testnet: `solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z`
+- Mainnet: `svm:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`
+- Devnet: `svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`
+- Testnet: `svm:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z`
 
 ## Token Support
 
@@ -200,7 +200,7 @@ The exact scheme uses this instruction layout:
 ## Using a Facilitator
 
 ```dart
-import 'package:x402_solana/x402_solana.dart';
+import 'package:x402_svm/x402_svm.dart';
 
 // Initialize facilitator client
 final facilitator = HttpFacilitatorClient(
@@ -261,16 +261,16 @@ try {
 Run tests with:
 
 ```bash
-cd packages/x402_solana
+cd packages/x402_svm
 dart test
 ```
 
-Note: Integration tests require a Solana devnet connection and funded wallet.
+Note: Integration tests require a SVM devnet connection and funded wallet.
 
 ## Resources
 
 - [x402 Protocol](https://x402.org)
-- [Solana SPL Token](https://spl.solana.com/token)
+- [SVM SPL Token](https://spl.solana.com/token)
 - [Token-2022](https://spl.solana.com/token-2022)
 - [Coinbase x402](https://github.com/coinbase/x402)
 

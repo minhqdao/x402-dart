@@ -9,14 +9,14 @@ environment:
 
 workspace:
   - examples/client_evm
-  - examples/client_solana
+  - examples/client_svm
   - examples/server_evm
-  - examples/server_solana
+  - examples/server_svm
   - examples/server_facilitator
   - packages/x402
   - packages/x402_core
   - packages/x402_evm
-  - packages/x402_solana
+  - packages/x402_svm
 
 dev_dependencies:
   lint: ^2.8.0

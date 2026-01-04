@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:solana/encoder.dart';
 import 'package:solana/solana.dart';
 
-/// Utilities for building Solana transactions for x402
-class SolanaTransactionBuilder {
-  SolanaTransactionBuilder._();
+/// Utilities for building SVM transactions for x402
+class SvmTransactionBuilder {
+  SvmTransactionBuilder._();
 
   /// Create a transfer transaction for SPL token
   static Future<String> createTransferTransaction({
@@ -221,7 +221,7 @@ class SolanaTransactionBuilder {
   }
 }
 
-/// Decoded Solana transaction
+/// Decoded SVM transaction
 class DecodedTransaction {
   final List<CompiledInstruction> instructions;
   final List<Ed25519HDPublicKey> accountKeys;

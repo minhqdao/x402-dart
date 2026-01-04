@@ -42,7 +42,7 @@ void main(List<String> args) async {
       extra: {'name': 'USD Coin', 'version': '2'},
     ),
     PaymentRequirements(
-      network: 'solana:mainnet',
+      network: 'svm:mainnet',
       asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
       maxAmountRequired: '1000000',
       maxTimeoutSeconds: 3600,
@@ -184,7 +184,7 @@ Future<void> _startMockFacilitator(int port) async {
 
           {'scheme': 'exact', 'network': 'eip155:8453'},
 
-          {'scheme': 'exact', 'network': 'solana:mainnet'},
+          {'scheme': 'exact', 'network': 'svm:mainnet'},
 
         ],
 

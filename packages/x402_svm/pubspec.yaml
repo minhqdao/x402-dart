@@ -1,5 +1,5 @@
-name: x402_solana
-description: Solana blockchain implementation of the x402 protocol.
+name: x402_svm
+description: SVM blockchain implementation of the x402 protocol.
 version: 0.1.0
 repository: https://github.com/minhqdao/x402
 homepage: https://github.com/minhqdao/x402

@@ -12,4 +12,4 @@ resolution: workspace
 dependencies:
   x402_core: ^0.1.0
   x402_evm: ^0.1.0
-  x402_solana: ^0.1.0
+  x402_svm: ^0.1.0

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:x402_core/x402_core.dart';
 
-/// HTTP client for interacting with x402 facilitator servers (Solana)
+/// HTTP client for interacting with x402 facilitator servers (SVM)
 class HttpFacilitatorClient implements FacilitatorClient {
   @override
   final String baseUrl;

@@ -4,4 +4,4 @@ library;
 
 export 'package:x402_core/x402_core.dart';
 export 'package:x402_evm/x402_evm.dart' show ExactEvmSchemeClient;
-export 'package:x402_solana/x402_solana.dart' show ExactSolanaSchemeClient;
+export 'package:x402_svm/x402_svm.dart' show ExactSvmSchemeClient;

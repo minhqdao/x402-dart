@@ -8,13 +8,13 @@ import 'package:x402/x402.dart';
 
 // Constants
 const _defaultHost = 'http://127.0.0.1:8081';
-const _solanaRpcUrl = 'https://api.devnet.solana.com';
-const _solanaWsUrl = 'wss://api.devnet.solana.com';
+const _svmRpcUrl = 'https://api.devnet.solana.com';
+const _svmWsUrl = 'wss://api.devnet.solana.com';
 
 void main(List<String> args) async {
   final parser = ArgParser()
     ..addOption('host', abbr: 'h', defaultsTo: _defaultHost)
-    ..addOption('seed', abbr: 's', help: 'Solana Wallet Seed (mnemonic)');
+    ..addOption('seed', abbr: 's', help: 'SVM Wallet Seed (mnemonic)');
 
   final result = parser.parse(args);
   final host = result['host'] as String;
@@ -31,7 +31,7 @@ void main(List<String> args) async {
 
   stdout.writeln('Using address: ${signer.address}');
 
-  final solanaClient = SolanaClient(rpcUrl: Uri.parse(_solanaRpcUrl), websocketUrl: Uri.parse(_solanaWsUrl));
+  final solanaClient = SolanaClient(rpcUrl: Uri.parse(_svmRpcUrl), websocketUrl: Uri.parse(_svmWsUrl));
 
   final client = http.Client();
   try {
@@ -54,18 +54,18 @@ void main(List<String> args) async {
     stdout.writeln('Payment required. Parsing requirements...');
     final paymentResponse = PaymentRequiredResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
 
-    // Find Solana requirement
+    // Find SVM requirement
     final solReq = paymentResponse.accepts.firstWhere(
-      (req) => req.scheme == 'exact' && req.network.startsWith('solana'),
-      orElse: () => throw Exception('No supported Solana payment method found'),
+      (req) => req.scheme == 'exact' && req.network.startsWith('svm'),
+      orElse: () => throw Exception('No supported SVM payment method found'),
     );
 
-    stdout.writeln('Found Solana requirement for ${solReq.network}');
+    stdout.writeln('Found SVM requirement for ${solReq.network}');
     stdout.writeln('Asset: ${solReq.asset}');
     stdout.writeln('Amount: ${solReq.maxAmountRequired}');
 
     // 3. Create payment payload
-    final schemeClient = ExactSolanaSchemeClient(signer: signer, solanaClient: solanaClient);
+    final schemeClient = ExactSvmSchemeClient(signer: signer, solanaClient: solanaClient);
     final paymentPayload = await schemeClient.createPaymentPayload(solReq);
 
     // 4. Retry with authorization

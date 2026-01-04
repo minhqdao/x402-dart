@@ -1,5 +1,5 @@
-name: client_solana
-description: x402 Solana Client Example
+name: client_svm
+description: x402 SVM Client Example
 version: 1.0.0
 publish_to: none
 

@@ -7,11 +7,11 @@ import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_cors_headers/shelf_cors_headers.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_solana/x402_solana.dart';
+import 'package:x402_svm/x402_svm.dart';
 
 // Constants
 const _hostname = '0.0.0.0';
-const _solanaAddress = 'mvines9iiHiQTysrwkTjMcDYC5WzZhVp85694463d74'; // Test address
+const _svmAddress = 'mvines9iiHiQTysrwkTjMcDYC5WzZhVp85694463d74'; // Test address
 const _usdcAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'; // Mainnet USDC
 
 void main(List<String> args) async {
@@ -20,16 +20,16 @@ void main(List<String> args) async {
   final port = int.parse(result['port'] as String);
 
   // Initialize scheme
-  final solanaScheme = ExactSolanaSchemeServer();
+  final svmScheme = ExactSvmSchemeServer();
 
   // Define requirements
   const requirements = [
     PaymentRequirements(
-      network: 'solana:mainnet',
+      network: 'svm:mainnet',
       asset: _usdcAddress,
       maxAmountRequired: '1000000', // 1 USDC
       maxTimeoutSeconds: 3600,
-      payTo: _solanaAddress,
+      payTo: _svmAddress,
       scheme: 'exact',
       resource: '/premium-content',
       description: 'Premium content access',
@@ -58,11 +58,11 @@ void main(List<String> args) async {
         orElse: () => throw Exception('No matching requirement found for ${payload.network}'),
       );
 
-      final isValid = await solanaScheme.verifyPayload(payload, requirement);
+      final isValid = await svmScheme.verifyPayload(payload, requirement);
 
       if (isValid) {
         return Response.ok(
-          jsonEncode({'content': 'Here is your premium Solana content! ☀️'}),
+          jsonEncode({'content': 'Here is your premium SVM content! ☀️'}),
           headers: const {'content-type': 'application/json'},
         );
       } else {
@@ -78,7 +78,7 @@ void main(List<String> args) async {
   final handler = const Pipeline().addMiddleware(corsHeaders()).addHandler(app.call);
 
   final server = await io.serve(handler, _hostname, port);
-  stdout.writeln('Solana Server serving at http://${server.address.host}:${server.port}');
+  stdout.writeln('SVM Server serving at http://${server.address.host}:${server.port}');
 }
 
 Response _paymentRequired(List<PaymentRequirements> requirements) {
