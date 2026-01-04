@@ -8,6 +8,8 @@ environment:
   sdk: ^3.10.0
 
 workspace:
+  - examples/client
+  - examples/server
   - packages/x402
   - packages/x402_core
   - packages/x402_evm
