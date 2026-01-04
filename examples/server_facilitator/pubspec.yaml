@@ -1,0 +1,21 @@
+name: server_facilitator
+description: x402 Multi-chain Server using Facilitator
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.0
+
+resolution: workspace
+
+dependencies:
+  args: ^2.4.2
+  shelf: ^1.4.1
+  shelf_cors_headers: ^0.1.5
+  shelf_router: ^1.1.4
+  x402_core:
+  x402_evm:
+  x402_solana:
+
+dev_dependencies:
+  lint: ^2.0.0

@@ -12,6 +12,7 @@ workspace:
   - examples/client_solana
   - examples/server_evm
   - examples/server_solana
+  - examples/server_facilitator
   - packages/x402
   - packages/x402_core
   - packages/x402_evm
