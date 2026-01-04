@@ -59,7 +59,7 @@ class EIP712Utils {
       _uint256Bytes(value),
       _uint256Bytes(validAfter),
       _uint256Bytes(validBefore),
-      keccak256(nonce),
+      nonce,
     ]);
 
     return keccak256(encoded);
@@ -84,7 +84,7 @@ class EIP712Utils {
     final domainSeparator = computeDomainSeparator(domain);
     final messageHash = createMessageHash(domainSeparator: domainSeparator, structHash: structHash);
 
-    return privateKey.signToEcSignature(messageHash);
+    return sign(messageHash, privateKey.privateKey);
   }
 
   /// Recover signer from EIP-712 signature
