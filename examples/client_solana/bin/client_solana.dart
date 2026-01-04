@@ -31,10 +31,7 @@ void main(List<String> args) async {
 
   stdout.writeln('Using address: ${signer.address}');
 
-  final solanaClient = SolanaClient(
-    rpcUrl: Uri.parse(_solanaRpcUrl),
-    websocketUrl: Uri.parse(_solanaWsUrl),
-  );
+  final solanaClient = SolanaClient(rpcUrl: Uri.parse(_solanaRpcUrl), websocketUrl: Uri.parse(_solanaWsUrl));
 
   final client = http.Client();
   try {
@@ -55,9 +52,7 @@ void main(List<String> args) async {
 
     // 2. Handle 402 Payment Required
     stdout.writeln('Payment required. Parsing requirements...');
-    final paymentResponse = PaymentRequiredResponse.fromJson(
-      jsonDecode(response.body) as Map<String, dynamic>,
-    );
+    final paymentResponse = PaymentRequiredResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
 
     // Find Solana requirement
     final solReq = paymentResponse.accepts.firstWhere(
@@ -70,27 +65,19 @@ void main(List<String> args) async {
     stdout.writeln('Amount: ${solReq.maxAmountRequired}');
 
     // 3. Create payment payload
-    final schemeClient = ExactSolanaSchemeClient(
-      signer: signer,
-      solanaClient: solanaClient,
-    );
+    final schemeClient = ExactSolanaSchemeClient(signer: signer, solanaClient: solanaClient);
     final paymentPayload = await schemeClient.createPaymentPayload(solReq);
 
     // 4. Retry with authorization
     stdout.writeln('Generated payment payload. Retrying request...');
     final token = base64Encode(utf8.encode(jsonEncode(paymentPayload.toJson())));
 
-    final authResponse = await client.get(
-      Uri.parse('$host/premium-content'),
-      headers: {'Authorization': '402 $token'},
-    );
+    final authResponse = await client.get(Uri.parse('$host/premium-content'), headers: {'Authorization': '402 $token'});
 
     if (authResponse.statusCode == 200) {
       stdout.writeln('Success! Content: ${authResponse.body}');
     } else {
-      stdout.writeln(
-        'Failed to authorize payment. Status: ${authResponse.statusCode}',
-      );
+      stdout.writeln('Failed to authorize payment. Status: ${authResponse.statusCode}');
       stdout.writeln('Body: ${authResponse.body}');
     }
   } catch (e) {

@@ -55,10 +55,7 @@ void main(List<String> args) async {
       // Find matching requirement
       final requirement = requirements.firstWhere(
         (r) => r.network == payload.network && r.scheme == payload.scheme,
-        orElse:
-            () => throw Exception(
-              'No matching requirement found for ${payload.network}',
-            ),
+        orElse: () => throw Exception('No matching requirement found for ${payload.network}'),
       );
 
       final isValid = await solanaScheme.verifyPayload(payload, requirement);
@@ -78,14 +75,10 @@ void main(List<String> args) async {
   });
 
   // CORS middleware
-  final handler = const Pipeline()
-      .addMiddleware(corsHeaders())
-      .addHandler(app.call);
+  final handler = const Pipeline().addMiddleware(corsHeaders()).addHandler(app.call);
 
   final server = await io.serve(handler, _hostname, port);
-  stdout.writeln(
-    'Solana Server serving at http://${server.address.host}:${server.port}',
-  );
+  stdout.writeln('Solana Server serving at http://${server.address.host}:${server.port}');
 }
 
 Response _paymentRequired(List<PaymentRequirements> requirements) {
@@ -94,9 +87,6 @@ Response _paymentRequired(List<PaymentRequirements> requirements) {
   return Response(
     402,
     body: jsonEncode(response.toJson()),
-    headers: const {
-      'content-type': 'application/json',
-      'WWW-Authenticate': '402',
-    },
+    headers: const {'content-type': 'application/json', 'WWW-Authenticate': '402'},
   );
 }
