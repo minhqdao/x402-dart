@@ -34,7 +34,7 @@ class ExactSolanaSchemeServer implements SchemeServer {
 
       // Verify transaction structure
       final expectedAmount = BigInt.parse(requirements.maxAmountRequired);
-      final isValidStructure = SolanaTransactionBuilder.verifyTransactionStructure(
+      final isValidStructure = await SolanaTransactionBuilder.verifyTransactionStructure(
         decoded: decoded,
         expectedRecipient: requirements.payTo,
         expectedAmount: expectedAmount,

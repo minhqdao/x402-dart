@@ -170,12 +170,12 @@ class SolanaTransactionBuilder {
   }
 
   /// Verify transaction structure for exact scheme
-  static bool verifyTransactionStructure({
+  static Future<bool> verifyTransactionStructure({
     required DecodedTransaction decoded,
     required String expectedRecipient,
     required BigInt expectedAmount,
     required String tokenMint,
-  }) {
+  }) async {
     if (decoded.instructions.isEmpty) return false;
 
     final ix = decoded.instructions.last;
@@ -209,7 +209,13 @@ class SolanaTransactionBuilder {
 
     // 5. Destination
     final destination = decoded.accountKeys[ix.accountKeyIndexes[2]].toBase58();
-    if (destination != expectedRecipient) return false;
+
+    // Derive expected ATA
+    final recipientKey = Ed25519HDPublicKey.fromBase58(expectedRecipient);
+    final mintPublicKey = Ed25519HDPublicKey.fromBase58(tokenMint);
+    final expectedATA = await getAssociatedTokenAddress(mint: mintPublicKey, owner: recipientKey);
+
+    if (destination != expectedATA.toBase58()) return false;
 
     return true;
   }
