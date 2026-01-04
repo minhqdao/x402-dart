@@ -7,9 +7,9 @@ homepage: https://github.com/minhqdao/x402
 environment:
   sdk: ^3.10.0
 
+resolution: workspace
+
 dependencies:
   x402_core: ^0.1.0
   x402_evm: ^0.1.0
   x402_solana: ^0.1.0
-
-resolution: workspace

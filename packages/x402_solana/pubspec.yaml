@@ -10,6 +10,10 @@ environment:
 resolution: workspace
 
 dependencies:
-  http: ^1.1.0
+  convert: ^3.1.2
+  http: ^1.6.0
   solana: ^0.32.0
   x402_core: ^0.1.0
+
+dev_dependencies:
+  test: ^1.28.0
