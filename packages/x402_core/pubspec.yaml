@@ -1,8 +1,13 @@
 name: x402_core
 description: Core protocol definitions and shared logic for the x402 protocol, providing blockchain-agnostic interfaces and data structures.
 version: 0.1.0
+repository: https://github.com/minhqdao/x402
+homepage: https://github.com/minhqdao/x402
 
 environment:
   sdk: ^3.10.0
 
 resolution: workspace
+
+dev_dependencies:
+  test: ^1.28.0

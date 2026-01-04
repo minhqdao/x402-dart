@@ -1,8 +1,20 @@
 name: x402_evm
 description: EVM-compatible blockchain implementation of the x402 protocol.
 version: 0.1.0
+repository: https://github.com/minhqdao/x402
+homepage: https://github.com/minhqdao/x402
 
 environment:
   sdk: ^3.10.0
 
 resolution: workspace
+
+dependencies:
+  convert: ^3.1.2
+  crypto: ^3.0.7
+  http: ^1.6.0
+  web3dart: ^2.7.3
+  x402_core: ^0.1.0
+
+dev_dependencies:
+  test: ^1.28.0

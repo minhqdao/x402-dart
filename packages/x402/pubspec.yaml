@@ -1,6 +1,8 @@
 name: x402
 description: Unified package for the x402 protocol with support for multiple blockchains.
 version: 0.1.0
+repository: https://github.com/minhqdao/x402
+homepage: https://github.com/minhqdao/x402
 
 environment:
   sdk: ^3.10.0
