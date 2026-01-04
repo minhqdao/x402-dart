@@ -16,3 +16,9 @@ workspace:
 dev_dependencies:
   lint: ^2.8.0
   melos: ^7.3.0
+
+melos:
+  scripts:
+    test:
+      description: Run all tests in this workspace.
+      run:  melos exec --dir-exists=test -- dart test
