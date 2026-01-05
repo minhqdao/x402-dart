@@ -4,12 +4,9 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
-import 'package:solana/solana.dart';
 import 'package:x402/x402.dart';
 
 const _defaultHost = 'http://localhost:3002';
-const _svmRpcUrl = 'https://api.devnet.solana.com';
-const _svmWsUrl = 'wss://api.devnet.solana.com';
 
 void main(List<String> args) async {
   final parser = ArgParser()..addOption('host', abbr: 'h', defaultsTo: _defaultHost);
@@ -54,10 +51,7 @@ void main(List<String> args) async {
     String? signature;
 
     // Initialize EVM signer
-    final evmSigner = EvmSigner.fromHex(
-      chainId: 31337,
-      privateKeyHex: '0x1234567890123456789012345678901234567890123456789012345678901234',
-    );
+    final evmSigner = EvmSigner.fromHex(chainId: 31337, privateKeyHex: '0x1234567890123456789012345678901234567890123');
     stdout.writeln('EVM Address: ${evmSigner.privateKey.address.hex}');
 
     // Try EVM first
@@ -70,12 +64,7 @@ void main(List<String> args) async {
       chosenRequirement = evmReq;
     } else {
       // Initialize SVM signer
-      final svmSolanaClient = SolanaClient(rpcUrl: Uri.parse(_svmRpcUrl), websocketUrl: Uri.parse(_svmWsUrl));
-      final svmSigner = await SvmSigner.fromMnemonic(
-        mnemonic: 'love bird zero jungle vessel seven', // Example mnemonic
-        networkType: 'mainnet',
-        solanaClient: svmSolanaClient,
-      );
+      final svmSigner = await SvmSigner.createRandom(network: SolanaNetwork.devnet);
       stdout.writeln('SVM Address: ${svmSigner.signer.address}');
 
       // Try SVM
