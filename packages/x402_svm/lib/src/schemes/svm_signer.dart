@@ -8,12 +8,34 @@ class SvmSigner extends X402Signer {
   @override
   final String networkId;
   final ExactSvmSchemeClient _client;
+  final Ed25519HDKeyPair signer; // Exposed for convenience
 
+  /// Creates an SvmSigner.
+  /// `networkNamespace` defaults to "svm".
   SvmSigner({
-    required this.networkId,
-    required Ed25519HDKeyPair signer,
+    required String networkType,
+    required this.signer,
     required SolanaClient solanaClient,
-  }) : _client = ExactSvmSchemeClient(signer: signer, solanaClient: solanaClient);
+    String networkNamespace = 'svm',
+  }) : networkId = '$networkNamespace:$networkType',
+       _client = ExactSvmSchemeClient(signer: signer, solanaClient: solanaClient);
+
+  /// Creates an SvmSigner from a mnemonic phrase.
+  /// `networkNamespace` defaults to "svm".
+  static Future<SvmSigner> fromMnemonic({
+    required String mnemonic,
+    required String networkType,
+    required SolanaClient solanaClient,
+    String networkNamespace = 'svm',
+  }) async {
+    final signer = await Ed25519HDKeyPair.fromMnemonic(mnemonic);
+    return SvmSigner(
+      networkType: networkType,
+      signer: signer,
+      solanaClient: solanaClient,
+      networkNamespace: networkNamespace,
+    );
+  }
 
   @override
   String get scheme => _client.scheme;

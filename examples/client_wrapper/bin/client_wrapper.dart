@@ -7,13 +7,12 @@ const _defaultHost = 'http://127.0.0.1:8080';
 
 void main(List<String> args) async {
   // 1. Setup (Once per app)
-  final EthPrivateKey privateKey = EthPrivateKey.fromHex(
-    '0x1234567890123456789012345678901234567890123456789012345678901234',
-  );
+  final evmEthPrivateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
+  final evmSigner = EvmSigner(chainId: 8453, privateKey: evmEthPrivateKey);
 
   final client = X402Client(
     signers: [
-      EvmSigner(networkId: 'eip155:8453', privateKey: privateKey), // Prefer Base
+      evmSigner, // Prefer Base
     ],
     onPaymentRequired: (req) async {
       stdout.writeln('--- Magic Payment Approval ---');
@@ -22,7 +21,7 @@ void main(List<String> args) async {
     },
   );
 
-  stdout.writeln('Using EVM address: ${privateKey.address.hex}');
+  stdout.writeln('Using EVM address: ${evmEthPrivateKey.address.hex}');
 
   try {
     // 2. Usage (Anywhere in your app)

@@ -8,9 +8,22 @@ class EvmSigner extends X402Signer {
   @override
   final String networkId;
   final ExactEvmSchemeClient _client;
+  final EthPrivateKey privateKey; // Exposed for convenience
 
-  EvmSigner({required this.networkId, required EthPrivateKey privateKey})
-    : _client = ExactEvmSchemeClient(privateKey: privateKey);
+  /// Creates an EvmSigner.
+  /// `networkNamespace` defaults to "eip155".
+  EvmSigner({required int chainId, required this.privateKey, String networkNamespace = 'eip155'})
+    : networkId = '$networkNamespace:$chainId',
+      _client = ExactEvmSchemeClient(privateKey: privateKey);
+
+  /// Creates an EvmSigner from a hexadecimal private key string.
+  /// The `privateKeyHex` string can optionally be prefixed with "0x".
+  /// `networkNamespace` defaults to "eip155".
+  factory EvmSigner.fromHex({required String privateKeyHex, required int chainId, String networkNamespace = 'eip155'}) {
+    final cleanedHex = privateKeyHex.startsWith('0x') ? privateKeyHex : '0x$privateKeyHex';
+    final privateKey = EthPrivateKey.fromHex(cleanedHex);
+    return EvmSigner(chainId: chainId, privateKey: privateKey, networkNamespace: networkNamespace);
+  }
 
   @override
   String get scheme => _client.scheme;

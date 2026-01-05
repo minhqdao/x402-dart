@@ -5,7 +5,6 @@ import 'package:args/args.dart';
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 import 'package:solana/solana.dart';
-import 'package:web3dart/web3dart.dart';
 import 'package:x402/x402.dart';
 
 const _defaultHost = 'http://localhost:3002';
@@ -21,7 +20,7 @@ void main(List<String> args) async {
 
   try {
     // 1. Initial HTTP Request
-    stdout.writeln('Making initial request to $host/premium-content...');
+    stdout.writeln('Making initial request to $host/api/data...');
     final initialResponse = await client.get(Uri.parse('$host/api/data'));
 
     if (initialResponse.statusCode == 200) {
@@ -55,9 +54,11 @@ void main(List<String> args) async {
     String? signature;
 
     // Initialize EVM signer
-    final evmPrivateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
-    final evmSigner = EvmSigner(networkId: 'eip155:31337', privateKey: evmPrivateKey);
-    stdout.writeln('EVM Address: ${evmPrivateKey.address.hex}');
+    final evmSigner = EvmSigner.fromHex(
+      chainId: 31337,
+      privateKeyHex: '0x1234567890123456789012345678901234567890123456789012345678901234',
+    );
+    stdout.writeln('EVM Address: ${evmSigner.privateKey.address.hex}');
 
     // Try EVM first
     final evmReq = paymentResponse.accepts.firstWhereOrNull(
@@ -69,10 +70,13 @@ void main(List<String> args) async {
       chosenRequirement = evmReq;
     } else {
       // Initialize SVM signer
-      final svmSignerKeypair = await Ed25519HDKeyPair.random();
       final svmSolanaClient = SolanaClient(rpcUrl: Uri.parse(_svmRpcUrl), websocketUrl: Uri.parse(_svmWsUrl));
-      final svmSigner = SvmSigner(networkId: 'svm:mainnet', signer: svmSignerKeypair, solanaClient: svmSolanaClient);
-      stdout.writeln('SVM Address: ${svmSignerKeypair.address}');
+      final svmSigner = await SvmSigner.fromMnemonic(
+        mnemonic: 'love bird zero jungle vessel seven', // Example mnemonic
+        networkType: 'mainnet',
+        solanaClient: svmSolanaClient,
+      );
+      stdout.writeln('SVM Address: ${svmSigner.signer.address}');
 
       // Try SVM
       final svmReq = paymentResponse.accepts.firstWhereOrNull(
