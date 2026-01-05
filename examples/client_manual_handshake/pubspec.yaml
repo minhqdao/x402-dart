@@ -1,0 +1,20 @@
+name: client_manual_handshake
+description: x402 Manual Handshake Client Example
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.0
+
+resolution: workspace
+
+dependencies:
+  args: ^2.4.2
+  collection: ^1.18.0
+  http: ^1.1.0
+  solana: ^0.32.0
+  web3dart: ^2.7.3
+  x402:
+
+dev_dependencies:
+  lint: ^2.0.0

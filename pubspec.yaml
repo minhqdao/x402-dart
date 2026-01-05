@@ -8,16 +8,17 @@ environment:
   sdk: ^3.10.0
 
 workspace:
-  - packages/x402
-  - packages/x402_core
-  - packages/x402_evm
-  - packages/x402_svm
   - examples/client_evm
+  - examples/client_manual_handshake
   - examples/client_svm
   - examples/client_wrapper
   - examples/server_evm
   - examples/server_svm
   - examples/facilitator
+  - packages/x402
+  - packages/x402_core
+  - packages/x402_evm
+  - packages/x402_svm
 
 dev_dependencies:
   lint: ^2.8.0
