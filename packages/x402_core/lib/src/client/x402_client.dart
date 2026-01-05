@@ -7,9 +7,7 @@ import 'package:x402_core/src/constants.dart';
 import 'package:x402_core/src/models/payment_requirements.dart';
 
 /// Callback to let the user approve a payment before the 'magic' happens.
-typedef PaymentApprovalCallback = Future<bool> Function(
-  X402Requirement requirement,
-);
+typedef PaymentApprovalCallback = Future<bool> Function(X402Requirement requirement);
 
 /// The interface every blockchain-specific package must implement.
 abstract class X402Signer {
@@ -29,12 +27,9 @@ class X402Client extends http.BaseClient {
   final http.Client _inner;
   final PaymentApprovalCallback? onPaymentRequired;
 
-  X402Client({
-    required List<X402Signer> signers,
-    this.onPaymentRequired,
-    http.Client? inner,
-  }) : _signers = signers,
-       _inner = inner ?? http.Client();
+  X402Client({required List<X402Signer> signers, this.onPaymentRequired, http.Client? inner})
+    : _signers = signers,
+      _inner = inner ?? http.Client();
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
