@@ -17,4 +17,4 @@ dependencies:
   x402_evm:
 
 dev_dependencies:
-  lint: ^2.0.0
+  lint: ^2.8.0

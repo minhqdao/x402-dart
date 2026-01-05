@@ -8,7 +8,7 @@ import 'package:solana/solana.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:x402/x402.dart';
 
-const _defaultHost = 'http://127.0.0.1:8080';
+const _defaultHost = 'http://localhost:3002';
 const _svmRpcUrl = 'https://api.devnet.solana.com';
 const _svmWsUrl = 'wss://api.devnet.solana.com';
 
@@ -17,23 +17,12 @@ void main(List<String> args) async {
   final result = parser.parse(args);
   final host = result['host'] as String;
 
-  // Initialize EVM signer
-  final evmPrivateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
-  final evmSigner = EvmSigner(networkId: 'eip155:8453', privateKey: evmPrivateKey);
-  stdout.writeln('EVM Address: ${evmPrivateKey.address.hex}');
-
-  // Initialize SVM signer
-  final svmSignerKeypair = await Ed25519HDKeyPair.random();
-  final svmSolanaClient = SolanaClient(rpcUrl: Uri.parse(_svmRpcUrl), websocketUrl: Uri.parse(_svmWsUrl));
-  final svmSigner = SvmSigner(networkId: 'svm:mainnet', signer: svmSignerKeypair, solanaClient: svmSolanaClient);
-  stdout.writeln('SVM Address: ${svmSignerKeypair.address}');
-
   final client = http.Client();
 
   try {
     // 1. Initial HTTP Request
     stdout.writeln('Making initial request to $host/premium-content...');
-    final initialResponse = await client.get(Uri.parse('$host/premium-content'));
+    final initialResponse = await client.get(Uri.parse('$host/api/data'));
 
     if (initialResponse.statusCode == 200) {
       stdout.writeln('--- Success (no payment required) ---');
@@ -65,6 +54,11 @@ void main(List<String> args) async {
     X402Requirement? chosenRequirement;
     String? signature;
 
+    // Initialize EVM signer
+    final evmPrivateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
+    final evmSigner = EvmSigner(networkId: 'eip155:31337', privateKey: evmPrivateKey);
+    stdout.writeln('EVM Address: ${evmPrivateKey.address.hex}');
+
     // Try EVM first
     final evmReq = paymentResponse.accepts.firstWhereOrNull(
       (req) => req.network == evmSigner.networkId && req.scheme == evmSigner.scheme,
@@ -74,6 +68,12 @@ void main(List<String> args) async {
       chosenSigner = evmSigner;
       chosenRequirement = evmReq;
     } else {
+      // Initialize SVM signer
+      final svmSignerKeypair = await Ed25519HDKeyPair.random();
+      final svmSolanaClient = SolanaClient(rpcUrl: Uri.parse(_svmRpcUrl), websocketUrl: Uri.parse(_svmWsUrl));
+      final svmSigner = SvmSigner(networkId: 'svm:mainnet', signer: svmSignerKeypair, solanaClient: svmSolanaClient);
+      stdout.writeln('SVM Address: ${svmSignerKeypair.address}');
+
       // Try SVM
       final svmReq = paymentResponse.accepts.firstWhereOrNull(
         (req) => req.network == svmSigner.networkId && req.scheme == svmSigner.scheme,
