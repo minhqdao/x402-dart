@@ -23,14 +23,14 @@ void main(List<String> args) async {
   final svmScheme = ExactSvmSchemeServer();
 
   // Define requirements
-  const requirements = [
+  final requirements = [
     X402Requirement(
-      network: 'svm:mainnet',
+      network: 'solana:${SolanaNetwork.mainnet.genesisHash}',
       asset: _usdcAddress,
       amount: '1000000', // 1 USDC
       maxTimeoutSeconds: 3600,
       payTo: _solanaAddress,
-      scheme: 'exact',
+      scheme: 'v2:solana:exact',
       resource: '/premium-content',
       description: 'Premium content access',
       mimeType: 'application/json',
@@ -61,10 +61,7 @@ void main(List<String> args) async {
       // Find matching requirement
       final requirement = requirements.firstWhere(
         (r) => r.network == payload.network && r.scheme == payload.scheme,
-        orElse:
-            () => throw Exception(
-              'No matching requirement found for ${payload.network}',
-            ),
+        orElse: () => throw Exception('No matching requirement found for ${payload.network}'),
       );
 
       final isValid = await svmScheme.verifyPayload(payload, requirement);
@@ -84,21 +81,14 @@ void main(List<String> args) async {
   });
 
   // CORS middleware
-  final handler = const Pipeline()
-      .addMiddleware(corsHeaders())
-      .addHandler(app.call);
+  final handler = const Pipeline().addMiddleware(corsHeaders()).addHandler(app.call);
 
   final server = await io.serve(handler, _hostname, port);
-  stdout.writeln(
-    'SVM Server serving at http://${server.address.host}:${server.port}',
-  );
+  stdout.writeln('SVM Server serving at http://${server.address.host}:${server.port}');
 }
 
 Response _paymentRequired(List<X402Requirement> requirements) {
-  final response = PaymentRequiredResponse(
-    x402Version: kX402Version,
-    accepts: requirements,
-  );
+  final response = PaymentRequiredResponse(x402Version: kX402Version, accepts: requirements);
 
   final responseJson = jsonEncode(response.toJson());
   final base64Response = base64Encode(utf8.encode(responseJson));
@@ -106,10 +96,6 @@ Response _paymentRequired(List<X402Requirement> requirements) {
   return Response(
     kPaymentRequiredStatus,
     body: responseJson,
-    headers: {
-      'content-type': 'application/json',
-      'WWW-Authenticate': '402',
-      kPaymentRequiredHeader: base64Response,
-    },
+    headers: {'content-type': 'application/json', 'WWW-Authenticate': '402', kPaymentRequiredHeader: base64Response},
   );
 }

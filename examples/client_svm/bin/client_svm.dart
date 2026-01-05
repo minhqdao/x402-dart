@@ -56,11 +56,11 @@ void main(List<String> args) async {
 
     // Find SVM requirement
     final solReq = paymentResponse.accepts.firstWhere(
-      (req) => req.scheme == 'exact' && req.network.startsWith('svm'),
-      orElse: () => throw Exception('No supported SVM payment method found'),
+      (req) => req.scheme == 'v2:solana:exact' && req.network.startsWith('solana'),
+      orElse: () => throw Exception('No supported Solana payment method found'),
     );
 
-    stdout.writeln('Found SVM requirement for ${solReq.network}');
+    stdout.writeln('Found Solana requirement for ${solReq.network}');
     stdout.writeln('Asset: ${solReq.asset}');
     stdout.writeln('Amount: ${solReq.amount}');
 

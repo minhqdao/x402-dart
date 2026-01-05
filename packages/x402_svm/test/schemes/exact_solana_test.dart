@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_svm/src/facilitator/http_facilitator_client.dart';
+import 'package:x402_svm/x402_svm.dart';
 
 void main() {
   group('HttpFacilitatorClient', () {
@@ -12,8 +11,8 @@ void main() {
 
     setUp(() {
       requirements = const X402Requirement(
-        scheme: 'exact',
-        network: 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+        scheme: 'v2:solana:exact',
+        network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
         amount: '10000',
         resource: 'https://api.example.com/data',
         description: 'Premium data',
@@ -52,7 +51,7 @@ void main() {
           jsonEncode({
             'success': true,
             'txHash': 'transaction_signature',
-            'networkId': 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+            'networkId': 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
           }),
           200,
         );
@@ -78,8 +77,8 @@ void main() {
         return http.Response(
           jsonEncode({
             'kinds': [
-              {'scheme': 'exact', 'network': 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'},
-              {'scheme': 'exact', 'network': 'svm:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'},
+              {'scheme': 'v2:solana:exact', 'network': 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'},
+              {'scheme': 'v2:solana:exact', 'network': 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'},
             ],
           }),
           200,
@@ -91,8 +90,8 @@ void main() {
       final supported = await client.getSupported();
 
       expect(supported.length, equals(2));
-      expect(supported[0].scheme, equals('exact'));
-      expect(supported[0].network, contains('svm:'));
+      expect(supported[0].scheme, equals('v2:solana:exact'));
+      expect(supported[0].network, contains('solana:'));
     });
   });
 }

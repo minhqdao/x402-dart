@@ -23,9 +23,7 @@ void main(List<String> args) async {
   stdout.writeln('Mock Facilitator running at http://localhost:$facilitatorPort');
 
   // 2. Initialize Facilitator Client
-  final facilitatorClient = evm.HttpFacilitatorClient(
-    baseUrl: 'http://localhost:$facilitatorPort',
-  );
+  final facilitatorClient = evm.HttpFacilitatorClient(baseUrl: 'http://localhost:$facilitatorPort');
 
   // 3. Define requirements for multiple chains
   const requirements = [
@@ -78,10 +76,7 @@ void main(List<String> args) async {
       // Find matching requirement
       final requirement = requirements.firstWhere(
         (r) => r.network == payload.network && r.scheme == payload.scheme,
-        orElse:
-            () => throw Exception(
-              'No matching requirement found for ${payload.network}',
-            ),
+        orElse: () => throw Exception('No matching requirement found for ${payload.network}'),
       );
 
       stdout.writeln('Verifying payment via facilitator...');
@@ -105,10 +100,7 @@ void main(List<String> args) async {
       if (settleResp.success) {
         stdout.writeln('Payment settled! TX: ${settleResp.txHash}');
         return Response.ok(
-          jsonEncode({
-            'content': 'Multi-chain premium content! 🌐',
-            'txHash': settleResp.txHash,
-          }),
+          jsonEncode({'content': 'Multi-chain premium content! 🌐', 'txHash': settleResp.txHash}),
           headers: const {'content-type': 'application/json'},
         );
       } else {
@@ -120,21 +112,14 @@ void main(List<String> args) async {
     }
   });
 
-  final handler = const Pipeline()
-      .addMiddleware(corsHeaders())
-      .addHandler(app.call);
+  final handler = const Pipeline().addMiddleware(corsHeaders()).addHandler(app.call);
 
   final server = await io.serve(handler, _hostname, port);
-  stdout.writeln(
-    'Facilitator-backed Server serving at http://${server.address.host}:${server.port}',
-  );
+  stdout.writeln('Facilitator-backed Server serving at http://${server.address.host}:${server.port}');
 }
 
 Response _paymentRequired(List<X402Requirement> requirements) {
-  final response = PaymentRequiredResponse(
-    x402Version: kX402Version,
-    accepts: requirements,
-  );
+  final response = PaymentRequiredResponse(x402Version: kX402Version, accepts: requirements);
 
   final responseJson = jsonEncode(response.toJson());
   final base64Response = base64Encode(utf8.encode(responseJson));
@@ -142,11 +127,7 @@ Response _paymentRequired(List<X402Requirement> requirements) {
   return Response(
     kPaymentRequiredStatus,
     body: responseJson,
-    headers: {
-      'content-type': 'application/json',
-      'WWW-Authenticate': '402',
-      kPaymentRequiredHeader: base64Response,
-    },
+    headers: {'content-type': 'application/json', 'WWW-Authenticate': '402', kPaymentRequiredHeader: base64Response},
   );
 }
 

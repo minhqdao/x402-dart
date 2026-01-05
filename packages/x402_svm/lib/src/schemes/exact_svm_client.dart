@@ -10,7 +10,7 @@ class ExactSvmSchemeClient implements SchemeClient {
   ExactSvmSchemeClient({required this.signer, required this.solanaClient});
 
   @override
-  String get scheme => 'exact';
+  String get scheme => 'v2:solana:exact';
 
   @override
   Future<PaymentPayload> createPaymentPayload(X402Requirement requirements) async {
@@ -19,11 +19,11 @@ class ExactSvmSchemeClient implements SchemeClient {
       throw UnsupportedSchemeException('Expected scheme "$scheme", got "${requirements.scheme}"');
     }
 
-    // Parse network (format: svm:genesisHash)
+    // Parse network (format: solana:genesisHash)
     final networkParts = requirements.network.split(':');
-    if (networkParts.length != 2 || networkParts[0] != 'svm') {
+    if (networkParts.length != 2 || networkParts[0] != 'solana') {
       throw InvalidPayloadException(
-        'Invalid network format. Expected "svm:genesisHash", got "${requirements.network}"',
+        'Invalid network format. Expected "solana:genesisHash", got "${requirements.network}"',
       );
     }
 

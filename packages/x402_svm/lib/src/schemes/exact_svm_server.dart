@@ -10,7 +10,7 @@ class ExactSvmSchemeServer implements SchemeServer {
   ExactSvmSchemeServer({this.solanaClient});
 
   @override
-  String get scheme => 'exact';
+  String get scheme => 'v2:solana:exact';
 
   @override
   Future<bool> verifyPayload(PaymentPayload payload, X402Requirement requirements) async {
