@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-/// Represents a payment option offered by the server (formerly X402Requirement)
+/// Represents a payment option offered by the server
 class X402Requirement {
   /// Scheme of the payment protocol (e.g., "exact")
   final String scheme;
@@ -32,7 +32,7 @@ class X402Requirement {
   /// Token/asset contract address
   final String asset;
 
-  /// Scheme-specific data data
+  /// Scheme-specific data
   final Map<String, dynamic> data;
 
   const X402Requirement({
@@ -53,7 +53,7 @@ class X402Requirement {
     return X402Requirement(
       scheme: json['scheme'] as String,
       network: json['network'] as String,
-      amount: (json['amount'] ?? json['amount']) as String,
+      amount: (json['amount'] ?? json['maxAmountRequired']) as String,
       resource: json['resource'] as String,
       description: json['description'] as String,
       mimeType: json['mimeType'] as String,
@@ -61,7 +61,7 @@ class X402Requirement {
       payTo: json['payTo'] as String,
       maxTimeoutSeconds: json['maxTimeoutSeconds'] as int,
       asset: json['asset'] as String,
-      data: (json['data'] ?? json['data'] ?? <String, dynamic>{}) as Map<String, dynamic>,
+      data: (json['data'] ?? json['extra'] ?? <String, dynamic>{}) as Map<String, dynamic>,
     );
   }
 
@@ -70,6 +70,7 @@ class X402Requirement {
       'scheme': scheme,
       'network': network,
       'amount': amount,
+      'maxAmountRequired': amount, // Backward compatibility
       'resource': resource,
       'description': description,
       'mimeType': mimeType,
@@ -78,6 +79,7 @@ class X402Requirement {
       'maxTimeoutSeconds': maxTimeoutSeconds,
       'asset': asset,
       'data': data,
+      'extra': data, // Backward compatibility
     };
   }
 

@@ -34,7 +34,6 @@ void main(List<String> args) async {
       resource: '/premium-content',
       description: 'Premium content access',
       mimeType: 'application/json',
-      data: {},
     ),
   ];
 
