@@ -14,6 +14,7 @@ workspace:
   - packages/x402_svm
   - examples/client_evm
   - examples/client_svm
+  - examples/client_wrapper
   - examples/server_evm
   - examples/server_svm
   - examples/facilitator

@@ -3,5 +3,5 @@
 library;
 
 export 'package:x402_core/x402_core.dart';
-export 'package:x402_evm/x402_evm.dart' show ExactEvmSchemeClient;
-export 'package:x402_svm/x402_svm.dart' show ExactSvmSchemeClient;
+export 'package:x402_evm/x402_evm.dart' show EvmSigner, ExactEvmSchemeClient;
+export 'package:x402_svm/x402_svm.dart' show ExactSvmSchemeClient, SvmSigner;

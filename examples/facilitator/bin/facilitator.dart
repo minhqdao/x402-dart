@@ -57,13 +57,20 @@ void main(List<String> args) async {
   final app = Router();
 
   app.get('/premium-content', (Request request) async {
-    final authHeader = request.headers['Authorization'];
+    // Check for payment signature in standard v2 header or legacy header
+    String? token = request.headers[kPaymentSignatureHeader];
+    token ??= request.headers[kPaymentHeader.toLowerCase()];
 
-    if (authHeader == null || !authHeader.startsWith('402 ')) {
+    // Also check Authorization header for backward compatibility
+    final authHeader = request.headers['Authorization'];
+    if (token == null && authHeader != null && authHeader.startsWith('402 ')) {
+      token = authHeader.substring(4);
+    }
+
+    if (token == null) {
       return _paymentRequired(requirements);
     }
 
-    final token = authHeader.substring(4);
     try {
       final json = jsonDecode(utf8.decode(base64Decode(token)));
       final payload = PaymentPayload.fromJson(json as Map<String, dynamic>);
@@ -79,7 +86,7 @@ void main(List<String> args) async {
 
       stdout.writeln('Verifying payment via facilitator...');
       final verifyResp = await facilitatorClient.verify(
-        x402Version: 1,
+        x402Version: kX402Version,
         paymentHeader: token,
         paymentRequirements: requirement,
       );
@@ -90,7 +97,7 @@ void main(List<String> args) async {
 
       stdout.writeln('Settling payment via facilitator...');
       final settleResp = await facilitatorClient.settle(
-        x402Version: 1,
+        x402Version: kX402Version,
         paymentHeader: token,
         paymentRequirements: requirement,
       );
@@ -124,78 +131,54 @@ void main(List<String> args) async {
 }
 
 Response _paymentRequired(List<PaymentRequirements> requirements) {
-  final response = PaymentRequiredResponse(x402Version: 1, accepts: requirements);
+  final response = PaymentRequiredResponse(
+    x402Version: kX402Version,
+    accepts: requirements,
+  );
+
+  final responseJson = jsonEncode(response.toJson());
+  final base64Response = base64Encode(utf8.encode(responseJson));
 
   return Response(
-    402,
-    body: jsonEncode(response.toJson()),
-    headers: const {
+    kPaymentRequiredStatus,
+    body: responseJson,
+    headers: {
       'content-type': 'application/json',
       'WWW-Authenticate': '402',
+      kPaymentRequiredHeader: base64Response,
     },
   );
 }
 
 /// A very simple mock Facilitator server for demonstration
-
 Future<void> _startMockFacilitator(int port) async {
-
   final router = Router();
 
-
-
   router.post('/verify', (Request request) {
-
     // In a real facilitator, this would cryptographically verify the signature/transaction
-
     return Response.ok(jsonEncode({'isValid': true}));
-
   });
-
-
 
   router.post('/settle', (Request request) {
-
     // In a real facilitator, this would submit the transaction to the blockchain
-
     return Response.ok(
-
       jsonEncode({
-
         'success': true,
-
         'txHash': '0x${'f' * 64}', // Mock hash
-
       }),
-
     );
-
   });
-
-
 
   router.get('/supported', (Request request) {
-
     return Response.ok(
-
       jsonEncode({
-
         'kinds': [
-
           {'scheme': 'exact', 'network': 'eip155:8453'},
-
           {'scheme': 'exact', 'network': 'svm:mainnet'},
-
         ],
-
       }),
-
     );
-
   });
 
-
-
   await io.serve(router.call, 'localhost', port);
-
 }

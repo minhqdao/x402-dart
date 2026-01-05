@@ -50,7 +50,9 @@ void main(List<String> args) async {
 
     // 2. Handle 402 Payment Required
     stdout.writeln('Payment required. Parsing requirements...');
-    final paymentResponse = PaymentRequiredResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+    final paymentResponse = PaymentRequiredResponse.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
 
     // Find EVM requirement
     final evmReq = paymentResponse.accepts.firstWhere(
@@ -70,12 +72,17 @@ void main(List<String> args) async {
     stdout.writeln('Generated payment payload. Retrying request...');
     final token = base64Encode(utf8.encode(jsonEncode(paymentPayload.toJson())));
 
-    final authResponse = await client.get(Uri.parse('$host/premium-content'), headers: {'Authorization': '402 $token'});
+    final authResponse = await client.get(
+      Uri.parse('$host/premium-content'),
+      headers: {'Authorization': '402 $token'},
+    );
 
     if (authResponse.statusCode == 200) {
       stdout.writeln('Success! Content: ${authResponse.body}');
     } else {
-      stdout.writeln('Failed to authorize payment. Status: ${authResponse.statusCode}');
+      stdout.writeln(
+        'Failed to authorize payment. Status: ${authResponse.statusCode}',
+      );
       stdout.writeln('Body: ${authResponse.body}');
     }
   } catch (e) {
