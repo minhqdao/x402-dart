@@ -29,22 +29,22 @@ void main(List<String> args) async {
 
   // 3. Define requirements for multiple chains
   const requirements = [
-    PaymentRequirements(
+    X402Requirement(
       network: 'eip155:8453',
       asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-      maxAmountRequired: '1000000',
+      amount: '1000000',
       maxTimeoutSeconds: 3600,
       payTo: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
       scheme: 'exact',
       resource: '/premium-content',
       description: 'Multi-chain premium access',
       mimeType: 'application/json',
-      extra: {'name': 'USD Coin', 'version': '2'},
+      data: {'name': 'USD Coin', 'version': '2'},
     ),
-    PaymentRequirements(
+    X402Requirement(
       network: 'svm:mainnet',
       asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-      maxAmountRequired: '1000000',
+      amount: '1000000',
       maxTimeoutSeconds: 3600,
       payTo: 'mvines9iiHiQTysrwkTjMcDYC5WzZhVp85694463d74',
       scheme: 'exact',
@@ -88,7 +88,7 @@ void main(List<String> args) async {
       final verifyResp = await facilitatorClient.verify(
         x402Version: kX402Version,
         paymentHeader: token,
-        paymentRequirements: requirement,
+        requirement: requirement,
       );
 
       if (!verifyResp.isValid) {
@@ -99,7 +99,7 @@ void main(List<String> args) async {
       final settleResp = await facilitatorClient.settle(
         x402Version: kX402Version,
         paymentHeader: token,
-        paymentRequirements: requirement,
+        requirement: requirement,
       );
 
       if (settleResp.success) {
@@ -130,7 +130,7 @@ void main(List<String> args) async {
   );
 }
 
-Response _paymentRequired(List<PaymentRequirements> requirements) {
+Response _paymentRequired(List<X402Requirement> requirements) {
   final response = PaymentRequiredResponse(
     x402Version: kX402Version,
     accepts: requirements,

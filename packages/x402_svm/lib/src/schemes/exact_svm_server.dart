@@ -13,7 +13,7 @@ class ExactSvmSchemeServer implements SchemeServer {
   String get scheme => 'exact';
 
   @override
-  Future<bool> verifyPayload(PaymentPayload payload, PaymentRequirements requirements) async {
+  Future<bool> verifyPayload(PaymentPayload payload, X402Requirement requirements) async {
     try {
       // Validate scheme
       if (payload.scheme != scheme || requirements.scheme != scheme) {
@@ -33,7 +33,7 @@ class ExactSvmSchemeServer implements SchemeServer {
       final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
 
       // Verify transaction structure
-      final expectedAmount = BigInt.parse(requirements.maxAmountRequired);
+      final expectedAmount = BigInt.parse(requirements.amount);
       final isValidStructure = await SvmTransactionBuilder.verifyTransactionStructure(
         decoded: decoded,
         expectedRecipient: requirements.payTo,

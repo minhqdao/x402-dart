@@ -62,7 +62,7 @@ void main(List<String> args) async {
 
     stdout.writeln('Found EVM requirement for ${evmReq.network}');
     stdout.writeln('Asset: ${evmReq.asset}');
-    stdout.writeln('Amount: ${evmReq.maxAmountRequired}');
+    stdout.writeln('Amount: ${evmReq.amount}');
 
     // 3. Create payment payload
     final schemeClient = ExactEvmSchemeClient(privateKey: privateKey);

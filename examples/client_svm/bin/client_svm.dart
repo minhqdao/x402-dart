@@ -62,7 +62,7 @@ void main(List<String> args) async {
 
     stdout.writeln('Found SVM requirement for ${solReq.network}');
     stdout.writeln('Asset: ${solReq.asset}');
-    stdout.writeln('Amount: ${solReq.maxAmountRequired}');
+    stdout.writeln('Amount: ${solReq.amount}');
 
     // 3. Create payment payload
     final schemeClient = ExactSvmSchemeClient(signer: signer, solanaClient: solanaClient);

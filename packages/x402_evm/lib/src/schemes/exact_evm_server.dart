@@ -10,7 +10,7 @@ class ExactEvmSchemeServer implements SchemeServer {
   String get scheme => 'exact';
 
   @override
-  Future<bool> verifyPayload(PaymentPayload payload, PaymentRequirements requirements) async {
+  Future<bool> verifyPayload(PaymentPayload payload, X402Requirement requirements) async {
     try {
       // Validate scheme
       if (payload.scheme != scheme || requirements.scheme != scheme) {
@@ -34,7 +34,7 @@ class ExactEvmSchemeServer implements SchemeServer {
       final auth = exactPayload.authorization;
 
       // Verify amounts match
-      final expectedAmount = BigInt.parse(requirements.maxAmountRequired);
+      final expectedAmount = BigInt.parse(requirements.amount);
       final actualAmount = BigInt.parse(auth.value);
       if (actualAmount != expectedAmount) {
         return false;
@@ -55,11 +55,8 @@ class ExactEvmSchemeServer implements SchemeServer {
       }
 
       // Get token metadata
-      if (requirements.extra == null) {
-        return false;
-      }
-      final tokenName = requirements.extra!['name'] as String?;
-      final tokenVersion = requirements.extra!['version'] as String?;
+      final tokenName = requirements.data['name'] as String?;
+      final tokenVersion = requirements.data['version'] as String?;
       if (tokenName == null || tokenVersion == null) {
         return false;
       }

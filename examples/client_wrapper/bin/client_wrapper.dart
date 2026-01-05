@@ -30,33 +30,46 @@ void main(List<String> args) async {
 
   stdout.writeln('Using EVM address: ${privateKey.address.hex}');
 
-  // 2. Initialize X402Client wrapper
-  final x402Client = X402Client(
-    signers: [evmSigner],
-    onPaymentRequired: (requirement) async {
-      stdout.writeln('--- Payment Approval Required ---');
-      stdout.writeln('Resource: ${requirement.resource}');
-      stdout.writeln('Network: ${requirement.network}');
-      stdout.writeln('Asset: ${requirement.asset}');
-      stdout.writeln('Amount: ${requirement.maxAmountRequired}');
-      stdout.writeln('Approving payment...');
-      return true; // Auto-approve for demo
-    },
-  );
+  // 2. Initialize X402Client
+  final x402Client = X402Client();
 
   try {
-    // 3. Simple GET request
-    // The wrapper handles 402 -> sign -> retry automatically
+    // 3. Perform request
     stdout.writeln('Requesting premium content from $host...');
-    final response = await x402Client.get(Uri.parse('$host/premium-content'));
+    final result = await x402Client.get(Uri.parse('$host/premium-content'));
 
-    if (response.statusCode == 200) {
+    // 4. Handle results sequentially using pattern matching
+    final finalResponse = await (switch (result) {
+      X402StandardResponse(response: final r) => Future.value(r),
+      X402PaymentRequired(requirements: final reqs) => () async {
+        stdout.writeln('--- Payment Required ---');
+        final req = reqs.first; // Pick first for demo
+        stdout.writeln('Need to pay: ${req.amount} ${req.asset}');
+
+        // Sign the requirement
+        final signature = await evmSigner.sign(req);
+
+        // Retry with signature
+        stdout.writeln('Retrying with signature...');
+        final retryResult = await x402Client.get(
+          Uri.parse('$host/premium-content'),
+          signature: signature,
+        );
+
+        return switch (retryResult) {
+          X402StandardResponse(response: final r) => r,
+          X402PaymentRequired() => throw Exception('Payment failed after retry'),
+        };
+      }(),
+    });
+
+    if (finalResponse.statusCode == 200) {
       stdout.writeln('--- Success! ---');
-      stdout.writeln('Content: ${response.body}');
+      stdout.writeln('Content: ${finalResponse.body}');
     } else {
       stdout.writeln('--- Failed ---');
-      stdout.writeln('Status: ${response.statusCode}');
-      stdout.writeln('Body: ${response.body}');
+      stdout.writeln('Status: ${finalResponse.statusCode}');
+      stdout.writeln('Body: ${finalResponse.body}');
     }
   } catch (e) {
     stdout.writeln('Error: $e');

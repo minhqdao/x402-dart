@@ -1,13 +1,15 @@
-/// Represents payment requirements for accessing a resource
-class PaymentRequirements {
+import 'dart:convert';
+
+/// Represents a payment option offered by the server (formerly X402Requirement)
+class X402Requirement {
   /// Scheme of the payment protocol (e.g., "exact")
   final String scheme;
 
-  /// Network identifier (e.g., "eip155:8453" for Base)
+  /// Network identifier (e.g., "eip155:8453")
   final String network;
 
-  /// Maximum amount required in atomic units
-  final String maxAmountRequired;
+  /// Amount required in atomic units
+  final String amount;
 
   /// URL of the resource to pay for
   final String resource;
@@ -30,13 +32,13 @@ class PaymentRequirements {
   /// Token/asset contract address
   final String asset;
 
-  /// Scheme-specific extra data
-  final Map<String, dynamic>? extra;
+  /// Scheme-specific data data
+  final Map<String, dynamic> data;
 
-  const PaymentRequirements({
+  const X402Requirement({
     required this.scheme,
     required this.network,
-    required this.maxAmountRequired,
+    required this.amount,
     required this.resource,
     required this.description,
     required this.mimeType,
@@ -44,14 +46,14 @@ class PaymentRequirements {
     required this.payTo,
     required this.maxTimeoutSeconds,
     required this.asset,
-    this.extra,
+    this.data = const {},
   });
 
-  factory PaymentRequirements.fromJson(Map<String, dynamic> json) {
-    return PaymentRequirements(
+  factory X402Requirement.fromJson(Map<String, dynamic> json) {
+    return X402Requirement(
       scheme: json['scheme'] as String,
       network: json['network'] as String,
-      maxAmountRequired: json['maxAmountRequired'] as String,
+      amount: (json['amount'] ?? json['amount']) as String,
       resource: json['resource'] as String,
       description: json['description'] as String,
       mimeType: json['mimeType'] as String,
@@ -59,7 +61,7 @@ class PaymentRequirements {
       payTo: json['payTo'] as String,
       maxTimeoutSeconds: json['maxTimeoutSeconds'] as int,
       asset: json['asset'] as String,
-      extra: json['extra'] as Map<String, dynamic>?,
+      data: (json['data'] ?? json['data'] ?? <String, dynamic>{}) as Map<String, dynamic>,
     );
   }
 
@@ -67,7 +69,7 @@ class PaymentRequirements {
     return {
       'scheme': scheme,
       'network': network,
-      'maxAmountRequired': maxAmountRequired,
+      'amount': amount,
       'resource': resource,
       'description': description,
       'mimeType': mimeType,
@@ -75,7 +77,13 @@ class PaymentRequirements {
       'payTo': payTo,
       'maxTimeoutSeconds': maxTimeoutSeconds,
       'asset': asset,
-      if (extra != null) 'extra': extra,
+      'data': data,
     };
+  }
+
+  /// Factory to decode the Base64 JSON from the payment-required header
+  factory X402Requirement.fromHeader(String base64Json) {
+    final decoded = jsonDecode(utf8.decode(base64Decode(base64Json)));
+    return X402Requirement.fromJson(decoded as Map<String, dynamic>);
   }
 }

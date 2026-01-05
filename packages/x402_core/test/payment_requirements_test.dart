@@ -2,31 +2,31 @@ import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
 
 void main() {
-  group('PaymentRequirements', () {
+  group('X402Requirement', () {
     test('should serialize to and from JSON', () {
-      const requirements = PaymentRequirements(
+      const requirements = X402Requirement(
         scheme: 'exact',
         network: 'eip155:8453',
-        maxAmountRequired: '10000',
+        amount: '10000',
         resource: 'https://api.example.com/data',
         description: 'Access to premium data',
         mimeType: 'application/json',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        extra: {'name': 'USDC', 'version': '2'},
+        data: {'name': 'USDC', 'version': '2'},
       );
 
       final json = requirements.toJson();
-      final deserialized = PaymentRequirements.fromJson(json);
+      final deserialized = X402Requirement.fromJson(json);
 
       expect(deserialized.scheme, equals(requirements.scheme));
       expect(deserialized.network, equals(requirements.network));
-      expect(deserialized.maxAmountRequired, equals(requirements.maxAmountRequired));
+      expect(deserialized.amount, equals(requirements.amount));
       expect(deserialized.resource, equals(requirements.resource));
       expect(deserialized.payTo, equals(requirements.payTo));
       expect(deserialized.asset, equals(requirements.asset));
-      expect(deserialized.extra, equals(requirements.extra));
+      expect(deserialized.data, equals(requirements.data));
     });
   });
 
@@ -57,10 +57,10 @@ void main() {
       const response = PaymentRequiredResponse(
         x402Version: 2,
         accepts: [
-          PaymentRequirements(
+          X402Requirement(
             scheme: 'exact',
             network: 'eip155:8453',
-            maxAmountRequired: '10000',
+            amount: '10000',
             resource: 'https://api.example.com/data',
             description: 'Access to data',
             mimeType: 'application/json',

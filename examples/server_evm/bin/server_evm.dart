@@ -27,17 +27,17 @@ void main(List<String> args) async {
 
   // Define requirements
   const requirements = [
-    PaymentRequirements(
+    X402Requirement(
       network: 'eip155:$_chainId',
       asset: _usdcAddress,
-      maxAmountRequired: '1000000', // 1 USDC
+      amount: '1000000', // 1 USDC
       maxTimeoutSeconds: 3600,
       payTo: _evmAddress,
       scheme: 'exact',
       resource: '/premium-content',
       description: 'Premium content access',
       mimeType: 'application/json',
-      extra: {'name': _usdcName, 'version': _usdcVersion},
+      data: {'name': _usdcName, 'version': _usdcVersion},
     ),
   ];
 
@@ -98,7 +98,7 @@ void main(List<String> args) async {
   );
 }
 
-Response _paymentRequired(List<PaymentRequirements> requirements) {
+Response _paymentRequired(List<X402Requirement> requirements) {
   final response = PaymentRequiredResponse(
     x402Version: kX402Version,
     accepts: requirements,

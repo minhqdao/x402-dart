@@ -14,7 +14,7 @@ class ExactEvmSchemeClient implements SchemeClient {
   String get scheme => 'exact';
 
   @override
-  Future<PaymentPayload> createPaymentPayload(PaymentRequirements requirements) async {
+  Future<PaymentPayload> createPaymentPayload(X402Requirement requirements) async {
     // Validate scheme
     if (requirements.scheme != scheme) {
       throw UnsupportedSchemeException('Expected scheme "$scheme", got "${requirements.scheme}"');
@@ -28,16 +28,13 @@ class ExactEvmSchemeClient implements SchemeClient {
     final chainId = int.parse(networkParts[1]);
 
     // Parse amount
-    final amount = BigInt.parse(requirements.maxAmountRequired);
+    final amount = BigInt.parse(requirements.amount);
 
-    // Get token metadata from extra
-    if (requirements.extra == null) {
-      throw const InvalidPayloadException('Missing token metadata in extra field');
-    }
-    final tokenName = requirements.extra!['name'] as String?;
-    final tokenVersion = requirements.extra!['version'] as String?;
+    // Get token metadata from data
+    final tokenName = requirements.data['name'] as String?;
+    final tokenVersion = requirements.data['version'] as String?;
     if (tokenName == null || tokenVersion == null) {
-      throw const InvalidPayloadException('Missing name or version in extra field');
+      throw const InvalidPayloadException('Missing name or version in data field');
     }
 
     // Generate nonce and validity window

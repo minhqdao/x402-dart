@@ -34,7 +34,7 @@ dependencies:
 ### Payment Flow
 
 1. **Client** requests a resource from a server
-2. **Server** responds with `402 Payment Required` and `PaymentRequirements`
+2. **Server** responds with `402 Payment Required` and `X402Requirement`
 3. **Client** creates a `PaymentPayload` using a scheme (e.g., "exact")
 4. **Server** verifies the payment (optionally via facilitator)
 5. **Server** settles the payment on-chain (optionally via facilitator)
@@ -42,22 +42,22 @@ dependencies:
 
 ### Models
 
-#### PaymentRequirements
+#### X402Requirement
 
 Describes what payment is needed to access a resource:
 
 ```dart
-final requirements = PaymentRequirements(
+final requirements = X402Requirement(
   scheme: 'exact',
   network: 'eip155:8453',  // Base mainnet
-  maxAmountRequired: '10000',  // 0.01 USDC (6 decimals)
+  amount: '10000',  // 0.01 USDC (6 decimals)
   resource: 'https://api.example.com/premium-data',
   description: 'Access to premium data',
   mimeType: 'application/json',
   payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
   maxTimeoutSeconds: 60,
   asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',  // USDC
-  extra: {'name': 'USDC', 'version': '2'},
+  data: {'name': 'USDC', 'version': '2'},
 );
 ```
 
@@ -90,7 +90,7 @@ class MySchemeClient implements SchemeClient {
 
   @override
   Future<PaymentPayload> createPaymentPayload(
-    PaymentRequirements requirements,
+    X402Requirement requirements,
   ) async {
     // Create and sign payment payload
     // ...

@@ -52,10 +52,10 @@ final client = ExactSVMSchemeClient(
 );
 
 // Get payment requirements from server (via 402 response)
-final requirements = PaymentRequirements(
+final requirements = X402Requirement(
   scheme: 'exact',
   network: 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1', // Devnet
-  maxAmountRequired: '10000', // 0.01 USDC (6 decimals)
+  amount: '10000', // 0.01 USDC (6 decimals)
   resource: 'https://api.example.com/premium-data',
   description: 'Access to premium data',
   mimeType: 'application/json',
@@ -101,10 +101,10 @@ final serverWithClient = ExactSVMSchemeServer(
 );
 
 // Your payment requirements
-final requirements = PaymentRequirements(
+final requirements = X402Requirement(
   scheme: 'exact',
   network: 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-  maxAmountRequired: '10000',
+  amount: '10000',
   resource: '/premium-data',
   description: 'Premium data access',
   mimeType: 'application/json',
@@ -211,7 +211,7 @@ final facilitator = HttpFacilitatorClient(
 final verificationResult = await facilitator.verify(
   x402Version: kX402Version,
   paymentHeader: paymentHeaderBase64,
-  paymentRequirements: requirements,
+  requirement: requirements,
 );
 
 if (verificationResult.isValid) {
@@ -219,7 +219,7 @@ if (verificationResult.isValid) {
   final settlementResult = await facilitator.settle(
     x402Version: kX402Version,
     paymentHeader: paymentHeaderBase64,
-    paymentRequirements: requirements,
+    requirement: requirements,
   );
   
   if (settlementResult.success) {
@@ -233,10 +233,10 @@ if (verificationResult.isValid) {
 For Token-2022 or custom programs:
 
 ```dart
-final requirements = PaymentRequirements(
+final requirements = X402Requirement(
   // ... other fields ...
   asset: 'YourToken2022Address',
-  extra: {
+  data: {
     'tokenProgramId': 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
   },
 );

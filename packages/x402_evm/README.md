@@ -42,17 +42,17 @@ final privateKey = EthPrivateKey.fromHex('0x...');
 final client = ExactEvmSchemeClient(privateKey: privateKey);
 
 // Get payment requirements from server (via 402 response)
-final requirements = PaymentRequirements(
+final requirements = X402Requirement(
   scheme: 'exact',
   network: 'eip155:8453', // Base mainnet
-  maxAmountRequired: '10000', // 0.01 USDC (6 decimals)
+  amount: '10000', // 0.01 USDC (6 decimals)
   resource: 'https://api.example.com/premium-data',
   description: 'Access to premium data',
   mimeType: 'application/json',
   payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
   maxTimeoutSeconds: 60,
   asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', // USDC on Base
-  extra: {
+  data: {
     'name': 'USD Coin',
     'version': '2',
   },
@@ -86,17 +86,17 @@ import 'package:x402_evm/x402_evm.dart';
 final server = ExactEvmSchemeServer();
 
 // Your payment requirements
-final requirements = PaymentRequirements(
+final requirements = X402Requirement(
   scheme: 'exact',
   network: 'eip155:8453',
-  maxAmountRequired: '10000',
+  amount: '10000',
   resource: '/premium-data',
   description: 'Premium data access',
   mimeType: 'application/json',
   payTo: '0xYourAddress',
   maxTimeoutSeconds: 60,
   asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-  extra: {'name': 'USD Coin', 'version': '2'},
+  data: {'name': 'USD Coin', 'version': '2'},
 );
 
 Handler paymentHandler(Handler innerHandler) {
@@ -162,7 +162,7 @@ final facilitator = HttpFacilitatorClient(
 final verificationResult = await facilitator.verify(
   x402Version: kX402Version,
   paymentHeader: paymentHeaderBase64,
-  paymentRequirements: requirements,
+  requirement: requirements,
 );
 
 if (verificationResult.isValid) {
@@ -170,7 +170,7 @@ if (verificationResult.isValid) {
   final settlementResult = await facilitator.settle(
     x402Version: kX402Version,
     paymentHeader: paymentHeaderBase64,
-    paymentRequirements: requirements,
+    requirement: requirements,
   );
   
   if (settlementResult.success) {
@@ -198,7 +198,7 @@ for (final kind in supported) {
 ### Payment Flow
 
 ```
-1. Client requests resource → Server returns 402 with PaymentRequirements
+1. Client requests resource → Server returns 402 with X402Requirement
 2. Client creates PaymentPayload with EIP-3009 signature
 3. Client sends request with X-PAYMENT header
 4. Server verifies signature (locally or via facilitator)
@@ -282,10 +282,10 @@ Tests cover:
 ### Custom Token Metadata
 
 ```dart
-final requirements = PaymentRequirements(
+final requirements = X402Requirement(
   // ... other fields ...
   asset: '0xYourTokenAddress',
-  extra: {
+  data: {
     'name': 'Your Token Name',  // From EIP-2612/3009
     'version': '1',              // Token version
   },
@@ -296,7 +296,7 @@ final requirements = PaymentRequirements(
 
 ```dart
 // Payments valid for 5 minutes
-final requirements = PaymentRequirements(
+final requirements = X402Requirement(
   // ... other fields ...
   maxTimeoutSeconds: 300,
 );
@@ -310,18 +310,18 @@ final response = PaymentRequiredResponse(
   x402Version: kX402Version,
   accepts: [
     // Base USDC
-    PaymentRequirements(
+    X402Requirement(
       scheme: 'exact',
       network: 'eip155:8453',
-      maxAmountRequired: '10000',
+      amount: '10000',
       asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
       // ... other fields ...
     ),
     // Ethereum USDC
-    PaymentRequirements(
+    X402Requirement(
       scheme: 'exact',
       network: 'eip155:1',
-      maxAmountRequired: '10000',
+      amount: '10000',
       asset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       // ... other fields ...
     ),

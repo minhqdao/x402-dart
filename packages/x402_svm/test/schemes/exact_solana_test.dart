@@ -8,13 +8,13 @@ import 'package:x402_svm/src/facilitator/http_facilitator_client.dart';
 
 void main() {
   group('HttpFacilitatorClient', () {
-    late PaymentRequirements requirements;
+    late X402Requirement requirements;
 
     setUp(() {
-      requirements = const PaymentRequirements(
+      requirements = const X402Requirement(
         scheme: 'exact',
         network: 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-        maxAmountRequired: '10000',
+        amount: '10000',
         resource: 'https://api.example.com/data',
         description: 'Premium data',
         mimeType: 'application/json',
@@ -37,7 +37,7 @@ void main() {
       final response = await client.verify(
         x402Version: 2,
         paymentHeader: 'base64encodedpayload',
-        paymentRequirements: requirements,
+        requirement: requirements,
       );
 
       expect(response.isValid, isTrue);
@@ -63,7 +63,7 @@ void main() {
       final response = await client.settle(
         x402Version: 2,
         paymentHeader: 'base64encodedpayload',
-        paymentRequirements: requirements,
+        requirement: requirements,
       );
 
       expect(response.success, isTrue);

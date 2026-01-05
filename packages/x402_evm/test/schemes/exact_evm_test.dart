@@ -7,23 +7,23 @@ void main() {
   group('ExactEvmSchemeClient', () {
     late EthPrivateKey privateKey;
     late ExactEvmSchemeClient client;
-    late PaymentRequirements requirements;
+    late X402Requirement requirements;
 
     setUp(() {
       privateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
       client = ExactEvmSchemeClient(privateKey: privateKey);
 
-      requirements = const PaymentRequirements(
+      requirements = const X402Requirement(
         scheme: 'exact',
         network: 'eip155:8453',
-        maxAmountRequired: '10000',
+        amount: '10000',
         resource: 'https://api.example.com/data',
         description: 'Premium data access',
         mimeType: 'application/json',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        extra: {'name': 'USD Coin', 'version': '2'},
+        data: {'name': 'USD Coin', 'version': '2'},
       );
     });
 
@@ -43,10 +43,10 @@ void main() {
     });
 
     test('should throw on unsupported scheme', () {
-      const badRequirements = PaymentRequirements(
+      const badRequirements = X402Requirement(
         scheme: 'deferred',
         network: 'eip155:8453',
-        maxAmountRequired: '10000',
+        amount: '10000',
         resource: 'https://api.example.com/data',
         description: 'Premium data access',
         mimeType: 'application/json',
@@ -59,34 +59,34 @@ void main() {
     });
 
     test('should throw on invalid network format', () {
-      const badRequirements = PaymentRequirements(
+      const badRequirements = X402Requirement(
         scheme: 'exact',
         network: 'invalid:network',
-        maxAmountRequired: '10000',
+        amount: '10000',
         resource: 'https://api.example.com/data',
         description: 'Premium data access',
         mimeType: 'application/json',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        extra: {'name': 'USDC', 'version': '2'},
+        data: {'name': 'USDC', 'version': '2'},
       );
 
       expect(() => client.createPaymentPayload(badRequirements), throwsA(isA<InvalidPayloadException>()));
     });
 
     test('should throw on missing token metadata', () {
-      const badRequirements = PaymentRequirements(
+      const badRequirements = X402Requirement(
         scheme: 'exact',
         network: 'eip155:8453',
-        maxAmountRequired: '10000',
+        amount: '10000',
         resource: 'https://api.example.com/data',
         description: 'Premium data access',
         mimeType: 'application/json',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        // Missing extra field
+        // Missing data field
       );
 
       expect(() => client.createPaymentPayload(badRequirements), throwsA(isA<InvalidPayloadException>()));
@@ -97,24 +97,24 @@ void main() {
     late EthPrivateKey privateKey;
     late ExactEvmSchemeClient client;
     late ExactEvmSchemeServer server;
-    late PaymentRequirements requirements;
+    late X402Requirement requirements;
 
     setUp(() {
       privateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
       client = ExactEvmSchemeClient(privateKey: privateKey);
       server = ExactEvmSchemeServer();
 
-      requirements = const PaymentRequirements(
+      requirements = const X402Requirement(
         scheme: 'exact',
         network: 'eip155:8453',
-        maxAmountRequired: '10000',
+        amount: '10000',
         resource: 'https://api.example.com/data',
         description: 'Premium data access',
         mimeType: 'application/json',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 3600, // 1 hour to ensure test doesn't expire
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        extra: {'name': 'USD Coin', 'version': '2'},
+        data: {'name': 'USD Coin', 'version': '2'},
       );
     });
 
@@ -156,17 +156,17 @@ void main() {
     test('should reject payload with wrong amount', () async {
       final payload = await client.createPaymentPayload(requirements);
 
-      final wrongRequirements = PaymentRequirements(
+      final wrongRequirements = X402Requirement(
         scheme: requirements.scheme,
         network: requirements.network,
-        maxAmountRequired: '20000', // Different amount
+        amount: '20000', // Different amount
         resource: requirements.resource,
         description: requirements.description,
         mimeType: requirements.mimeType,
         payTo: requirements.payTo,
         maxTimeoutSeconds: requirements.maxTimeoutSeconds,
         asset: requirements.asset,
-        extra: requirements.extra,
+        data: requirements.data,
       );
 
       final isValid = await server.verifyPayload(payload, wrongRequirements);
@@ -177,17 +177,17 @@ void main() {
     test('should reject payload with wrong recipient', () async {
       final payload = await client.createPaymentPayload(requirements);
 
-      final wrongRequirements = PaymentRequirements(
+      final wrongRequirements = X402Requirement(
         scheme: requirements.scheme,
         network: requirements.network,
-        maxAmountRequired: requirements.maxAmountRequired,
+        amount: requirements.amount,
         resource: requirements.resource,
         description: requirements.description,
         mimeType: requirements.mimeType,
         payTo: '0x1111111111111111111111111111111111111111', // Wrong address
         maxTimeoutSeconds: requirements.maxTimeoutSeconds,
         asset: requirements.asset,
-        extra: requirements.extra,
+        data: requirements.data,
       );
 
       final isValid = await server.verifyPayload(payload, wrongRequirements);

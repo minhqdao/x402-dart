@@ -15,7 +15,7 @@ const _solanaAddress = 'mvines9iiHiQTysrwkTjMcDYC5WzZhVp85694463d74'; // Test ad
 const _usdcAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'; // Mainnet USDC
 
 void main(List<String> args) async {
-  final parser = ArgParser()..addOption('port', abbr: 'p', defaultsTo: '8081');
+  final parser = ArgParser()..addOption('port', abbr: 'p');
   final result = parser.parse(args);
   final port = int.parse(result['port'] as String);
 
@@ -24,17 +24,17 @@ void main(List<String> args) async {
 
   // Define requirements
   const requirements = [
-    PaymentRequirements(
+    X402Requirement(
       network: 'svm:mainnet',
       asset: _usdcAddress,
-      maxAmountRequired: '1000000', // 1 USDC
+      amount: '1000000', // 1 USDC
       maxTimeoutSeconds: 3600,
       payTo: _solanaAddress,
       scheme: 'exact',
       resource: '/premium-content',
       description: 'Premium content access',
       mimeType: 'application/json',
-      extra: {},
+      data: {},
     ),
   ];
 
@@ -95,7 +95,7 @@ void main(List<String> args) async {
   );
 }
 
-Response _paymentRequired(List<PaymentRequirements> requirements) {
+Response _paymentRequired(List<X402Requirement> requirements) {
   final response = PaymentRequiredResponse(
     x402Version: kX402Version,
     accepts: requirements,

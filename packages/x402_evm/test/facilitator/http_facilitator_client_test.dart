@@ -7,20 +7,20 @@ import 'package:x402_evm/x402_evm.dart';
 
 void main() {
   group('HttpFacilitatorClient', () {
-    late PaymentRequirements requirements;
+    late X402Requirement requirements;
 
     setUp(() {
-      requirements = const PaymentRequirements(
+      requirements = const X402Requirement(
         scheme: 'exact',
         network: 'eip155:8453',
-        maxAmountRequired: '10000',
+        amount: '10000',
         resource: 'https://api.example.com/data',
         description: 'Premium data',
         mimeType: 'application/json',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        extra: {'name': 'USDC', 'version': '2'},
+        data: {'name': 'USDC', 'version': '2'},
       );
     });
 
@@ -37,7 +37,7 @@ void main() {
       final response = await client.verify(
         x402Version: 2,
         paymentHeader: 'base64encodedpayload',
-        paymentRequirements: requirements,
+        requirement: requirements,
       );
 
       expect(response.isValid, isTrue);
@@ -54,7 +54,7 @@ void main() {
       final response = await client.verify(
         x402Version: 2,
         paymentHeader: 'base64encodedpayload',
-        paymentRequirements: requirements,
+        requirement: requirements,
       );
 
       expect(response.isValid, isFalse);
@@ -74,7 +74,7 @@ void main() {
       final response = await client.settle(
         x402Version: 2,
         paymentHeader: 'base64encodedpayload',
-        paymentRequirements: requirements,
+        requirement: requirements,
       );
 
       expect(response.success, isTrue);
@@ -116,7 +116,7 @@ void main() {
       final client = HttpFacilitatorClient(baseUrl: 'https://facilitator.example.com', httpClient: mockClient);
 
       expect(
-        () => client.verify(x402Version: 2, paymentHeader: 'base64encodedpayload', paymentRequirements: requirements),
+        () => client.verify(x402Version: 2, paymentHeader: 'base64encodedpayload', requirement: requirements),
         throwsA(isA<PaymentVerificationException>()),
       );
     });

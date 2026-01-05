@@ -11,14 +11,14 @@ abstract class FacilitatorClient {
   Future<VerificationResponse> verify({
     required int x402Version,
     required String paymentHeader,
-    required PaymentRequirements paymentRequirements,
+    required X402Requirement requirement,
   });
 
   /// Settle a payment
   Future<SettlementResponse> settle({
     required int x402Version,
     required String paymentHeader,
-    required PaymentRequirements paymentRequirements,
+    required X402Requirement requirement,
   });
 
   /// Get supported schemes and networks

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:web3dart/web3dart.dart';
 import 'package:x402_core/x402_core.dart';
 import 'package:x402_evm/src/schemes/exact_evm_client.dart';
@@ -15,6 +16,8 @@ class EvmSigner extends X402Signer {
   String get scheme => _client.scheme;
 
   @override
-  Future<PaymentPayload> sign(PaymentRequirements requirement) =>
-      _client.createPaymentPayload(requirement);
+  Future<String> sign(X402Requirement requirement) async {
+    final payload = await _client.createPaymentPayload(requirement);
+    return base64Encode(utf8.encode(jsonEncode(payload.toJson())));
+  }
 }

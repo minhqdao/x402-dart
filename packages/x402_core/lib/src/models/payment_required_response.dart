@@ -6,7 +6,7 @@ class PaymentRequiredResponse {
   final int x402Version;
 
   /// List of accepted payment requirements
-  final List<PaymentRequirements> accepts;
+  final List<X402Requirement> accepts;
 
   /// Error message (if any)
   final String? error;
@@ -16,7 +16,7 @@ class PaymentRequiredResponse {
   factory PaymentRequiredResponse.fromJson(Map<String, dynamic> json) {
     return PaymentRequiredResponse(
       x402Version: json['x402Version'] as int,
-      accepts: (json['accepts'] as List).map((e) => PaymentRequirements.fromJson(e as Map<String, dynamic>)).toList(),
+      accepts: (json['accepts'] as List).map((e) => X402Requirement.fromJson(e as Map<String, dynamic>)).toList(),
       error: json['error'] as String?,
     );
   }
