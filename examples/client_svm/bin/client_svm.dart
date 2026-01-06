@@ -66,7 +66,7 @@ void main(List<String> args) async {
 
     // 3. Create payment payload
     final schemeClient = ExactSvmSchemeClient(signer: signer, solanaClient: solanaClient);
-    final paymentPayload = await schemeClient.createPaymentPayload(solReq);
+    final paymentPayload = await schemeClient.createPaymentPayload(solReq, paymentResponse.resource);
 
     // 4. Retry with authorization
     stdout.writeln('Generated payment payload. Retrying request...');

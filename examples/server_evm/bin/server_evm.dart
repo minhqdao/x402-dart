@@ -25,6 +25,13 @@ void main(List<String> args) async {
   // Initialize scheme
   final evmScheme = ExactEvmSchemeServer();
 
+  // Define resource info
+  const resource = ResourceInfo(
+    url: '/premium-content',
+    description: 'Premium content access',
+    mimeType: 'application/json',
+  );
+
   // Define requirements
   const requirements = [
     PaymentRequirement(
@@ -34,10 +41,7 @@ void main(List<String> args) async {
       maxTimeoutSeconds: 3600,
       payTo: _evmAddress,
       scheme: 'exact',
-      resource: '/premium-content',
-      description: 'Premium content access',
-      mimeType: 'application/json',
-      data: {'name': _usdcName, 'version': _usdcVersion},
+      extra: {'name': _usdcName, 'version': _usdcVersion},
     ),
   ];
 
@@ -55,7 +59,7 @@ void main(List<String> args) async {
     }
 
     if (token == null) {
-      return _paymentRequired(requirements);
+      return _paymentRequired(requirements, resource);
     }
 
     try {
@@ -64,8 +68,8 @@ void main(List<String> args) async {
 
       // Find matching requirement
       final requirement = requirements.firstWhere(
-        (r) => r.network == payload.network && r.scheme == payload.scheme,
-        orElse: () => throw Exception('No matching requirement found for ${payload.network}'),
+        (r) => r.network == payload.accepted.network && r.scheme == payload.accepted.scheme,
+        orElse: () => throw Exception('No matching requirement found for ${payload.accepted.network}'),
       );
 
       final isValid = await evmScheme.verifyPayload(payload, requirement);
@@ -91,8 +95,8 @@ void main(List<String> args) async {
   stdout.writeln('EVM Server serving at http://${server.address.host}:${server.port}');
 }
 
-Response _paymentRequired(List<PaymentRequirement> requirements) {
-  final response = PaymentRequiredResponse(x402Version: kX402Version, accepts: requirements);
+Response _paymentRequired(List<PaymentRequirement> requirements, ResourceInfo resource) {
+  final response = PaymentRequiredResponse(x402Version: kX402Version, resource: resource, accepts: requirements);
 
   final responseJson = jsonEncode(response.toJson());
   final base64Response = base64Encode(utf8.encode(responseJson));

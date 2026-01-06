@@ -14,9 +14,9 @@ void main(List<String> args) async {
     signers: [
       evmSigner, // Prefer Base
     ],
-    onPaymentRequired: (req) async {
+    onPaymentRequired: (req, resource) async {
       stdout.writeln('--- Magic Payment Approval ---');
-      stdout.writeln('Paying ${req.amount} for ${req.resource}...');
+      stdout.writeln('Paying ${req.amount} for ${resource.url}...');
       return true; // Simple auto-approve
     },
   );

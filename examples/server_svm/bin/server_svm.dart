@@ -15,12 +15,19 @@ const _solanaAddress = 'mvines9iiHiQTysrwkTjMcDYC5WzZhVp85694463d74'; // Test ad
 const _usdcAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'; // Mainnet USDC
 
 void main(List<String> args) async {
-  final parser = ArgParser()..addOption('port', abbr: 'p');
+  final parser = ArgParser()..addOption('port', abbr: 'p', defaultsTo: '8081');
   final result = parser.parse(args);
   final port = int.parse(result['port'] as String);
 
   // Initialize scheme
   final svmScheme = ExactSvmSchemeServer();
+
+  // Define resource info
+  const resource = ResourceInfo(
+    url: '/premium-content',
+    description: 'Premium content access',
+    mimeType: 'application/json',
+  );
 
   // Define requirements
   final requirements = [
@@ -31,9 +38,6 @@ void main(List<String> args) async {
       maxTimeoutSeconds: 3600,
       payTo: _solanaAddress,
       scheme: 'v2:solana:exact',
-      resource: '/premium-content',
-      description: 'Premium content access',
-      mimeType: 'application/json',
     ),
   ];
 
@@ -51,7 +55,7 @@ void main(List<String> args) async {
     }
 
     if (token == null) {
-      return _paymentRequired(requirements);
+      return _paymentRequired(requirements, resource);
     }
 
     try {
@@ -60,8 +64,8 @@ void main(List<String> args) async {
 
       // Find matching requirement
       final requirement = requirements.firstWhere(
-        (r) => r.network == payload.network && r.scheme == payload.scheme,
-        orElse: () => throw Exception('No matching requirement found for ${payload.network}'),
+        (r) => r.network == payload.accepted.network && r.scheme == payload.accepted.scheme,
+        orElse: () => throw Exception('No matching requirement found for ${payload.accepted.network}'),
       );
 
       final isValid = await svmScheme.verifyPayload(payload, requirement);
@@ -87,8 +91,8 @@ void main(List<String> args) async {
   stdout.writeln('SVM Server serving at http://${server.address.host}:${server.port}');
 }
 
-Response _paymentRequired(List<PaymentRequirement> requirements) {
-  final response = PaymentRequiredResponse(x402Version: kX402Version, accepts: requirements);
+Response _paymentRequired(List<PaymentRequirement> requirements, ResourceInfo resource) {
+  final response = PaymentRequiredResponse(x402Version: kX402Version, resource: resource, accepts: requirements);
 
   final responseJson = jsonEncode(response.toJson());
   final base64Response = base64Encode(utf8.encode(responseJson));

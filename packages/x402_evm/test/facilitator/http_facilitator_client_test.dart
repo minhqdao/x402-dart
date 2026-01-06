@@ -14,13 +14,10 @@ void main() {
         scheme: 'exact',
         network: 'eip155:8453',
         amount: '10000',
-        resource: 'https://api.example.com/data',
-        description: 'Premium data',
-        mimeType: 'application/json',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        data: {'name': 'USDC', 'version': '2'},
+        extra: {'name': 'USDC', 'version': '2'},
       );
     });
 

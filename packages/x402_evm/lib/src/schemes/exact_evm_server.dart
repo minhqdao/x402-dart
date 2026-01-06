@@ -13,12 +13,12 @@ class ExactEvmSchemeServer implements SchemeServer {
   Future<bool> verifyPayload(PaymentPayload payload, PaymentRequirement requirements) async {
     try {
       // Validate scheme
-      if (payload.scheme != scheme || requirements.scheme != scheme) {
+      if (payload.accepted.scheme != scheme || requirements.scheme != scheme) {
         return false;
       }
 
       // Validate network
-      if (payload.network != requirements.network) {
+      if (payload.accepted.network != requirements.network) {
         return false;
       }
 
@@ -55,8 +55,8 @@ class ExactEvmSchemeServer implements SchemeServer {
       }
 
       // Get token metadata
-      final tokenName = requirements.data['name'] as String?;
-      final tokenVersion = requirements.data['version'] as String?;
+      final tokenName = requirements.extra['name'] as String?;
+      final tokenVersion = requirements.extra['version'] as String?;
       if (tokenName == null || tokenVersion == null) {
         return false;
       }

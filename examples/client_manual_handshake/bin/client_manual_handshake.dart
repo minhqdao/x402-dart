@@ -97,7 +97,7 @@ void main(List<String> args) async {
     }
 
     stdout.writeln('Signing payment payload...');
-    signature = await chosenSigner.sign(chosenRequirement);
+    signature = await chosenSigner.sign(chosenRequirement, paymentResponse.resource);
 
     // 4. Retry Request with Signature
     stdout.writeln('Retrying request with signature...');

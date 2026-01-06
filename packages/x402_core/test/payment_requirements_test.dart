@@ -8,13 +8,10 @@ void main() {
         scheme: 'exact',
         network: 'eip155:8453',
         amount: '10000',
-        resource: 'https://api.example.com/data',
-        description: 'Access to premium data',
-        mimeType: 'application/json',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        data: {'name': 'USDC', 'version': '2'},
+        extra: {'name': 'USDC', 'version': '2'},
       );
 
       final json = requirements.toJson();
@@ -23,19 +20,31 @@ void main() {
       expect(deserialized.scheme, equals(requirements.scheme));
       expect(deserialized.network, equals(requirements.network));
       expect(deserialized.amount, equals(requirements.amount));
-      expect(deserialized.resource, equals(requirements.resource));
       expect(deserialized.payTo, equals(requirements.payTo));
       expect(deserialized.asset, equals(requirements.asset));
-      expect(deserialized.data, equals(requirements.data));
+      expect(deserialized.extra, equals(requirements.extra));
     });
   });
 
   group('PaymentPayload', () {
     test('should serialize to and from JSON', () {
-      const payload = PaymentPayload(
-        x402Version: 2,
+      const resource = ResourceInfo(
+        url: 'https://api.example.com/data',
+        description: 'Access to premium data',
+        mimeType: 'application/json',
+      );
+      const requirement = PaymentRequirement(
         scheme: 'exact',
         network: 'eip155:8453',
+        amount: '10000',
+        payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
+        maxTimeoutSeconds: 60,
+        asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+      );
+      const payload = PaymentPayload(
+        x402Version: 2,
+        resource: resource,
+        accepted: requirement,
         payload: {
           'signature': '0x123...',
           'authorization': {'from': '0xabc...', 'to': '0xdef...', 'value': '10000'},
@@ -46,24 +55,28 @@ void main() {
       final deserialized = PaymentPayload.fromJson(json);
 
       expect(deserialized.x402Version, equals(payload.x402Version));
-      expect(deserialized.scheme, equals(payload.scheme));
-      expect(deserialized.network, equals(payload.network));
+      expect(deserialized.accepted.scheme, equals(payload.accepted.scheme));
+      expect(deserialized.accepted.network, equals(payload.accepted.network));
+      expect(deserialized.resource.url, equals(resource.url));
       expect(deserialized.payload['signature'], equals('0x123...'));
     });
   });
 
   group('PaymentRequiredResponse', () {
     test('should serialize to and from JSON', () {
+      const resource = ResourceInfo(
+        url: 'https://api.example.com/data',
+        description: 'Access to data',
+        mimeType: 'application/json',
+      );
       const response = PaymentRequiredResponse(
         x402Version: 2,
+        resource: resource,
         accepts: [
           PaymentRequirement(
             scheme: 'exact',
             network: 'eip155:8453',
             amount: '10000',
-            resource: 'https://api.example.com/data',
-            description: 'Access to data',
-            mimeType: 'application/json',
             payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
             maxTimeoutSeconds: 60,
             asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
@@ -75,12 +88,23 @@ void main() {
       final deserialized = PaymentRequiredResponse.fromJson(json);
 
       expect(deserialized.x402Version, equals(response.x402Version));
+      expect(deserialized.resource.url, equals(resource.url));
       expect(deserialized.accepts.length, equals(1));
       expect(deserialized.accepts.first.scheme, equals('exact'));
     });
 
     test('should handle error field', () {
-      const response = PaymentRequiredResponse(x402Version: 2, accepts: [], error: 'Invalid payment');
+      const resource = ResourceInfo(
+        url: 'https://api.example.com/data',
+        description: 'Access to data',
+        mimeType: 'application/json',
+      );
+      const response = PaymentRequiredResponse(
+        x402Version: 2,
+        resource: resource,
+        accepts: [],
+        error: 'Invalid payment',
+      );
 
       final json = response.toJson();
       expect(json['error'], equals('Invalid payment'));

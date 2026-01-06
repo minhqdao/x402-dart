@@ -13,7 +13,7 @@ class ExactSvmSchemeClient implements SchemeClient {
   String get scheme => 'v2:solana:exact';
 
   @override
-  Future<PaymentPayload> createPaymentPayload(PaymentRequirement requirements) async {
+  Future<PaymentPayload> createPaymentPayload(PaymentRequirement requirements, ResourceInfo resource) async {
     // Validate scheme
     if (requirements.scheme != scheme) {
       throw UnsupportedSchemeException('Expected scheme "$scheme", got "${requirements.scheme}"');
@@ -46,8 +46,8 @@ class ExactSvmSchemeClient implements SchemeClient {
     // Create payment payload
     return PaymentPayload(
       x402Version: kX402Version,
-      scheme: scheme,
-      network: requirements.network,
+      resource: resource,
+      accepted: requirements,
       payload: {'transaction': encodedTransaction, 'blockhash': blockhash},
     );
   }

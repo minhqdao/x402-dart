@@ -25,6 +25,13 @@ void main(List<String> args) async {
   // 2. Initialize Facilitator Client
   final facilitatorClient = evm.HttpFacilitatorClient(baseUrl: 'http://localhost:$facilitatorPort');
 
+  // Define resource info
+  const resource = ResourceInfo(
+    url: '/premium-content',
+    description: 'Multi-chain premium access',
+    mimeType: 'application/json',
+  );
+
   // 3. Define requirements for multiple chains
   const requirements = [
     PaymentRequirement(
@@ -34,10 +41,7 @@ void main(List<String> args) async {
       maxTimeoutSeconds: 3600,
       payTo: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
       scheme: 'exact',
-      resource: '/premium-content',
-      description: 'Multi-chain premium access',
-      mimeType: 'application/json',
-      data: {'name': 'USD Coin', 'version': '2'},
+      extra: {'name': 'USD Coin', 'version': '2'},
     ),
     PaymentRequirement(
       network: 'svm:mainnet',
@@ -46,9 +50,6 @@ void main(List<String> args) async {
       maxTimeoutSeconds: 3600,
       payTo: 'mvines9iiHiQTysrwkTjMcDYC5WzZhVp85694463d74',
       scheme: 'exact',
-      resource: '/premium-content',
-      description: 'Multi-chain premium access',
-      mimeType: 'application/json',
     ),
   ];
 
@@ -66,7 +67,7 @@ void main(List<String> args) async {
     }
 
     if (token == null) {
-      return _paymentRequired(requirements);
+      return _paymentRequired(requirements, resource);
     }
 
     try {
@@ -75,8 +76,8 @@ void main(List<String> args) async {
 
       // Find matching requirement
       final requirement = requirements.firstWhere(
-        (r) => r.network == payload.network && r.scheme == payload.scheme,
-        orElse: () => throw Exception('No matching requirement found for ${payload.network}'),
+        (r) => r.network == payload.accepted.network && r.scheme == payload.accepted.scheme,
+        orElse: () => throw Exception('No matching requirement found for ${payload.accepted.network}'),
       );
 
       stdout.writeln('Verifying payment via facilitator...');
@@ -118,8 +119,8 @@ void main(List<String> args) async {
   stdout.writeln('Facilitator-backed Server serving at http://${server.address.host}:${server.port}');
 }
 
-Response _paymentRequired(List<PaymentRequirement> requirements) {
-  final response = PaymentRequiredResponse(x402Version: kX402Version, accepts: requirements);
+Response _paymentRequired(List<PaymentRequirement> requirements, ResourceInfo resource) {
+  final response = PaymentRequiredResponse(x402Version: kX402Version, resource: resource, accepts: requirements);
 
   final responseJson = jsonEncode(response.toJson());
   final base64Response = base64Encode(utf8.encode(responseJson));

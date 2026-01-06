@@ -16,12 +16,12 @@ class ExactSvmSchemeServer implements SchemeServer {
   Future<bool> verifyPayload(PaymentPayload payload, PaymentRequirement requirements) async {
     try {
       // Validate scheme
-      if (payload.scheme != scheme || requirements.scheme != scheme) {
+      if (payload.accepted.scheme != scheme || requirements.scheme != scheme) {
         return false;
       }
 
       // Validate network
-      if (payload.network != requirements.network) {
+      if (payload.accepted.network != requirements.network) {
         return false;
       }
 

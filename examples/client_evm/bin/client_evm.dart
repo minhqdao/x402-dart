@@ -64,7 +64,7 @@ void main(List<String> args) async {
 
     // 3. Create payment payload
     final schemeClient = ExactEvmSchemeClient(privateKey: privateKey);
-    final paymentPayload = await schemeClient.createPaymentPayload(evmReq);
+    final paymentPayload = await schemeClient.createPaymentPayload(evmReq, paymentResponse.resource);
 
     // 4. Retry with authorization
     stdout.writeln('Generated payment payload. Retrying request...');

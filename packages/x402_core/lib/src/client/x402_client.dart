@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 import 'package:x402_core/src/constants.dart';
+import 'package:x402_core/src/models/payment_required_response.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
+import 'package:x402_core/src/models/resource_info.dart';
 
 /// Callback to let the user approve a payment before the 'magic' happens.
-typedef PaymentApprovalCallback = Future<bool> Function(PaymentRequirement requirement);
+typedef PaymentApprovalCallback = Future<bool> Function(PaymentRequirement requirement, ResourceInfo resource);
 
 /// The interface every blockchain-specific package must implement.
 abstract class X402Signer {
@@ -18,7 +20,7 @@ abstract class X402Signer {
   String get scheme;
 
   /// Signs the requirements and returns the Base64 signature string.
-  Future<String> sign(PaymentRequirement requirement);
+  Future<String> sign(PaymentRequirement requirement, ResourceInfo resource);
 }
 
 /// A high-level client that automatically handles 402 Payment Required flows
@@ -28,8 +30,8 @@ class X402Client extends http.BaseClient {
   final PaymentApprovalCallback? onPaymentRequired;
 
   X402Client({required List<X402Signer> signers, this.onPaymentRequired, http.Client? inner})
-    : _signers = signers,
-      _inner = inner ?? http.Client();
+      : _signers = signers,
+        _inner = inner ?? http.Client();
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
@@ -46,7 +48,8 @@ class X402Client extends http.BaseClient {
 
       try {
         // 4. Parse the requirements (The 'accepts' array from server)
-        final List<PaymentRequirement> requirements = _parseHeader(header);
+        final paymentRequired = _parseHeader(header);
+        final requirements = paymentRequired.accepts;
 
         // 5. Negotiation: Iterate through YOUR signers (in order)
         for (final signer in _signers) {
@@ -58,12 +61,12 @@ class X402Client extends http.BaseClient {
           if (match != null) {
             // 6. Optional Consent Check (Safety first!)
             if (onPaymentRequired != null) {
-              final approved = await onPaymentRequired!(match);
+              final approved = await onPaymentRequired!(match, paymentRequired.resource);
               if (!approved) return response; // Return the 402 if denied
             }
 
             // 7. Magic: Sign & Automatically Retry
-            final signature = await signer.sign(match);
+            final signature = await signer.sign(match, paymentRequired.resource);
             final retryRequest = _recreate(request, bytes);
 
             // Attach the proof using both v2 standard and legacy headers
@@ -91,10 +94,9 @@ class X402Client extends http.BaseClient {
     return req;
   }
 
-  List<PaymentRequirement> _parseHeader(String headerBase64) {
+  PaymentRequiredResponse _parseHeader(String headerBase64) {
     final json = jsonDecode(utf8.decode(base64Decode(headerBase64))) as Map<String, dynamic>;
-    final list = json['accepts'] as List? ?? [];
-    return list.map((m) => PaymentRequirement.fromJson(m as Map<String, dynamic>)).toList();
+    return PaymentRequiredResponse.fromJson(json);
   }
 
   @override

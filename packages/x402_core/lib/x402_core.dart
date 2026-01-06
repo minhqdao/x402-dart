@@ -9,5 +9,6 @@ export 'src/interfaces/scheme.dart';
 export 'src/models/payment_payload.dart';
 export 'src/models/payment_required_response.dart';
 export 'src/models/payment_requirement.dart';
+export 'src/models/resource_info.dart';
 export 'src/models/settlement_response.dart';
 export 'src/models/verification_response.dart';
