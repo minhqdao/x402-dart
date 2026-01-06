@@ -14,7 +14,7 @@ class ExactEvmSchemeClient implements SchemeClient {
   String get scheme => 'exact';
 
   @override
-  Future<PaymentPayload> createPaymentPayload(X402Requirement requirements) async {
+  Future<PaymentPayload> createPaymentPayload(PaymentRequirement requirements) async {
     // Validate scheme
     if (requirements.scheme != scheme) {
       throw UnsupportedSchemeException('Expected scheme "$scheme", got "${requirements.scheme}"');

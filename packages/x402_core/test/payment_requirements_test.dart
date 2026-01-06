@@ -2,9 +2,9 @@ import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
 
 void main() {
-  group('X402Requirement', () {
+  group('PaymentRequirement', () {
     test('should serialize to and from JSON', () {
-      const requirements = X402Requirement(
+      const requirements = PaymentRequirement(
         scheme: 'exact',
         network: 'eip155:8453',
         amount: '10000',
@@ -18,7 +18,7 @@ void main() {
       );
 
       final json = requirements.toJson();
-      final deserialized = X402Requirement.fromJson(json);
+      final deserialized = PaymentRequirement.fromJson(json);
 
       expect(deserialized.scheme, equals(requirements.scheme));
       expect(deserialized.network, equals(requirements.network));
@@ -57,7 +57,7 @@ void main() {
       const response = PaymentRequiredResponse(
         x402Version: 2,
         accepts: [
-          X402Requirement(
+          PaymentRequirement(
             scheme: 'exact',
             network: 'eip155:8453',
             amount: '10000',

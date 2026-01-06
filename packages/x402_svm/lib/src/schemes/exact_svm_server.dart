@@ -13,7 +13,7 @@ class ExactSvmSchemeServer implements SchemeServer {
   String get scheme => 'v2:solana:exact';
 
   @override
-  Future<bool> verifyPayload(PaymentPayload payload, X402Requirement requirements) async {
+  Future<bool> verifyPayload(PaymentPayload payload, PaymentRequirement requirements) async {
     try {
       // Validate scheme
       if (payload.scheme != scheme || requirements.scheme != scheme) {

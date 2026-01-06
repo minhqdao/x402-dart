@@ -14,7 +14,7 @@ class HttpFacilitatorClient implements FacilitatorClient {
   Future<VerificationResponse> verify({
     required int x402Version,
     required String paymentHeader,
-    required X402Requirement requirement,
+    required PaymentRequirement requirement,
   }) async {
     try {
       final response = await _httpClient.post(
@@ -46,7 +46,7 @@ class HttpFacilitatorClient implements FacilitatorClient {
   Future<SettlementResponse> settle({
     required int x402Version,
     required String paymentHeader,
-    required X402Requirement requirement,
+    required PaymentRequirement requirement,
   }) async {
     try {
       final response = await _httpClient.post(

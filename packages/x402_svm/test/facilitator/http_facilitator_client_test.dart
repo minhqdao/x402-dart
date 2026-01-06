@@ -7,10 +7,10 @@ import 'package:x402_svm/x402_svm.dart';
 
 void main() {
   group('HttpFacilitatorClient', () {
-    late X402Requirement requirements;
+    late PaymentRequirement requirements;
 
     setUp(() {
-      requirements = const X402Requirement(
+      requirements = const PaymentRequirement(
         scheme: 'v2:solana:exact',
         network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
         amount: '10000',

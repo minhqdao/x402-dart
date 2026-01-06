@@ -1,4 +1,4 @@
-import 'package:x402_core/src/models/payment_requirements.dart';
+import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/settlement_response.dart';
 import 'package:x402_core/src/models/verification_response.dart';
 
@@ -11,14 +11,14 @@ abstract class FacilitatorClient {
   Future<VerificationResponse> verify({
     required int x402Version,
     required String paymentHeader,
-    required X402Requirement requirement,
+    required PaymentRequirement requirement,
   });
 
   /// Settle a payment
   Future<SettlementResponse> settle({
     required int x402Version,
     required String paymentHeader,
-    required X402Requirement requirement,
+    required PaymentRequirement requirement,
   });
 
   /// Get supported schemes and networks

@@ -58,7 +58,7 @@ void main(List<String> args) async {
 
     // 3. Negotiate Requirements and Sign
     X402Signer? chosenSigner;
-    X402Requirement? chosenRequirement;
+    PaymentRequirement? chosenRequirement;
     String? signature;
 
     // Initialize EVM signer

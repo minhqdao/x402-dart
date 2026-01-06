@@ -52,7 +52,7 @@ final client = ExactSVMSchemeClient(
 );
 
 // Get payment requirements from server (via 402 response)
-final requirements = X402Requirement(
+final requirements = PaymentRequirement(
   scheme: 'exact',
   network: 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1', // Devnet
   amount: '10000', // 0.01 USDC (6 decimals)
@@ -101,7 +101,7 @@ final serverWithClient = ExactSVMSchemeServer(
 );
 
 // Your payment requirements
-final requirements = X402Requirement(
+final requirements = PaymentRequirement(
   scheme: 'exact',
   network: 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
   amount: '10000',
@@ -233,7 +233,7 @@ if (verificationResult.isValid) {
 For Token-2022 or custom programs:
 
 ```dart
-final requirements = X402Requirement(
+final requirements = PaymentRequirement(
   // ... other fields ...
   asset: 'YourToken2022Address',
   data: {

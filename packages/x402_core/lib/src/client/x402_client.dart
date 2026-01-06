@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 import 'package:x402_core/src/constants.dart';
-import 'package:x402_core/src/models/payment_requirements.dart';
+import 'package:x402_core/src/models/payment_requirement.dart';
 
 /// Callback to let the user approve a payment before the 'magic' happens.
-typedef PaymentApprovalCallback = Future<bool> Function(X402Requirement requirement);
+typedef PaymentApprovalCallback = Future<bool> Function(PaymentRequirement requirement);
 
 /// The interface every blockchain-specific package must implement.
 abstract class X402Signer {
@@ -18,7 +18,7 @@ abstract class X402Signer {
   String get scheme;
 
   /// Signs the requirements and returns the Base64 signature string.
-  Future<String> sign(X402Requirement requirement);
+  Future<String> sign(PaymentRequirement requirement);
 }
 
 /// A high-level client that automatically handles 402 Payment Required flows
@@ -46,7 +46,7 @@ class X402Client extends http.BaseClient {
 
       try {
         // 4. Parse the requirements (The 'accepts' array from server)
-        final List<X402Requirement> requirements = _parseHeader(header);
+        final List<PaymentRequirement> requirements = _parseHeader(header);
 
         // 5. Negotiation: Iterate through YOUR signers (in order)
         for (final signer in _signers) {
@@ -91,10 +91,10 @@ class X402Client extends http.BaseClient {
     return req;
   }
 
-  List<X402Requirement> _parseHeader(String headerBase64) {
+  List<PaymentRequirement> _parseHeader(String headerBase64) {
     final json = jsonDecode(utf8.decode(base64Decode(headerBase64))) as Map<String, dynamic>;
     final list = json['accepts'] as List? ?? [];
-    return list.map((m) => X402Requirement.fromJson(m as Map<String, dynamic>)).toList();
+    return list.map((m) => PaymentRequirement.fromJson(m as Map<String, dynamic>)).toList();
   }
 
   @override

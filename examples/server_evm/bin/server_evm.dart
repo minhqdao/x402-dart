@@ -27,7 +27,7 @@ void main(List<String> args) async {
 
   // Define requirements
   const requirements = [
-    X402Requirement(
+    PaymentRequirement(
       network: 'eip155:$_chainId',
       asset: _usdcAddress,
       amount: '1000000', // 1 USDC
@@ -91,7 +91,7 @@ void main(List<String> args) async {
   stdout.writeln('EVM Server serving at http://${server.address.host}:${server.port}');
 }
 
-Response _paymentRequired(List<X402Requirement> requirements) {
+Response _paymentRequired(List<PaymentRequirement> requirements) {
   final response = PaymentRequiredResponse(x402Version: kX402Version, accepts: requirements);
 
   final responseJson = jsonEncode(response.toJson());

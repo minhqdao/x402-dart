@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 /// Represents a payment option offered by the server
-class X402Requirement {
+class PaymentRequirement {
   /// Scheme of the payment protocol (e.g., "exact")
   final String scheme;
 
@@ -35,7 +35,7 @@ class X402Requirement {
   /// Scheme-specific data
   final Map<String, dynamic> data;
 
-  const X402Requirement({
+  const PaymentRequirement({
     required this.scheme,
     required this.network,
     required this.amount,
@@ -49,8 +49,8 @@ class X402Requirement {
     this.data = const {},
   });
 
-  factory X402Requirement.fromJson(Map<String, dynamic> json) {
-    return X402Requirement(
+  factory PaymentRequirement.fromJson(Map<String, dynamic> json) {
+    return PaymentRequirement(
       scheme: json['scheme'] as String,
       network: json['network'] as String,
       amount: (json['amount'] ?? json['maxAmountRequired']) as String,
@@ -84,8 +84,8 @@ class X402Requirement {
   }
 
   /// Factory to decode the Base64 JSON from the payment-required header
-  factory X402Requirement.fromHeader(String base64Json) {
+  factory PaymentRequirement.fromHeader(String base64Json) {
     final decoded = jsonDecode(utf8.decode(base64Decode(base64Json)));
-    return X402Requirement.fromJson(decoded as Map<String, dynamic>);
+    return PaymentRequirement.fromJson(decoded as Map<String, dynamic>);
   }
 }

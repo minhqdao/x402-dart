@@ -27,7 +27,7 @@ void main(List<String> args) async {
 
   // 3. Define requirements for multiple chains
   const requirements = [
-    X402Requirement(
+    PaymentRequirement(
       network: 'eip155:8453',
       asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
       amount: '1000000',
@@ -39,7 +39,7 @@ void main(List<String> args) async {
       mimeType: 'application/json',
       data: {'name': 'USD Coin', 'version': '2'},
     ),
-    X402Requirement(
+    PaymentRequirement(
       network: 'svm:mainnet',
       asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
       amount: '1000000',
@@ -118,7 +118,7 @@ void main(List<String> args) async {
   stdout.writeln('Facilitator-backed Server serving at http://${server.address.host}:${server.port}');
 }
 
-Response _paymentRequired(List<X402Requirement> requirements) {
+Response _paymentRequired(List<PaymentRequirement> requirements) {
   final response = PaymentRequiredResponse(x402Version: kX402Version, accepts: requirements);
 
   final responseJson = jsonEncode(response.toJson());

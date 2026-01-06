@@ -7,13 +7,13 @@ void main() {
   group('ExactEvmSchemeClient', () {
     late EthPrivateKey privateKey;
     late ExactEvmSchemeClient client;
-    late X402Requirement requirements;
+    late PaymentRequirement requirements;
 
     setUp(() {
       privateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
       client = ExactEvmSchemeClient(privateKey: privateKey);
 
-      requirements = const X402Requirement(
+      requirements = const PaymentRequirement(
         scheme: 'exact',
         network: 'eip155:8453',
         amount: '10000',
@@ -43,7 +43,7 @@ void main() {
     });
 
     test('should throw on unsupported scheme', () {
-      const badRequirements = X402Requirement(
+      const badRequirements = PaymentRequirement(
         scheme: 'deferred',
         network: 'eip155:8453',
         amount: '10000',
@@ -59,7 +59,7 @@ void main() {
     });
 
     test('should throw on invalid network format', () {
-      const badRequirements = X402Requirement(
+      const badRequirements = PaymentRequirement(
         scheme: 'exact',
         network: 'invalid:network',
         amount: '10000',
@@ -76,7 +76,7 @@ void main() {
     });
 
     test('should throw on missing token metadata', () {
-      const badRequirements = X402Requirement(
+      const badRequirements = PaymentRequirement(
         scheme: 'exact',
         network: 'eip155:8453',
         amount: '10000',
@@ -97,14 +97,14 @@ void main() {
     late EthPrivateKey privateKey;
     late ExactEvmSchemeClient client;
     late ExactEvmSchemeServer server;
-    late X402Requirement requirements;
+    late PaymentRequirement requirements;
 
     setUp(() {
       privateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
       client = ExactEvmSchemeClient(privateKey: privateKey);
       server = ExactEvmSchemeServer();
 
-      requirements = const X402Requirement(
+      requirements = const PaymentRequirement(
         scheme: 'exact',
         network: 'eip155:8453',
         amount: '10000',
@@ -156,7 +156,7 @@ void main() {
     test('should reject payload with wrong amount', () async {
       final payload = await client.createPaymentPayload(requirements);
 
-      final wrongRequirements = X402Requirement(
+      final wrongRequirements = PaymentRequirement(
         scheme: requirements.scheme,
         network: requirements.network,
         amount: '20000', // Different amount
@@ -177,7 +177,7 @@ void main() {
     test('should reject payload with wrong recipient', () async {
       final payload = await client.createPaymentPayload(requirements);
 
-      final wrongRequirements = X402Requirement(
+      final wrongRequirements = PaymentRequirement(
         scheme: requirements.scheme,
         network: requirements.network,
         amount: requirements.amount,

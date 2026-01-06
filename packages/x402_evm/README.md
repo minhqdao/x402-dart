@@ -42,7 +42,7 @@ final privateKey = EthPrivateKey.fromHex('0x...');
 final client = ExactEvmSchemeClient(privateKey: privateKey);
 
 // Get payment requirements from server (via 402 response)
-final requirements = X402Requirement(
+final requirements = PaymentRequirement(
   scheme: 'exact',
   network: 'eip155:8453', // Base mainnet
   amount: '10000', // 0.01 USDC (6 decimals)
@@ -86,7 +86,7 @@ import 'package:x402_evm/x402_evm.dart';
 final server = ExactEvmSchemeServer();
 
 // Your payment requirements
-final requirements = X402Requirement(
+final requirements = PaymentRequirement(
   scheme: 'exact',
   network: 'eip155:8453',
   amount: '10000',
@@ -198,7 +198,7 @@ for (final kind in supported) {
 ### Payment Flow
 
 ```
-1. Client requests resource → Server returns 402 with X402Requirement
+1. Client requests resource → Server returns 402 with PaymentRequirement
 2. Client creates PaymentPayload with EIP-3009 signature
 3. Client sends request with X-PAYMENT header
 4. Server verifies signature (locally or via facilitator)
@@ -282,7 +282,7 @@ Tests cover:
 ### Custom Token Metadata
 
 ```dart
-final requirements = X402Requirement(
+final requirements = PaymentRequirement(
   // ... other fields ...
   asset: '0xYourTokenAddress',
   data: {
@@ -296,7 +296,7 @@ final requirements = X402Requirement(
 
 ```dart
 // Payments valid for 5 minutes
-final requirements = X402Requirement(
+final requirements = PaymentRequirement(
   // ... other fields ...
   maxTimeoutSeconds: 300,
 );
@@ -310,7 +310,7 @@ final response = PaymentRequiredResponse(
   x402Version: kX402Version,
   accepts: [
     // Base USDC
-    X402Requirement(
+    PaymentRequirement(
       scheme: 'exact',
       network: 'eip155:8453',
       amount: '10000',
@@ -318,7 +318,7 @@ final response = PaymentRequiredResponse(
       // ... other fields ...
     ),
     // Ethereum USDC
-    X402Requirement(
+    PaymentRequirement(
       scheme: 'exact',
       network: 'eip155:1',
       amount: '10000',

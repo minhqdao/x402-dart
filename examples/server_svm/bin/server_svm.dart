@@ -24,7 +24,7 @@ void main(List<String> args) async {
 
   // Define requirements
   final requirements = [
-    X402Requirement(
+    PaymentRequirement(
       network: 'solana:${SolanaNetwork.mainnet.genesisHash}',
       asset: _usdcAddress,
       amount: '1000000', // 1 USDC
@@ -87,7 +87,7 @@ void main(List<String> args) async {
   stdout.writeln('SVM Server serving at http://${server.address.host}:${server.port}');
 }
 
-Response _paymentRequired(List<X402Requirement> requirements) {
+Response _paymentRequired(List<PaymentRequirement> requirements) {
   final response = PaymentRequiredResponse(x402Version: kX402Version, accepts: requirements);
 
   final responseJson = jsonEncode(response.toJson());

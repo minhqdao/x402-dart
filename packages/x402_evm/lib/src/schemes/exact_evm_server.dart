@@ -10,7 +10,7 @@ class ExactEvmSchemeServer implements SchemeServer {
   String get scheme => 'exact';
 
   @override
-  Future<bool> verifyPayload(PaymentPayload payload, X402Requirement requirements) async {
+  Future<bool> verifyPayload(PaymentPayload payload, PaymentRequirement requirements) async {
     try {
       // Validate scheme
       if (payload.scheme != scheme || requirements.scheme != scheme) {

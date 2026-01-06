@@ -7,10 +7,10 @@ import 'package:x402_evm/x402_evm.dart';
 
 void main() {
   group('HttpFacilitatorClient', () {
-    late X402Requirement requirements;
+    late PaymentRequirement requirements;
 
     setUp(() {
-      requirements = const X402Requirement(
+      requirements = const PaymentRequirement(
         scheme: 'exact',
         network: 'eip155:8453',
         amount: '10000',
