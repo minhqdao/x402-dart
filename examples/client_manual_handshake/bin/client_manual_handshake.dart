@@ -6,8 +6,8 @@ import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 import 'package:x402/x402.dart';
 
-const _defaultHost = 'http://localhost:3002';
-const _privateKeyHex = '0xF78C75461d0f21120e8a924DC4Ad539CFcBBA506';
+const _defaultHost = 'http://localhost:4021';
+const _privateKeyHex = '0x7E7868F8596B239c0Ac3DA8c08a20E1eDEaa1a2d';
 
 void main(List<String> args) async {
   final parser = ArgParser()..addOption('host', abbr: 'h', defaultsTo: _defaultHost);
@@ -18,10 +18,10 @@ void main(List<String> args) async {
 
   try {
     // 1. Initial HTTP Request
-    stdout.writeln('Making initial request to $host/api/data...');
+    stdout.writeln('Making initial request to $host/weather...');
     http.Response initialResponse;
     try {
-      initialResponse = await client.get(Uri.parse('$host/api/data'));
+      initialResponse = await client.get(Uri.parse('$host/weather'));
     } on http.ClientException catch (e) {
       stdout.writeln('--- Error: Connection Failed ---');
       stdout.writeln('Could not connect to $host.');
@@ -46,8 +46,17 @@ void main(List<String> args) async {
 
     // 2. Handle 402 Payment Required
     stdout.writeln('--- 402 Payment Required ---');
-    final paymentResponse = PaymentRequiredResponse.fromJson(jsonDecode(initialResponse.body) as Map<String, dynamic>);
-    stdout.writeln('Payment data from body mapped.');
+
+    final header = initialResponse.headers[kPaymentRequiredHeader];
+    if (header == null) {
+      stdout.writeln('Error: Missing $kPaymentRequiredHeader header.');
+      return;
+    }
+
+    final paymentResponse = PaymentRequiredResponse.fromJson(
+      jsonDecode(utf8.decode(base64Decode(header))) as Map<String, dynamic>,
+    );
+    stdout.writeln('Payment data mapped from header.');
 
     // 3. Negotiate Requirements and Sign
     X402Signer? chosenSigner;
@@ -93,7 +102,7 @@ void main(List<String> args) async {
     // 4. Retry Request with Signature
     stdout.writeln('Retrying request with signature...');
     final retryResponse = await client.get(
-      Uri.parse('$host/api/data'),
+      Uri.parse('$host/weather'),
       headers: {kPaymentSignatureHeader: signature},
     );
 
