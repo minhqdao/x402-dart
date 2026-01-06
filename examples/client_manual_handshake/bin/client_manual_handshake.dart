@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:x402/x402.dart';
 
 const _defaultHost = 'http://localhost:3002';
-const _privateKeyHex = '0xbB2A5A674178525714eD9E80Fe3B4f97b9CcDfeD';
+const _privateKeyHex = '0xF78C75461d0f21120e8a924DC4Ad539CFcBBA506';
 
 void main(List<String> args) async {
   final parser = ArgParser()..addOption('host', abbr: 'h', defaultsTo: _defaultHost);
@@ -46,15 +46,8 @@ void main(List<String> args) async {
 
     // 2. Handle 402 Payment Required
     stdout.writeln('--- 402 Payment Required ---');
-    final header = initialResponse.headers[kPaymentRequiredHeader];
-    if (header == null) {
-      stdout.writeln('Error: Missing $kPaymentRequiredHeader header.');
-      return;
-    }
-
-    final paymentResponse = PaymentRequiredResponse.fromJson(
-      jsonDecode(utf8.decode(base64Decode(header))) as Map<String, dynamic>,
-    );
+    final paymentResponse = PaymentRequiredResponse.fromJson(jsonDecode(initialResponse.body) as Map<String, dynamic>);
+    stdout.writeln('Payment data from body mapped.');
 
     // 3. Negotiate Requirements and Sign
     X402Signer? chosenSigner;
@@ -67,7 +60,7 @@ void main(List<String> args) async {
 
     // Try EVM first
     final evmReq = paymentResponse.accepts.firstWhereOrNull(
-      (req) => req.network == evmSigner.networkId && req.scheme == evmSigner.scheme,
+      (req) => req.network == evmSigner.network && req.scheme == evmSigner.scheme,
     );
     if (evmReq != null) {
       stdout.writeln('Negotiated EVM payment via ${evmReq.network} (amount: ${evmReq.amount})');
@@ -80,7 +73,7 @@ void main(List<String> args) async {
 
       // Try SVM
       final svmReq = paymentResponse.accepts.firstWhereOrNull(
-        (req) => req.network == svmSigner.networkId && req.scheme == svmSigner.scheme,
+        (req) => req.network == svmSigner.network && req.scheme == svmSigner.scheme,
       );
       if (svmReq != null) {
         stdout.writeln('Negotiated SVM payment via ${svmReq.network} (amount: ${svmReq.amount})');

@@ -6,15 +6,15 @@ import 'package:x402_evm/src/schemes/exact_evm_client.dart';
 /// Concrete implementation of X402Signer for EVM chains
 class EvmSigner extends X402Signer {
   @override
-  final String networkId;
+  final String network;
   final ExactEvmSchemeClient _client;
   final EthPrivateKey privateKey; // Exposed for convenience
 
   /// Creates an EvmSigner.
   /// `networkNamespace` defaults to "eip155".
   EvmSigner({required int chainId, required this.privateKey, String networkNamespace = 'eip155'})
-    : networkId = '$networkNamespace:$chainId',
-      _client = ExactEvmSchemeClient(privateKey: privateKey);
+      : network = '$networkNamespace:$chainId',
+        _client = ExactEvmSchemeClient(privateKey: privateKey);
 
   /// Creates an EvmSigner from a hexadecimal private key string.
   /// The `privateKeyHex` string can optionally be prefixed with "0x".

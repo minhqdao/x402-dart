@@ -12,7 +12,7 @@ typedef PaymentApprovalCallback = Future<bool> Function(PaymentRequirement requi
 /// The interface every blockchain-specific package must implement.
 abstract class X402Signer {
   /// The CAIP-2 network identifier this signer supports (e.g., 'eip155:8453')
-  String get networkId;
+  String get network;
 
   /// The scheme this signer supports (e.g., 'exact')
   String get scheme;
@@ -52,7 +52,7 @@ class X402Client extends http.BaseClient {
         for (final signer in _signers) {
           // Does this signer match ANY of the server's requirements?
           final match = requirements.firstWhereOrNull(
-            (req) => req.network == signer.networkId && req.scheme == signer.scheme,
+            (req) => req.network == signer.network && req.scheme == signer.scheme,
           );
 
           if (match != null) {

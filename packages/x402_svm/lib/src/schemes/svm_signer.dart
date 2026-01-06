@@ -67,7 +67,7 @@ class SvmSigner extends X402Signer {
   }
 
   @override
-  String get networkId => 'solana:$_genesisHash';
+  String get network => 'solana:$_genesisHash';
 
   @override
   String get scheme => 'v2:solana:exact';
