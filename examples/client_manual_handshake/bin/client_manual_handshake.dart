@@ -89,7 +89,7 @@ void main(List<String> args) async {
     // 4. Retry Request with Signature
     stdout.writeln('Retrying request with signature...');
     final retryResponse = await client.get(
-      Uri.parse('$host/premium-content'),
+      Uri.parse('$host/api/data'),
       headers: {kPaymentSignatureHeader: signature},
     );
 
