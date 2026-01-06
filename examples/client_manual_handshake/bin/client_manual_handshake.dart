@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:x402/x402.dart';
 
 const _defaultHost = 'http://localhost:3002';
+const _privateKeyHex = '0xbB2A5A674178525714eD9E80Fe3B4f97b9CcDfeD';
 
 void main(List<String> args) async {
   final parser = ArgParser()..addOption('host', abbr: 'h', defaultsTo: _defaultHost);
@@ -18,7 +19,17 @@ void main(List<String> args) async {
   try {
     // 1. Initial HTTP Request
     stdout.writeln('Making initial request to $host/api/data...');
-    final initialResponse = await client.get(Uri.parse('$host/api/data'));
+    http.Response initialResponse;
+    try {
+      initialResponse = await client.get(Uri.parse('$host/api/data'));
+    } on http.ClientException catch (e) {
+      stdout.writeln('--- Error: Connection Failed ---');
+      stdout.writeln('Could not connect to $host.');
+      stdout.writeln('Please ensure the x402 sandbox is running:');
+      stdout.writeln('  npx @bus402/x402-sandbox start');
+      stdout.writeln('Details: $e');
+      return;
+    }
 
     if (initialResponse.statusCode == 200) {
       stdout.writeln('--- Success (no payment required) ---');
@@ -51,7 +62,7 @@ void main(List<String> args) async {
     String? signature;
 
     // Initialize EVM signer
-    final evmSigner = EvmSigner.fromHex(chainId: 31337, privateKeyHex: '0x1234567890123456789012345678901234567890123');
+    final evmSigner = EvmSigner.fromHex(chainId: 31337, privateKeyHex: _privateKeyHex);
     stdout.writeln('EVM Address: ${evmSigner.privateKey.address.hex}');
 
     // Try EVM first
