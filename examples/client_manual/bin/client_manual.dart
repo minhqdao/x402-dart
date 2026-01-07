@@ -64,7 +64,7 @@ void main(List<String> args) async {
     String? signature;
 
     // Initialize EVM signer
-    final evmSigner = EvmSigner.fromHex(chainId: 31337, privateKeyHex: _privateKeyHex);
+    final evmSigner = EvmSigner.fromHex(chainId: 84532, privateKeyHex: _privateKeyHex);
     stdout.writeln('EVM Address: ${evmSigner.privateKey.address.hex}');
 
     // Try EVM first
