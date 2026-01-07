@@ -19,7 +19,13 @@ class SvmSigner extends X402Signer {
   final SolanaClient _client;
   final String _genesisHash;
 
-  SvmSigner._internal(this._signer, this._client, this._genesisHash);
+  SvmSigner({
+    required Ed25519HDKeyPair signer,
+    required SolanaClient client,
+    required String genesisHash,
+  })  : _signer = signer,
+        _client = client,
+        _genesisHash = genesisHash;
 
   /// 🚀 The "Production" way: Load an existing key
   static Future<SvmSigner> fromHex({
@@ -30,23 +36,23 @@ class SvmSigner extends X402Signer {
     final keypair = await Ed25519HDKeyPair.fromPrivateKeyBytes(privateKey: hex.decode(privateKeyHex));
     final rpcUrl = customRpcUrl ?? network.rpcUrl;
 
-    return SvmSigner._internal(
-      keypair,
-      SolanaClient(rpcUrl: Uri.parse(rpcUrl), websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
-      network.genesisHash,
+    return SvmSigner(
+      signer: keypair,
+      client: SolanaClient(rpcUrl: Uri.parse(rpcUrl), websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
+      genesisHash: network.genesisHash,
     );
   }
 
   /// 🧪 The "Quick Start" way: Random key for testing
   static Future<SvmSigner> createRandom({required SolanaNetwork network}) async {
     final keypair = await Ed25519HDKeyPair.random();
-    return SvmSigner._internal(
-      keypair,
-      SolanaClient(
+    return SvmSigner(
+      signer: keypair,
+      client: SolanaClient(
         rpcUrl: Uri.parse(network.rpcUrl),
         websocketUrl: Uri.parse(network.rpcUrl.replaceFirst('https', 'wss')),
       ),
-      network.genesisHash,
+      genesisHash: network.genesisHash,
     );
   }
 
@@ -59,10 +65,10 @@ class SvmSigner extends X402Signer {
     final keypair = await Ed25519HDKeyPair.fromMnemonic(mnemonic);
     final rpcUrl = customRpcUrl ?? network.rpcUrl;
 
-    return SvmSigner._internal(
-      keypair,
-      SolanaClient(rpcUrl: Uri.parse(rpcUrl), websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
-      network.genesisHash,
+    return SvmSigner(
+      signer: keypair,
+      client: SolanaClient(rpcUrl: Uri.parse(rpcUrl), websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
+      genesisHash: network.genesisHash,
     );
   }
 
