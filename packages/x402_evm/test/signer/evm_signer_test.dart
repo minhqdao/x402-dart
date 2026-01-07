@@ -12,7 +12,7 @@ void main() {
     late ResourceInfo resource;
 
     setUp(() {
-      privateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
+      privateKey = EthPrivateKey.fromHex('0xabcd567890123456789012345678901234567890123456789012345678901234');
       signer = EvmSigner(chainId: 8453, privateKey: privateKey);
 
       resource = const ResourceInfo(
@@ -64,7 +64,16 @@ void main() {
 
     test('fromHex factory should create valid signer', () {
       final hexSigner = EvmSigner.fromHex(
-        privateKeyHex: '1234567890123456789012345678901234567890123456789012345678901234',
+        privateKeyHex: 'abcd567890123456789012345678901234567890123456789012345678901234',
+        chainId: 1,
+      );
+      expect(hexSigner.network, equals('eip155:1'));
+      expect(hexSigner.privateKey.address, equals(privateKey.address));
+    });
+
+    test('same address with upper-case private key', () {
+      final hexSigner = EvmSigner.fromHex(
+        privateKeyHex: 'ABCD567890123456789012345678901234567890123456789012345678901234',
         chainId: 1,
       );
       expect(hexSigner.network, equals('eip155:1'));
