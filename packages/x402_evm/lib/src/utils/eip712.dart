@@ -113,7 +113,7 @@ class EIP712Utils {
   }
 
   static Uint8List _addressToBytes(String address) {
-    final addr = EthereumAddress.fromHex(address);
+    final addr = EthereumAddress.fromHex(address.toLowerCase());
     return Uint8List.fromList([...List.filled(12, 0), ...addr.addressBytes]);
   }
 
