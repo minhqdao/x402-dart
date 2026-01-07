@@ -3,16 +3,25 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:collection/collection.dart';
+import 'package:dotenv/dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:x402/x402.dart';
 
 const _defaultHost = 'http://localhost:4021';
-const _privateKeyHex = '0x7E7868F8596B239c0Ac3DA8c08a20E1eDEaa1a2d';
 
 void main(List<String> args) async {
   final parser = ArgParser()..addOption('host', abbr: 'h', defaultsTo: _defaultHost);
   final result = parser.parse(args);
   final host = result['host'] as String;
+
+  // Load environment variables
+  final env = DotEnv(includePlatformEnvironment: true)..load();
+  final privateKeyHex = env['EVM_PRIVATE_KEY'];
+
+  if (privateKeyHex == null) {
+    stdout.writeln('Error: EVM_PRIVATE_KEY not found in .env file');
+    return;
+  }
 
   final client = http.Client();
 
@@ -64,7 +73,7 @@ void main(List<String> args) async {
     String? signature;
 
     // Initialize EVM signer
-    final evmSigner = EvmSigner.fromHex(chainId: 84532, privateKeyHex: _privateKeyHex);
+    final evmSigner = EvmSigner.fromHex(chainId: 84532, privateKeyHex: privateKeyHex);
     stdout.writeln('EVM Address: ${evmSigner.privateKey.address.hex}');
 
     // Try EVM first
