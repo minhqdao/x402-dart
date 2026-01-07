@@ -8,7 +8,7 @@ import 'package:x402_evm/src/utils/eip712.dart';
 
 /// EIP-3009 utilities for transferWithAuthorization
 class EIP3009 {
-  EIP3009._();
+  const EIP3009._();
 
   /// Generate a random nonce (32 bytes)
   static Uint8List generateNonce() {

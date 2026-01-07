@@ -7,7 +7,7 @@ class ExactSvmSchemeClient implements SchemeClient {
   final Ed25519HDKeyPair signer;
   final SolanaClient solanaClient;
 
-  ExactSvmSchemeClient({required this.signer, required this.solanaClient});
+  const ExactSvmSchemeClient({required this.signer, required this.solanaClient});
 
   @override
   String get scheme => 'v2:solana:exact';

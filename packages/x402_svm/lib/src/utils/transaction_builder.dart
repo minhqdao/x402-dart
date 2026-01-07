@@ -4,7 +4,7 @@ import 'package:solana/solana.dart';
 
 /// Utilities for building SVM transactions for x402
 class SvmTransactionBuilder {
-  SvmTransactionBuilder._();
+  const SvmTransactionBuilder._();
 
   /// Create a transfer transaction for SPL token
   static Future<String> createTransferTransaction({

@@ -6,6 +6,8 @@ import 'package:x402_evm/src/utils/eip3009.dart';
 
 /// Server-side implementation of the exact scheme for EVM chains
 class ExactEvmSchemeServer implements SchemeServer {
+  const ExactEvmSchemeServer();
+
   @override
   String get scheme => 'exact';
 

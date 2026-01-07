@@ -25,7 +25,7 @@ class EIP712Domain {
 
 /// EIP-712 typed data utilities
 class EIP712Utils {
-  EIP712Utils._();
+  const EIP712Utils._();
 
   static const String domainTypeHash = '0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f';
 

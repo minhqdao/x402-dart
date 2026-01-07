@@ -23,7 +23,7 @@ void main(List<String> args) async {
   final port = int.parse(result['port'] as String);
 
   // Initialize scheme
-  final evmScheme = ExactEvmSchemeServer();
+  const evmScheme = ExactEvmSchemeServer();
 
   // Define resource info
   const resource = ResourceInfo(

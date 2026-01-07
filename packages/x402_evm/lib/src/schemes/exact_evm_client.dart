@@ -8,7 +8,7 @@ import 'package:x402_evm/src/utils/eip3009.dart';
 class ExactEvmSchemeClient implements SchemeClient {
   final EthPrivateKey privateKey;
 
-  ExactEvmSchemeClient({required this.privateKey});
+  const ExactEvmSchemeClient({required this.privateKey});
 
   @override
   String get scheme => 'exact';
