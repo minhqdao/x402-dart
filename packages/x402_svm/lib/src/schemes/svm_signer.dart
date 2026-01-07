@@ -73,9 +73,13 @@ class SvmSigner extends X402Signer {
   String get scheme => 'v2:solana:exact';
 
   @override
-  Future<String> sign(PaymentRequirement requirement, ResourceInfo resource) async {
+  Future<String> sign(
+    PaymentRequirement requirement,
+    ResourceInfo resource, {
+    Map<String, dynamic>? extensions,
+  }) async {
     final schemeClient = ExactSvmSchemeClient(signer: _signer, solanaClient: _client);
-    final payload = await schemeClient.createPaymentPayload(requirement, resource);
+    final payload = await schemeClient.createPaymentPayload(requirement, resource, extensions: extensions);
     return base64Encode(utf8.encode(jsonEncode(payload.toJson())));
   }
 

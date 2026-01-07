@@ -7,8 +7,12 @@ abstract class SchemeClient {
   /// The scheme identifier
   String get scheme;
 
-  /// Creates a payment payload for the given requirements
-  Future<PaymentPayload> createPaymentPayload(PaymentRequirement requirements, ResourceInfo resource);
+  /// Creates a payment payload based on requirements and resource info.
+  Future<PaymentPayload> createPaymentPayload(
+    PaymentRequirement requirements,
+    ResourceInfo resource, {
+    Map<String, dynamic>? extensions,
+  });
 }
 
 /// Interface for payment scheme servers

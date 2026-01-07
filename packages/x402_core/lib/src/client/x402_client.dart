@@ -20,7 +20,11 @@ abstract class X402Signer {
   String get scheme;
 
   /// Signs the requirements and returns the Base64 signature string.
-  Future<String> sign(PaymentRequirement requirement, ResourceInfo resource);
+  Future<String> sign(
+    PaymentRequirement requirement,
+    ResourceInfo resource, {
+    Map<String, dynamic>? extensions,
+  });
 }
 
 /// A high-level client that automatically handles 402 Payment Required flows
@@ -66,7 +70,11 @@ class X402Client extends http.BaseClient {
             }
 
             // 7. Magic: Sign & Automatically Retry
-            final signature = await signer.sign(match, paymentRequired.resource);
+            final signature = await signer.sign(
+              match,
+              paymentRequired.resource,
+              extensions: paymentRequired.extensions,
+            );
             final retryRequest = _recreate(request, bytes);
 
             // Attach the proof using both v2 standard and legacy headers

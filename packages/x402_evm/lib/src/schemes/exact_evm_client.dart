@@ -14,7 +14,11 @@ class ExactEvmSchemeClient implements SchemeClient {
   String get scheme => 'exact';
 
   @override
-  Future<PaymentPayload> createPaymentPayload(PaymentRequirement requirements, ResourceInfo resource) async {
+  Future<PaymentPayload> createPaymentPayload(
+    PaymentRequirement requirements,
+    ResourceInfo resource, {
+    Map<String, dynamic>? extensions,
+  }) async {
     // Validate scheme
     if (requirements.scheme != scheme) {
       throw UnsupportedSchemeException('Expected scheme "$scheme", got "${requirements.scheme}"');
@@ -31,8 +35,8 @@ class ExactEvmSchemeClient implements SchemeClient {
     final amount = BigInt.parse(requirements.amount);
 
     // Get token metadata from extra
-    final tokenName = requirements.extra['name'] as String?;
-    final tokenVersion = requirements.extra['version'] as String?;
+    final tokenName = requirements.extra['name']?.toString();
+    final tokenVersion = requirements.extra['version']?.toString();
     if (tokenName == null || tokenVersion == null) {
       throw const InvalidPayloadException('Missing name or version in extra field');
     }
@@ -40,7 +44,8 @@ class ExactEvmSchemeClient implements SchemeClient {
     // Generate nonce and validity window
     final nonce = EIP3009.generateNonce();
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final validAfter = BigInt.from(now);
+    // Using 0 for validAfter is standard for "valid immediately" and avoids clock skew
+    final validAfter = BigInt.zero;
     final validBefore = BigInt.from(now + requirements.maxTimeoutSeconds);
 
     // Create signature
@@ -73,6 +78,7 @@ class ExactEvmSchemeClient implements SchemeClient {
       resource: resource,
       accepted: requirements,
       payload: {'signature': EIP3009.encodeSignature(signature), 'authorization': authorization.toJson()},
+      extensions: extensions,
     );
   }
 }

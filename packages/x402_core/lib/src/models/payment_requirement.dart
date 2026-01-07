@@ -38,7 +38,7 @@ class PaymentRequirement {
       scheme: json['scheme'] as String,
       network: json['network'] as String,
       asset: json['asset'] as String,
-      amount: (json['amount'] ?? json['maxAmountRequired']) as String,
+      amount: (json['amount'] ?? json['maxAmountRequired']).toString(),
       payTo: json['payTo'] as String,
       maxTimeoutSeconds: json['maxTimeoutSeconds'] as int,
       extra: (json['extra'] ?? json['data'] ?? <String, dynamic>{}) as Map<String, dynamic>,
