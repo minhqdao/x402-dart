@@ -73,10 +73,16 @@ class SvmSigner extends X402Signer {
   }
 
   @override
-  String get network => 'solana:$_genesisHash';
+  String get network => 'solana:${_genesisHash.substring(0, 32)}';
 
   @override
   String get scheme => 'v2:solana:exact';
+
+  @override
+  bool supports(PaymentRequirement requirement) {
+    final supportedSchemes = {scheme, 'exact'};
+    return requirement.network == network && supportedSchemes.contains(requirement.scheme);
+  }
 
   @override
   Future<String> sign(

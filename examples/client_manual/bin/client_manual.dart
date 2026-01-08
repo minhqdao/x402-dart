@@ -10,8 +10,8 @@ void main(List<String> args) async {
   // Load environment variables
   final env = DotEnv(includePlatformEnvironment: true)..load();
 
-  final privateKeyHex = env['EVM_PRIVATE_KEY'];
-  if (privateKeyHex == null) {
+  final evmPrivateKey = env['EVM_PRIVATE_KEY'];
+  if (evmPrivateKey == null) {
     stdout.writeln('Error: EVM_PRIVATE_KEY is not set in .env file.');
     return;
   }

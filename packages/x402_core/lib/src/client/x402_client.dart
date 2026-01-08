@@ -19,6 +19,11 @@ abstract class X402Signer {
   /// The scheme this signer supports (e.g., 'exact')
   String get scheme;
 
+  /// Checks if this signer supports the given requirement.
+  bool supports(PaymentRequirement requirement) {
+    return requirement.network == network && requirement.scheme == scheme;
+  }
+
   /// Signs the requirements and returns the Base64 signature string.
   Future<String> sign(
     PaymentRequirement requirement,
@@ -58,9 +63,7 @@ class X402Client extends http.BaseClient {
         // 5. Negotiation: Iterate through YOUR signers (in order)
         for (final signer in _signers) {
           // Does this signer match ANY of the server's requirements?
-          final match = requirements.firstWhereOrNull(
-            (req) => req.network == signer.network && req.scheme == signer.scheme,
-          );
+          final match = requirements.firstWhereOrNull(signer.supports);
 
           if (match != null) {
             // 6. Optional Consent Check (Safety first!)

@@ -93,6 +93,46 @@ void main() {
       expect(signer.scheme, equals('v2:solana:exact'));
     });
 
+    test('should support both standard and exact schemes', () {
+      final reqStandard = PaymentRequirement(
+        scheme: 'v2:solana:exact',
+        network: signer.network,
+        amount: '1000',
+        asset: 'asset',
+        payTo: 'payTo',
+        maxTimeoutSeconds: 60,
+      );
+      final reqExact = PaymentRequirement(
+        scheme: 'exact',
+        network: signer.network,
+        amount: '1000',
+        asset: 'asset',
+        payTo: 'payTo',
+        maxTimeoutSeconds: 60,
+      );
+      const reqBadNetwork = PaymentRequirement(
+        scheme: 'exact',
+        network: 'bad-network',
+        amount: '1000',
+        asset: 'asset',
+        payTo: 'payTo',
+        maxTimeoutSeconds: 60,
+      );
+      final reqBadScheme = PaymentRequirement(
+        scheme: 'bad-scheme',
+        network: signer.network,
+        amount: '1000',
+        asset: 'asset',
+        payTo: 'payTo',
+        maxTimeoutSeconds: 60,
+      );
+
+      expect(signer.supports(reqStandard), isTrue);
+      expect(signer.supports(reqExact), isTrue);
+      expect(signer.supports(reqBadNetwork), isFalse);
+      expect(signer.supports(reqBadScheme), isFalse);
+    });
+
     test('should sign and return base64 encoded payload', () async {
       final signature = await signer.sign(requirements, resource);
 

@@ -19,8 +19,8 @@ class ExactSvmSchemeClient implements SchemeClient {
     Map<String, dynamic>? extensions,
   }) async {
     // Validate scheme
-    if (requirements.scheme != scheme) {
-      throw UnsupportedSchemeException('Expected scheme "$scheme", got "${requirements.scheme}"');
+    if (requirements.scheme != scheme && requirements.scheme != 'exact') {
+      throw UnsupportedSchemeException('Expected scheme "$scheme" or "exact", got "${requirements.scheme}"');
     }
 
     // Parse network (format: solana:genesisHash)
