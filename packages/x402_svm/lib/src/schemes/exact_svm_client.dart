@@ -34,12 +34,21 @@ class ExactSvmSchemeClient implements SchemeClient {
     // Parse amount
     final amount = BigInt.parse(requirements.amount);
 
+    // Extract feePayer from requirements.extra
+    final feePayer = requirements.extra['feePayer'] as String?;
+    if (feePayer == null) {
+      throw const InvalidPayloadException(
+        'feePayer is required in paymentRequirements.extra for SVM transactions',
+      );
+    }
+
     // Build transfer transaction
     final encodedTransaction = await SvmTransactionBuilder.createTransferTransaction(
       signer: signer,
       recipient: requirements.payTo,
       amount: amount,
       tokenMint: requirements.asset,
+      feePayer: feePayer,
       solanaClient: solanaClient,
     );
 

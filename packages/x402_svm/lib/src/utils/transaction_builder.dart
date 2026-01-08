@@ -12,11 +12,13 @@ class SvmTransactionBuilder {
     required String recipient,
     required BigInt amount,
     required String tokenMint,
+    required String feePayer,
     required SolanaClient solanaClient,
   }) async {
     final sourcePublicKey = await signer.extractPublicKey();
     final destinationPublicKey = Ed25519HDPublicKey.fromBase58(recipient);
     final mintPublicKey = Ed25519HDPublicKey.fromBase58(tokenMint);
+    final feePayerPublicKey = Ed25519HDPublicKey.fromBase58(feePayer);
 
     // Get associated token accounts
     final sourceTokenAccount = await getAssociatedTokenAddress(mint: mintPublicKey, owner: sourcePublicKey);
@@ -51,41 +53,35 @@ class SvmTransactionBuilder {
       ..add(setComputeUnitLimit(200000))
       ..add(setComputeUnitPrice(1));
 
-    // Check if destination token account exists, create if not
-    try {
-      await solanaClient.rpcClient.getAccountInfo(destinationTokenAccount.toBase58());
-    } catch (e) {
-      Instruction createAssociatedTokenAccount({
-        required Ed25519HDPublicKey funder,
-        required Ed25519HDPublicKey ata,
-        required Ed25519HDPublicKey owner,
-        required Ed25519HDPublicKey mint,
-      }) {
-        return Instruction(
-          programId: AssociatedTokenAccountProgram.id,
-          accounts: [
-            AccountMeta.writeable(pubKey: funder, isSigner: true),
-            AccountMeta.writeable(pubKey: ata, isSigner: false),
-            AccountMeta.readonly(pubKey: owner, isSigner: false),
-            AccountMeta.readonly(pubKey: mint, isSigner: false),
-            AccountMeta.readonly(pubKey: SystemProgram.id, isSigner: false),
-            AccountMeta.readonly(pubKey: TokenProgram.id, isSigner: false),
-            AccountMeta.readonly(pubKey: Ed25519HDPublicKey.fromBase58(Sysvar.rent), isSigner: false),
-          ],
-          data: const ByteArray.empty(), // ATA program uses empty data
-        );
-      }
-
-      // Destination account doesn't exist, add create instruction
-      instructions.add(
-        createAssociatedTokenAccount(
-          funder: sourcePublicKey,
-          ata: destinationTokenAccount,
-          owner: destinationPublicKey,
-          mint: mintPublicKey,
-        ),
+    Instruction createIdempotentAssociatedTokenAccount({
+      required Ed25519HDPublicKey funder,
+      required Ed25519HDPublicKey ata,
+      required Ed25519HDPublicKey owner,
+      required Ed25519HDPublicKey mint,
+    }) {
+      return Instruction(
+        programId: AssociatedTokenAccountProgram.id,
+        accounts: [
+          AccountMeta.writeable(pubKey: funder, isSigner: true),
+          AccountMeta.writeable(pubKey: ata, isSigner: false),
+          AccountMeta.readonly(pubKey: owner, isSigner: false),
+          AccountMeta.readonly(pubKey: mint, isSigner: false),
+          AccountMeta.readonly(pubKey: SystemProgram.id, isSigner: false),
+          AccountMeta.readonly(pubKey: TokenProgram.id, isSigner: false),
+        ],
+        data: ByteArray(const [1]), // 1 is CreateIdempotent
       );
     }
+
+    // Always add idempotent create instruction. The facilitator requires 4 instructions.
+    instructions.add(
+      createIdempotentAssociatedTokenAccount(
+        funder: feePayerPublicKey,
+        ata: destinationTokenAccount,
+        owner: destinationPublicKey,
+        mint: mintPublicKey,
+      ),
+    );
 
     // Default to 6 decimals if we can't determine
     const decimals = 6;
@@ -128,7 +124,7 @@ class SvmTransactionBuilder {
     // Create transaction
     final message = Message(instructions: instructions);
 
-    final compiledMessage = message.compile(recentBlockhash: blockhash, feePayer: sourcePublicKey);
+    final compiledMessage = message.compile(recentBlockhash: blockhash, feePayer: feePayerPublicKey);
 
     // Sign transaction
     final signature = await signer.sign(compiledMessage.toByteArray());
@@ -176,7 +172,8 @@ class SvmTransactionBuilder {
     required BigInt expectedAmount,
     required String tokenMint,
   }) async {
-    if (decoded.instructions.isEmpty) return false;
+    // Exactly 4 instructions: ComputeLimit + ComputePrice + CreateATA + TransferChecked
+    if (decoded.instructions.length != 4) return false;
 
     final ix = decoded.instructions.last;
 

@@ -51,6 +51,7 @@ void main() {
         payTo: 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv',
         maxTimeoutSeconds: 60,
         asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        extra: {'feePayer': '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC'},
       );
 
       // Mock blockhash
