@@ -11,8 +11,8 @@ void main(List<String> args) async {
   final env = DotEnv(includePlatformEnvironment: true)..load();
 
   final privateKeyHex = env['EVM_PRIVATE_KEY'];
-  if (privateKeyHex == null || privateKeyHex.length != 66 || !privateKeyHex.startsWith('0x')) {
-    stdout.writeln('Error: EVM_PRIVATE_KEY must be a 64-character hex string set in the .env file.');
+  if (privateKeyHex == null) {
+    stdout.writeln('Error: EVM_PRIVATE_KEY is not set in .env file.');
     return;
   }
 
@@ -39,8 +39,7 @@ void main(List<String> args) async {
     } on http.ClientException catch (e) {
       stdout.writeln('--- Error: Connection Failed ---');
       stdout.writeln('Could not connect to $host.');
-      stdout.writeln('Please ensure the x402 sandbox is running:');
-      stdout.writeln('  npx @bus402/x402-sandbox start');
+      stdout.writeln('Please set up or connect to a facilitator and a server');
       stdout.writeln('Details: $e');
       return;
     }
@@ -60,7 +59,6 @@ void main(List<String> args) async {
 
     // 2. Handle 402 Payment Required
     stdout.writeln('--- 402 Payment Required ---');
-
     final header = initialResponse.headers[kPaymentRequiredHeader];
     if (header == null) {
       stdout.writeln('Error: Missing $kPaymentRequiredHeader header.');
