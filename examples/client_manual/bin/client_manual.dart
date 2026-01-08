@@ -1,25 +1,30 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:args/args.dart';
 import 'package:collection/collection.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:x402/x402.dart';
 
-const _defaultHost = 'http://localhost:4021';
-
 void main(List<String> args) async {
-  final parser = ArgParser()..addOption('host', abbr: 'h', defaultsTo: _defaultHost);
-  final result = parser.parse(args);
-  final host = result['host'] as String;
-
   // Load environment variables
   final env = DotEnv(includePlatformEnvironment: true)..load();
-  final privateKeyHex = env['EVM_PRIVATE_KEY'];
 
-  if (privateKeyHex == null) {
-    stdout.writeln('Error: EVM_PRIVATE_KEY not found in .env file');
+  final privateKeyHex = env['EVM_PRIVATE_KEY'];
+  if (privateKeyHex == null || privateKeyHex.length != 66 || !privateKeyHex.startsWith('0x')) {
+    stdout.writeln('Error: EVM_PRIVATE_KEY must be a 64-character hex string set in the .env file.');
+    return;
+  }
+
+  final host = env['RESOURCE_SERVER_URL'];
+  if (host == null || host.isEmpty) {
+    stdout.writeln('Error: RESOURCE_SERVER_URL is not set in .env file.');
+    return;
+  }
+
+  final endpointPath = env['ENDPOINT_PATH'];
+  if (endpointPath == null || endpointPath.isEmpty) {
+    stdout.writeln('Error: ENDPOINT_PATH is not set in .env file.');
     return;
   }
 
@@ -27,10 +32,10 @@ void main(List<String> args) async {
 
   try {
     // 1. Initial HTTP Request
-    stdout.writeln('Making initial request to $host/weather...');
+    stdout.writeln('Making initial request to $host$endpointPath...');
     http.Response initialResponse;
     try {
-      initialResponse = await client.get(Uri.parse('$host/weather'));
+      initialResponse = await client.get(Uri.parse('$host$endpointPath'));
     } on http.ClientException catch (e) {
       stdout.writeln('--- Error: Connection Failed ---');
       stdout.writeln('Could not connect to $host.');
@@ -115,7 +120,7 @@ void main(List<String> args) async {
     // 4. Retry Request with Signature
     stdout.writeln('Retrying request with signature...');
     final retryResponse = await client.get(
-      Uri.parse('$host/weather'),
+      Uri.parse('$host$endpointPath'),
       headers: {kPaymentSignatureHeader: signature},
     );
 
