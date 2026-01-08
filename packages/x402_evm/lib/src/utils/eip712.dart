@@ -127,6 +127,8 @@ class EIP712Utils {
 
   static Uint8List hexToBytes(String hexString) {
     final cleanHex = hexString.startsWith('0x') ? hexString.substring(2) : hexString;
-    return Uint8List.fromList(List<int>.from(hex.decode(cleanHex)));
+    // SAFETY CHECK: Ensure even length
+    final evenHex = cleanHex.length.isEven ? cleanHex : '0$cleanHex';
+    return Uint8List.fromList(List<int>.from(hex.decode(evenHex)));
   }
 }

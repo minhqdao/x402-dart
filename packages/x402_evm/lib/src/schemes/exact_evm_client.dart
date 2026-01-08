@@ -51,11 +51,11 @@ class ExactEvmSchemeClient implements SchemeClient {
     // Create signature
     final signature = EIP3009.createAuthorizationSignature(
       privateKey: privateKey,
-      tokenAddress: requirements.asset,
+      tokenAddress: requirements.asset.toLowerCase(),
       chainId: chainId,
       tokenName: tokenName,
       tokenVersion: tokenVersion,
-      to: requirements.payTo,
+      to: requirements.payTo.toLowerCase(),
       value: amount,
       validAfter: validAfter,
       validBefore: validBefore,
@@ -64,8 +64,8 @@ class ExactEvmSchemeClient implements SchemeClient {
 
     // Create authorization object
     final authorization = ExactAuthorization(
-      from: privateKey.address.hex,
-      to: requirements.payTo,
+      from: privateKey.address.hex.toLowerCase(),
+      to: requirements.payTo.toLowerCase(),
       value: amount.toString(),
       validAfter: validAfter.toString(),
       validBefore: validBefore.toString(),
