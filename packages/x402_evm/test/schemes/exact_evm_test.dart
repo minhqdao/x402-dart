@@ -42,7 +42,7 @@ void main() {
 
       final auth = payload.payload['authorization'] as Map<String, dynamic>;
       expect(auth['from'], equals(privateKey.address.hex));
-      expect(auth['to'], equals(requirements.payTo));
+      expect(auth['to'], equals(requirements.payTo.toLowerCase()));
       expect(auth['value'], equals('10000'));
     });
 
@@ -211,6 +211,49 @@ void main() {
       final isValid = await server.verifyPayload(payload, wrongRequirements);
 
       expect(isValid, isFalse);
+    });
+
+    test('should fail if client uses USDC but verification expects USD Coin', () async {
+      const clientRequirements = PaymentRequirement(
+        scheme: 'exact',
+        network: 'eip155:8453',
+        amount: '10000',
+        payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
+        maxTimeoutSeconds: 3600,
+        asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+        extra: {'name': 'USDC', 'version': '2'},
+      );
+      final payload = await client.createPaymentPayload(clientRequirements, resource);
+
+      const serverRequirements = PaymentRequirement(
+        scheme: 'exact',
+        network: 'eip155:8453',
+        amount: '10000',
+        payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
+        maxTimeoutSeconds: 3600,
+        asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+        extra: {'name': 'USD Coin', 'version': '2'},
+      );
+
+      final isValid = await server.verifyPayload(payload, serverRequirements);
+      expect(isValid, isFalse, reason: 'Signature generated with USDC should not verify against USD Coin');
+    });
+
+    test('should generate valid signature when name is USD Coin', () async {
+      // Standard regression test to make sure we didn't break "USD Coin" support itself
+      const requirements = PaymentRequirement(
+        scheme: 'exact',
+        network: 'eip155:8453',
+        amount: '10000',
+        payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
+        maxTimeoutSeconds: 3600,
+        asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+        extra: {'name': 'USD Coin', 'version': '2'},
+      );
+
+      final payload = await client.createPaymentPayload(requirements, resource);
+      final isValid = await server.verifyPayload(payload, requirements);
+      expect(isValid, isTrue, reason: 'Signature should be valid for USD Coin');
     });
   });
 
