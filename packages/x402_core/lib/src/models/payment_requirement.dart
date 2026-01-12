@@ -30,7 +30,7 @@ class PaymentRequirement {
     required this.amount,
     required this.payTo,
     required this.maxTimeoutSeconds,
-    this.extra = const {},
+    required this.extra,
   });
 
   factory PaymentRequirement.fromJson(Map<String, dynamic> json) {
@@ -41,7 +41,7 @@ class PaymentRequirement {
       amount: (json['amount'] ?? json['maxAmountRequired']).toString(),
       payTo: json['payTo'] as String,
       maxTimeoutSeconds: json['maxTimeoutSeconds'] as int,
-      extra: (json['extra'] ?? json['data'] ?? <String, dynamic>{}) as Map<String, dynamic>,
+      extra: (json['extra'] ?? json['data']) as Map<String, dynamic>,
     );
   }
 

@@ -56,12 +56,10 @@ final requirements = PaymentRequirement(
   scheme: 'exact',
   network: 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1', // Devnet
   amount: '10000', // 0.01 USDC (6 decimals)
-  resource: 'https://api.example.com/premium-data',
-  description: 'Access to premium data',
-  mimeType: 'application/json',
   payTo: 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv',
   maxTimeoutSeconds: 60,
   asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC on Devnet
+  extra: {},
 );
 
 // Create payment payload
@@ -105,12 +103,10 @@ final requirements = PaymentRequirement(
   scheme: 'exact',
   network: 'svm:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
   amount: '10000',
-  resource: '/premium-data',
-  description: 'Premium data access',
-  mimeType: 'application/json',
   payTo: 'YourSVMAddress',
   maxTimeoutSeconds: 60,
   asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  extra: {},
 );
 
 Handler paymentHandler(Handler innerHandler) {
@@ -236,7 +232,7 @@ For Token-2022 or custom programs:
 final requirements = PaymentRequirement(
   // ... other fields ...
   asset: 'YourToken2022Address',
-  data: {
+  extra: {
     'tokenProgramId': 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
   },
 );

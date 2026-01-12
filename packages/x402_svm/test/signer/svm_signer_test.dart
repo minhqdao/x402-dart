@@ -102,6 +102,7 @@ void main() {
         asset: 'asset',
         payTo: 'payTo',
         maxTimeoutSeconds: 60,
+        extra: {},
       );
       final reqExact = PaymentRequirement(
         scheme: 'exact',
@@ -110,6 +111,7 @@ void main() {
         asset: 'asset',
         payTo: 'payTo',
         maxTimeoutSeconds: 60,
+        extra: {},
       );
       const reqBadNetwork = PaymentRequirement(
         scheme: 'exact',
@@ -118,6 +120,7 @@ void main() {
         asset: 'asset',
         payTo: 'payTo',
         maxTimeoutSeconds: 60,
+        extra: {},
       );
       final reqBadScheme = PaymentRequirement(
         scheme: 'bad-scheme',
@@ -126,6 +129,7 @@ void main() {
         asset: 'asset',
         payTo: 'payTo',
         maxTimeoutSeconds: 60,
+        extra: {},
       );
 
       expect(signer.supports(reqStandard), isTrue);

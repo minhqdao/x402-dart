@@ -50,6 +50,7 @@ void main(List<String> args) async {
       maxTimeoutSeconds: 3600,
       payTo: 'mvines9iiHiQTysrwkTjMcDYC5WzZhVp85694463d74',
       scheme: 'exact',
+      extra: {},
     ),
   ];
 

@@ -51,13 +51,10 @@ final requirements = PaymentRequirement(
   scheme: 'exact',
   network: 'eip155:8453',  // Base mainnet
   amount: '10000',  // 0.01 USDC (6 decimals)
-  resource: 'https://api.example.com/premium-data',
-  description: 'Access to premium data',
-  mimeType: 'application/json',
   payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
   maxTimeoutSeconds: 60,
   asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',  // USDC
-  data: {'name': 'USDC', 'version': '2'},
+  extra: {'name': 'USDC', 'version': '2'},
 );
 ```
 
@@ -68,8 +65,8 @@ Contains the cryptographic proof of payment:
 ```dart
 final payload = PaymentPayload(
   x402Version: 2,
-  scheme: 'exact',
-  network: 'eip155:8453',
+  resource: resource,
+  accepted: requirements,
   payload: {
     'signature': '0x...',
     'authorization': {...},

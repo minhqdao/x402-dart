@@ -46,13 +46,10 @@ final requirements = PaymentRequirement(
   scheme: 'exact',
   network: 'eip155:8453', // Base mainnet
   amount: '10000', // 0.01 USDC (6 decimals)
-  resource: 'https://api.example.com/premium-data',
-  description: 'Access to premium data',
-  mimeType: 'application/json',
   payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
   maxTimeoutSeconds: 60,
   asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', // USDC on Base
-  data: {
+  extra: {
     'name': 'USD Coin',
     'version': '2',
   },
@@ -90,13 +87,10 @@ final requirements = PaymentRequirement(
   scheme: 'exact',
   network: 'eip155:8453',
   amount: '10000',
-  resource: '/premium-data',
-  description: 'Premium data access',
-  mimeType: 'application/json',
   payTo: '0xYourAddress',
   maxTimeoutSeconds: 60,
   asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-  data: {'name': 'USD Coin', 'version': '2'},
+  extra: {'name': 'USD Coin', 'version': '2'},
 );
 
 Handler paymentHandler(Handler innerHandler) {
@@ -285,7 +279,7 @@ Tests cover:
 final requirements = PaymentRequirement(
   // ... other fields ...
   asset: '0xYourTokenAddress',
-  data: {
+  extra: {
     'name': 'Your Token Name',  // From EIP-2612/3009
     'version': '1',              // Token version
   },
@@ -315,7 +309,9 @@ final response = PaymentRequiredResponse(
       network: 'eip155:8453',
       amount: '10000',
       asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-      // ... other fields ...
+      payTo: '0x...',
+      maxTimeoutSeconds: 60,
+      extra: {'name': 'USD Coin', 'version': '2'},
     ),
     // Ethereum USDC
     PaymentRequirement(
@@ -323,7 +319,9 @@ final response = PaymentRequiredResponse(
       network: 'eip155:1',
       amount: '10000',
       asset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      // ... other fields ...
+      payTo: '0x...',
+      maxTimeoutSeconds: 60,
+      extra: {'name': 'USD Coin', 'version': '2'},
     ),
   ],
 );

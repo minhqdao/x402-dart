@@ -38,6 +38,7 @@ void main(List<String> args) async {
       maxTimeoutSeconds: 3600,
       payTo: _solanaAddress,
       scheme: 'v2:solana:exact',
+      extra: {},
     ),
   ];
 

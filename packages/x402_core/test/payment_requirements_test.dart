@@ -40,6 +40,7 @@ void main() {
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+        extra: {},
       );
       const payload = PaymentPayload(
         x402Version: 2,
@@ -80,6 +81,7 @@ void main() {
             payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
             maxTimeoutSeconds: 60,
             asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+            extra: {},
           ),
         ],
       );

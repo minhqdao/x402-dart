@@ -43,6 +43,37 @@ class SvmSigner extends X402Signer {
     );
   }
 
+  /// 🚀 The "Production" way: Load an existing key from bytes
+  static Future<SvmSigner> fromPrivateKeyBytes({
+    required List<int> privateKeyBytes,
+    required SolanaNetwork network,
+    String? customRpcUrl, // Optional override for Helius/QuickNode
+  }) async {
+    final List<int> seed;
+
+    if (privateKeyBytes.length == 32) {
+      // Ed25519 seed
+      seed = privateKeyBytes;
+    } else if (privateKeyBytes.length == 64) {
+      // Solana secret key = seed + public key
+      seed = privateKeyBytes.sublist(0, 32);
+    } else {
+      throw ArgumentError(
+        'Invalid private key length: ${privateKeyBytes.length}. '
+        'Expected 32 (seed) or 64 (Solana secret key) bytes.',
+      );
+    }
+
+    final keypair = await Ed25519HDKeyPair.fromPrivateKeyBytes(privateKey: seed);
+    final rpcUrl = customRpcUrl ?? network.rpcUrl;
+
+    return SvmSigner(
+      signer: keypair,
+      client: SolanaClient(rpcUrl: Uri.parse(rpcUrl), websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
+      genesisHash: network.genesisHash,
+    );
+  }
+
   /// 🧪 The "Quick Start" way: Random key for testing
   static Future<SvmSigner> createRandom({required SolanaNetwork network}) async {
     final keypair = await Ed25519HDKeyPair.random();
