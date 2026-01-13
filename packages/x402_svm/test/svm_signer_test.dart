@@ -94,7 +94,7 @@ void main() {
       expect(signer.scheme, equals('v2:solana:exact'));
     });
 
-    test('should have correct address', () async {
+    test('should have correct address', () {
       expect(signer.address, equals(keyPair.publicKey.toBase58()));
     });
 

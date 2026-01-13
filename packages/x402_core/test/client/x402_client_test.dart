@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_core/src/client/x402_client.dart';
 
 class MockHttpClient extends Mock implements http.Client {}
 class MockX402Signer extends Mock implements X402Signer {}
