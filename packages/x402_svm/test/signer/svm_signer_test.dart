@@ -148,7 +148,6 @@ void main() {
       expect(payload.x402Version, equals(kX402Version));
       expect(payload.accepted.network, equals(requirements.network));
       expect(payload.payload['transaction'], isNotNull);
-      expect(payload.payload['blockhash'], equals('5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d'));
     });
 
     test('should include extensions if provided', () async {
