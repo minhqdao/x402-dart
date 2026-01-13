@@ -37,9 +37,7 @@ class ExactSvmSchemeClient implements SchemeClient {
     // Extract feePayer from requirements.extra
     final feePayer = requirements.extra['feePayer'] as String?;
     if (feePayer == null) {
-      throw const InvalidPayloadException(
-        'feePayer is required in paymentRequirements.extra for SVM transactions',
-      );
+      throw const InvalidPayloadException('feePayer is required in paymentRequirements.extra for SVM transactions');
     }
 
     // Build transfer transaction
@@ -52,16 +50,12 @@ class ExactSvmSchemeClient implements SchemeClient {
       solanaClient: solanaClient,
     );
 
-    // Get recent blockhash for reference
-    final blockhashResult = await solanaClient.rpcClient.getLatestBlockhash();
-    final blockhash = blockhashResult.value.blockhash;
-
     // Create payment payload
     return PaymentPayload(
       x402Version: kX402Version,
       resource: resource,
       accepted: requirements,
-      payload: {'transaction': encodedTransaction, 'blockhash': blockhash},
+      payload: {'transaction': encodedTransaction},
       extensions: extensions,
     );
   }

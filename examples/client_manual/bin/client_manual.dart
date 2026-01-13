@@ -76,35 +76,34 @@ void main(List<String> args) async {
     String? signature;
 
     // Initialize EVM signer
-    // final evmSigner = EvmSigner.fromHex(chainId: 84532, privateKeyHex: evmPrivateKey);
-    // stdout.writeln('EVM Address: ${evmSigner.privateKey.address.hex}');
+    final evmSigner = EvmSigner.fromHex(chainId: 84532, privateKeyHex: evmPrivateKey);
+    stdout.writeln('EVM Address: ${evmSigner.privateKey.address.hex}');
 
     // Try EVM first
-    // final evmReq = paymentResponse.accepts.firstWhereOrNull(evmSigner.supports);
-    // if (evmReq != null) {
-    //   stdout.writeln('Negotiated EVM payment via ${evmReq.network} (amount: ${evmReq.amount})');
-    //   chosenSigner = evmSigner;
-    //   chosenRequirement = evmReq;
-    // } else {
-    // Initialize SVM signer
+    final evmReq = paymentResponse.accepts.firstWhereOrNull(evmSigner.supports);
+    if (evmReq != null) {
+      stdout.writeln('Negotiated EVM payment via ${evmReq.network} (amount: ${evmReq.amount})');
+      chosenSigner = evmSigner;
+      chosenRequirement = evmReq;
+    } else {
+      // Initialize SVM signer
+      final svmPrivateKey = env['SVM_PRIVATE_KEY'];
+      if (svmPrivateKey == null) {
+        stdout.writeln('Error:SVM_PRIVATE_KEY is not set in .env file.');
+        return;
+      }
 
-    final svmPrivateKey = env['SVM_PRIVATE_KEY'];
-    if (svmPrivateKey == null) {
-      stdout.writeln('Error:SVM_PRIVATE_KEY is not set in .env file.');
-      return;
+      final svmSigner = await SvmSigner.fromHex(privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
+      stdout.writeln('SVM Address: ${svmSigner.signer.publicKey.toBase58()}');
+
+      // Try SVM
+      final svmReq = paymentResponse.accepts.firstWhereOrNull(svmSigner.supports);
+      if (svmReq != null) {
+        stdout.writeln('Negotiated SVM payment via ${svmReq.network} (amount: ${svmReq.amount})');
+        chosenSigner = svmSigner;
+        chosenRequirement = svmReq;
+      }
     }
-
-    final svmSigner = await SvmSigner.fromHex(privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
-    stdout.writeln('SVM Address: ${svmSigner.signer.publicKey.toBase58()}');
-
-    // Try SVM
-    final svmReq = paymentResponse.accepts.firstWhereOrNull(svmSigner.supports);
-    if (svmReq != null) {
-      stdout.writeln('Negotiated SVM payment via ${svmReq.network} (amount: ${svmReq.amount})');
-      chosenSigner = svmSigner;
-      chosenRequirement = svmReq;
-    }
-    // }
 
     if (chosenSigner == null || chosenRequirement == null) {
       stdout.writeln('Error: No compatible signer found for requirements.');

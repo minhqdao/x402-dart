@@ -1,4 +1,6 @@
 import 'dart:convert';
+
+import 'package:solana/dto.dart' show BinaryAccountData, Encoding;
 import 'package:solana/encoder.dart';
 import 'package:solana/solana.dart';
 
@@ -6,7 +8,7 @@ import 'package:solana/solana.dart';
 class SvmTransactionBuilder {
   const SvmTransactionBuilder._();
 
-  /// Create a transfer transaction for SPL token
+  /// Create a payment payload for the Exact scheme (matching TS reference)
   static Future<String> createTransferTransaction({
     required Ed25519HDKeyPair signer,
     required String recipient,
@@ -15,127 +17,120 @@ class SvmTransactionBuilder {
     required String feePayer,
     required SolanaClient solanaClient,
   }) async {
-    final sourcePublicKey = await signer.extractPublicKey();
-    final destinationPublicKey = Ed25519HDPublicKey.fromBase58(recipient);
+    // Parse public keys
+    final signerPublicKey = await signer.extractPublicKey();
     final mintPublicKey = Ed25519HDPublicKey.fromBase58(tokenMint);
+    final recipientPublicKey = Ed25519HDPublicKey.fromBase58(recipient);
     final feePayerPublicKey = Ed25519HDPublicKey.fromBase58(feePayer);
 
-    // Get associated token accounts
-    final sourceTokenAccount = await getAssociatedTokenAddress(mint: mintPublicKey, owner: sourcePublicKey);
+    // Get token mint info to determine decimals and validate program
+    final mintInfo = await solanaClient.rpcClient.getAccountInfo(tokenMint, encoding: Encoding.base64);
+    if (mintInfo.value == null) throw Exception('Token mint account not found');
 
-    final destinationTokenAccount = await getAssociatedTokenAddress(mint: mintPublicKey, owner: destinationPublicKey);
+    // BinaryAccountData has a 'data' property that contains the bytes
+    final mintData = mintInfo.value!.data;
+    int decimals = 6; // default fallback
+
+    if (mintData is BinaryAccountData) {
+      // Access the underlying bytes from BinaryAccountData
+      final bytes = mintData.data;
+      if (bytes.length > 44) decimals = bytes[44];
+    }
+
+    // Find associated token accounts
+    final sourceATA = await getAssociatedTokenAddress(mint: mintPublicKey, owner: signerPublicKey);
+    final destinationATA = await getAssociatedTokenAddress(mint: mintPublicKey, owner: recipientPublicKey);
 
     // Get recent blockhash
     final blockhashResult = await solanaClient.rpcClient.getLatestBlockhash();
     final blockhash = blockhashResult.value.blockhash;
 
-    // Build instructions
+    // Build instructions (matching TS order exactly)
     final instructions = <Instruction>[];
 
-    Instruction setComputeUnitLimit(int units) {
-      return Instruction(
-        programId: ComputeBudgetProgram.id,
-        accounts: const [],
-        data: ByteArray.merge([ComputeBudgetProgram.setComputeUnitLimitIndex, ByteArray.u32(units)]),
-      );
-    }
+    // 1. Set compute unit limit
+    instructions.add(_setComputeUnitLimit(200000));
 
-    Instruction setComputeUnitPrice(int microLamports) {
-      return Instruction(
-        programId: ComputeBudgetProgram.id,
-        accounts: const [],
-        data: ByteArray.merge([ComputeBudgetProgram.setComputeUnitPriceIndex, ByteArray.u64(microLamports)]),
-      );
-    }
+    // 2. Set compute unit price
+    instructions.add(_setComputeUnitPrice(1));
 
-    // Add compute budget instructions for priority
-    instructions
-      ..add(setComputeUnitLimit(200000))
-      ..add(setComputeUnitPrice(1));
+    // 3. Transfer checked instruction
+    instructions.add(_transferChecked(
+      source: sourceATA,
+      destination: destinationATA,
+      owner: signerPublicKey,
+      mint: mintPublicKey,
+      amount: amount.toInt(),
+      decimals: decimals,
+    ));
 
-    Instruction createIdempotentAssociatedTokenAccount({
-      required Ed25519HDPublicKey funder,
-      required Ed25519HDPublicKey ata,
-      required Ed25519HDPublicKey owner,
-      required Ed25519HDPublicKey mint,
-    }) {
-      return Instruction(
-        programId: AssociatedTokenAccountProgram.id,
-        accounts: [
-          AccountMeta.writeable(pubKey: funder, isSigner: true),
-          AccountMeta.writeable(pubKey: ata, isSigner: false),
-          AccountMeta.readonly(pubKey: owner, isSigner: false),
-          AccountMeta.readonly(pubKey: mint, isSigner: false),
-          AccountMeta.readonly(pubKey: SystemProgram.id, isSigner: false),
-          AccountMeta.readonly(pubKey: TokenProgram.id, isSigner: false),
-        ],
-        data: ByteArray(const [1]), // 1 is CreateIdempotent
-      );
-    }
-
-    // Always add idempotent create instruction. The facilitator requires 4 instructions.
-    instructions.add(
-      createIdempotentAssociatedTokenAccount(
-        funder: feePayerPublicKey,
-        ata: destinationTokenAccount,
-        owner: destinationPublicKey,
-        mint: mintPublicKey,
-      ),
-    );
-
-    // Default to 6 decimals if we can't determine
-    const decimals = 6;
-
-    Instruction transferChecked({
-      required Ed25519HDPublicKey source,
-      required Ed25519HDPublicKey destination,
-      required Ed25519HDPublicKey owner,
-      required Ed25519HDPublicKey mint,
-      required int amount,
-      required int decimals,
-    }) {
-      return Instruction(
-        programId: TokenProgram.id,
-        accounts: [
-          AccountMeta.writeable(pubKey: source, isSigner: false),
-          AccountMeta.readonly(pubKey: mint, isSigner: false),
-          AccountMeta.writeable(pubKey: destination, isSigner: false),
-          AccountMeta.readonly(pubKey: owner, isSigner: true),
-        ],
-        data: ByteArray.merge([
-          TokenProgram.transferCheckedInstructionIndex,
-          ByteArray.u64(amount),
-          ByteArray.u8(decimals),
-        ]),
-      );
-    }
-
-    instructions.add(
-      transferChecked(
-        source: sourceTokenAccount,
-        destination: destinationTokenAccount,
-        owner: sourcePublicKey,
-        mint: mintPublicKey,
-        amount: amount.toInt(),
-        decimals: decimals,
-      ),
-    );
-
-    // Create transaction
+    // Create message with feePayer
     final message = Message(instructions: instructions);
-
     final compiledMessage = message.compile(recentBlockhash: blockhash, feePayer: feePayerPublicKey);
 
-    // Sign transaction
+    // Partially sign with only the signer (authority)
     final signature = await signer.sign(compiledMessage.toByteArray());
 
-    final transaction = SignedTx(
-      compiledMessage: compiledMessage,
-      signatures: [Signature(publicKey: sourcePublicKey, signature.bytes)],
-    );
+    final signatures = <Signature>[];
 
-    // Serialize and encode
-    return transaction.encode();
+    if (feePayerPublicKey.toBase58() != signerPublicKey.toBase58()) {
+      signatures.add(Signature(List.filled(64, 0), publicKey: feePayerPublicKey));
+    }
+
+    signatures.add(Signature(signature.bytes, publicKey: signerPublicKey));
+    final transaction = SignedTx(compiledMessage: compiledMessage, signatures: signatures);
+
+    final base64EncodedWireTransaction = transaction.encode();
+    return base64EncodedWireTransaction;
+  }
+
+  /// Set compute unit limit instruction
+  static Instruction _setComputeUnitLimit(int units) {
+    return Instruction(
+      programId: ComputeBudgetProgram.id,
+      accounts: const [],
+      data: ByteArray.merge([
+        ComputeBudgetProgram.setComputeUnitLimitIndex,
+        ByteArray.u32(units),
+      ]),
+    );
+  }
+
+  /// Set compute unit price instruction
+  static Instruction _setComputeUnitPrice(int microLamports) {
+    return Instruction(
+      programId: ComputeBudgetProgram.id,
+      accounts: const [],
+      data: ByteArray.merge([
+        ComputeBudgetProgram.setComputeUnitPriceIndex,
+        ByteArray.u64(microLamports),
+      ]),
+    );
+  }
+
+  /// Transfer checked instruction
+  static Instruction _transferChecked({
+    required Ed25519HDPublicKey source,
+    required Ed25519HDPublicKey destination,
+    required Ed25519HDPublicKey owner,
+    required Ed25519HDPublicKey mint,
+    required int amount,
+    required int decimals,
+  }) {
+    return Instruction(
+      programId: TokenProgram.id,
+      accounts: [
+        AccountMeta.writeable(pubKey: source, isSigner: false),
+        AccountMeta.readonly(pubKey: mint, isSigner: false),
+        AccountMeta.writeable(pubKey: destination, isSigner: false),
+        AccountMeta.readonly(pubKey: owner, isSigner: true),
+      ],
+      data: ByteArray.merge([
+        TokenProgram.transferCheckedInstructionIndex,
+        ByteArray.u64(amount),
+        ByteArray.u8(decimals),
+      ]),
+    );
   }
 
   /// Get associated token address
@@ -143,17 +138,17 @@ class SvmTransactionBuilder {
     required Ed25519HDPublicKey mint,
     required Ed25519HDPublicKey owner,
   }) {
-    // Find program address
     final seeds = [owner.bytes, TokenProgram.id.bytes, mint.bytes];
-
-    return Ed25519HDPublicKey.findProgramAddress(seeds: seeds, programId: AssociatedTokenAccountProgram.id);
+    return Ed25519HDPublicKey.findProgramAddress(
+      seeds: seeds,
+      programId: AssociatedTokenAccountProgram.id,
+    );
   }
 
   /// Decode and verify a transaction
   static DecodedTransaction decodeTransaction(String encodedTx) {
     final txBytes = base64Decode(encodedTx);
     final tx = SignedTx.fromBytes(txBytes);
-
     final msg = tx.compiledMessage;
 
     return DecodedTransaction(
@@ -172,8 +167,8 @@ class SvmTransactionBuilder {
     required BigInt expectedAmount,
     required String tokenMint,
   }) async {
-    // Exactly 4 instructions: ComputeLimit + ComputePrice + CreateATA + TransferChecked
-    if (decoded.instructions.length != 4) return false;
+    // Exactly 3 instructions: ComputePrice + ComputeLimit + TransferChecked
+    if (decoded.instructions.length != 3) return false;
 
     final ix = decoded.instructions.last;
 
@@ -183,21 +178,12 @@ class SvmTransactionBuilder {
 
     // 2. Instruction data
     final data = ix.data;
-
     if (data.isEmpty || data.first != TokenProgram.transferCheckedInstructionIndex.first) {
       return false;
     }
 
-    int readU64LE(List<int> bytes, int offset) {
-      var value = 0;
-      for (var i = 0; i < 8; i++) {
-        value |= (bytes[offset + i] & 0xff) << (8 * i);
-      }
-      return value;
-    }
-
     // 3. Amount (u64 LE)
-    final amount = readU64LE(data.toList(), 1);
+    final amount = _readU64LE(data.toList(), 1);
     if (amount != expectedAmount.toInt()) return false;
 
     // 4. Mint
@@ -210,11 +196,22 @@ class SvmTransactionBuilder {
     // Derive expected ATA
     final recipientKey = Ed25519HDPublicKey.fromBase58(expectedRecipient);
     final mintPublicKey = Ed25519HDPublicKey.fromBase58(tokenMint);
-    final expectedATA = await getAssociatedTokenAddress(mint: mintPublicKey, owner: recipientKey);
+    final expectedATA = await getAssociatedTokenAddress(
+      mint: mintPublicKey,
+      owner: recipientKey,
+    );
 
     if (destination != expectedATA.toBase58()) return false;
 
     return true;
+  }
+
+  static int _readU64LE(List<int> bytes, int offset) {
+    var value = 0;
+    for (var i = 0; i < 8; i++) {
+      value |= (bytes[offset + i] & 0xff) << (8 * i);
+    }
+    return value;
   }
 }
 
