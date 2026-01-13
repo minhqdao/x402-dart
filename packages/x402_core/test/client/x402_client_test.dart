@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
 
 class MockHttpClient extends Mock implements http.Client {}
+
 class MockX402Signer extends Mock implements X402Signer {}
 
 void main() {
@@ -12,7 +13,7 @@ void main() {
     late MockHttpClient mockInner;
     late MockX402Signer signerA;
     late MockX402Signer signerB;
-    
+
     late PaymentRequirement requirementA;
     late ResourceInfo resourceInfo;
     late String headerValue;
@@ -69,7 +70,7 @@ void main() {
         402,
         headers: {kPaymentRequiredHeader: headerValue},
       );
-      
+
       // Mock 200 response (after payment)
       final response200 = http.StreamedResponse(
         Stream.value(utf8.encode('Success')),
@@ -139,7 +140,7 @@ void main() {
     test('should use first matching signer (A before B)', () async {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() => signerB.supports(any())).thenReturn(true);
-      
+
       when(() => signerA.sign(any(), any(), extensions: any(named: 'extensions')))
           .thenAnswer((_) async => 'signature_A');
 
@@ -172,7 +173,7 @@ void main() {
     test('should use first matching signer (B before A)', () async {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() => signerB.supports(any())).thenReturn(true);
-      
+
       when(() => signerB.sign(any(), any(), extensions: any(named: 'extensions')))
           .thenAnswer((_) async => 'signature_B');
 

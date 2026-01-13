@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:x402_evm/src/utils/crypto.dart';
 import 'package:x402_evm/src/utils/eip712.dart';
 
 /// EIP-3009 utilities for transferWithAuthorization
@@ -83,24 +82,24 @@ class EIP3009 {
     return recoveredAddress.hex.toLowerCase() == from.toLowerCase();
   }
 
-  /// Convert signature to v, r, s components
-  static Map<String, dynamic> signatureToVRS(MsgSignature signature) {
-    return {
-      'v': signature.v,
-      'r': '0x${hex.encode(toBytes(signature.r))}',
-      's': '0x${hex.encode(toBytes(signature.s))}',
-    };
-  }
+  static Uint8List _toFixedLengthBytes(BigInt value, {int length = 32}) {
+    final bytes = unsignedIntToBytes(value);
 
-  /// Create signature from v, r, s components
-  static MsgSignature vrsToSignature(int v, String r, String s) {
-    return MsgSignature(bytesToUnsignedInt(hexToBytes(r)), bytesToUnsignedInt(hexToBytes(s)), v);
+    if (bytes.length > length) {
+      // Return only the last N bytes if it overflows (standard for EVM)
+      return bytes.sublist(bytes.length - length);
+    }
+
+    // Create a fixed-length list and fill it from the right
+    final padded = Uint8List(length);
+    padded.setRange(length - bytes.length, length, bytes);
+    return padded;
   }
 
   /// Encode signature as hex string
   static String encodeSignature(MsgSignature signature) {
-    final r = hex.encode(toBytes(signature.r));
-    final s = hex.encode(toBytes(signature.s));
+    final r = hex.encode(_toFixedLengthBytes(signature.r));
+    final s = hex.encode(_toFixedLengthBytes(signature.s));
     final v = signature.v.toRadixString(16).padLeft(2, '0');
     return '0x$r$s$v';
   }
