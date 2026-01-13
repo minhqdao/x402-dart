@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 import 'package:x402_core/src/constants.dart';
@@ -8,8 +7,14 @@ import 'package:x402_core/src/models/payment_required_response.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
 
-/// Callback to let the user approve a payment before the 'magic' happens.
-typedef PaymentApprovalCallback = Future<bool> Function(PaymentRequirement requirement, ResourceInfo resource);
+/// Callback to let the user approve a payment before it's sent.
+///
+/// Returns `true` to approve the payment, `false` to deny.
+typedef PaymentApprovalCallback = Future<bool> Function(
+  PaymentRequirement requirement,
+  ResourceInfo resource,
+  X402Signer signer,
+);
 
 /// The interface every blockchain-specific package must implement.
 abstract class X402Signer {
@@ -33,15 +38,47 @@ abstract class X402Signer {
   });
 }
 
-/// A high-level client that automatically handles 402 Payment Required flows
+/// A high-level HTTP client that automatically handles 402 Payment Required flows.
+///
+/// When a server responds with 402, this client:
+/// 1. Parses the payment requirements
+/// 2. Finds a compatible signer (in order of preference)
+/// 3. Optionally asks for user approval via [onPaymentRequired]
+/// 4. Signs and automatically retries the request
+///
+/// Example:
+/// ```dart
+/// final client = X402Client(
+///   signers: [evmSigner, svmSigner],
+///   onPaymentRequired: (req, resource, signer) async {
+///     print('Pay ${req.amount} using ${signer.network}?');
+///     return true; // or show UI and wait for user input
+///   },
+/// );
+///
+/// final response = await client.get(Uri.parse('https://api.example.com/premium'));
+/// ```
 class X402Client extends http.BaseClient {
   final List<X402Signer> _signers;
   final http.Client _inner;
   final PaymentApprovalCallback? onPaymentRequired;
 
-  X402Client({required List<X402Signer> signers, this.onPaymentRequired, http.Client? inner})
-      : _signers = signers,
-        _inner = inner ?? http.Client();
+  /// Creates an X402Client.
+  ///
+  /// [signers] are checked in order - the first compatible signer is used.
+  /// This gives you control over payment method preference (e.g., prefer EVM over SVM).
+  ///
+  /// [onPaymentRequired] is called before making a payment. Return false to abort.
+  ///
+  /// [inner] is the underlying HTTP client (defaults to a new http.Client).
+  X402Client({
+    required List<X402Signer> signers,
+    this.onPaymentRequired,
+    http.Client? inner,
+  })  : _signers = signers,
+        _inner = inner ?? http.Client() {
+    if (signers.isEmpty) throw ArgumentError('At least one signer must be provided');
+  }
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
@@ -61,38 +98,50 @@ class X402Client extends http.BaseClient {
         final paymentRequired = _parseHeader(header);
         final requirements = paymentRequired.accepts;
 
-        // 5. Negotiation: Iterate through YOUR signers (in order)
+        if (requirements.isEmpty) return response;
+
+        // 5. Negotiation: Iterate through YOUR signers (client preference order)
         for (final signer in _signers) {
           // Does this signer match ANY of the server's requirements?
           final match = requirements.firstWhereOrNull(signer.supports);
 
           if (match != null) {
-            // 6. Optional Consent Check (Safety first!)
+            // 6. Optional Consent Check
             if (onPaymentRequired != null) {
-              final approved = await onPaymentRequired!(match, paymentRequired.resource);
-              if (!approved) return response; // Return the 402 if denied
+              final approved = await onPaymentRequired!(match, paymentRequired.resource, signer);
+              if (!approved) {
+                await response.stream.drain();
+                return response;
+              }
             }
 
-            // 7. Magic: Sign & Automatically Retry
+            // 7. Sign & Automatically Retry
             final signature = await signer.sign(
               match,
               paymentRequired.resource,
               extensions: paymentRequired.extensions,
             );
+
             final retryRequest = _recreate(request, bytes);
 
             // Attach the proof using both v2 standard and legacy headers
             retryRequest.headers[kPaymentSignatureHeader] = signature;
             retryRequest.headers[kPaymentHeader] = signature;
 
+            // Consume the original 402 response stream
+            await response.stream.drain();
+
+            // Make the payment request
             return await _inner.send(retryRequest);
           }
         }
       } catch (e) {
-        stdout.writeln('Error handling 402 magic flow: $e');
-        // Return original response if magic fails
-        return response;
+        // Silently fail and return original response
+        // Users can add their own error handling in onPaymentRequired
       }
+
+      // Consume stream before returning
+      await response.stream.drain();
     }
 
     return response;
@@ -106,6 +155,7 @@ class X402Client extends http.BaseClient {
     return req;
   }
 
+  /// Parse the X-Payment-Required header
   PaymentRequiredResponse _parseHeader(String headerBase64) {
     final json = jsonDecode(utf8.decode(base64Decode(headerBase64))) as Map<String, dynamic>;
     return PaymentRequiredResponse.fromJson(json);
