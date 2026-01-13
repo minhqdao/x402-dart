@@ -110,6 +110,9 @@ class SvmSigner extends X402Signer {
   String get scheme => 'v2:solana:exact';
 
   @override
+  String get address => _signer.publicKey.toBase58();
+
+  @override
   bool supports(PaymentRequirement requirement) {
     final supportedSchemes = {scheme, 'exact'};
     return requirement.network == network && supportedSchemes.contains(requirement.scheme);

@@ -77,7 +77,7 @@ void main(List<String> args) async {
 
     // Initialize EVM signer
     final evmSigner = EvmSigner.fromHex(chainId: 84532, privateKeyHex: evmPrivateKey);
-    stdout.writeln('EVM Address: ${evmSigner.privateKey.address.hex}');
+    stdout.writeln('EVM Address: ${evmSigner.address}');
 
     // Try EVM first
     final evmReq = paymentResponse.accepts.firstWhereOrNull(evmSigner.supports);
@@ -94,7 +94,7 @@ void main(List<String> args) async {
       }
 
       final svmSigner = await SvmSigner.fromHex(privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
-      stdout.writeln('SVM Address: ${svmSigner.signer.publicKey.toBase58()}');
+      stdout.writeln('SVM Address: ${svmSigner.address}');
 
       // Try SVM
       final svmReq = paymentResponse.accepts.firstWhereOrNull(svmSigner.supports);

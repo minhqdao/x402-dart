@@ -19,10 +19,11 @@ abstract class X402Signer {
   /// The scheme this signer supports (e.g., 'exact')
   String get scheme;
 
+  /// The address/public key this signer uses
+  String get address;
+
   /// Checks if this signer supports the given requirement.
-  bool supports(PaymentRequirement requirement) {
-    return requirement.network == network && requirement.scheme == scheme;
-  }
+  bool supports(PaymentRequirement requirement) => requirement.network == network && requirement.scheme == scheme;
 
   /// Signs the requirements and returns the Base64 signature string.
   Future<String> sign(

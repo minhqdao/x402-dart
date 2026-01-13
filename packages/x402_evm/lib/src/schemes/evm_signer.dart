@@ -26,6 +26,9 @@ class EvmSigner extends X402Signer {
   }
 
   @override
+  String get address => privateKey.address.hex;
+
+  @override
   String get scheme => _client.scheme;
 
   @override
