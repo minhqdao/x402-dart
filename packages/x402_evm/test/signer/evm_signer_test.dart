@@ -37,6 +37,10 @@ void main() {
       expect(signer.scheme, equals('exact'));
     });
 
+    test('should have correct address', () {
+      expect(signer.address, equals(privateKey.address.hex));
+    });
+
     test('should sign and return base64 encoded payload', () async {
       final signature = await signer.sign(requirements, resource);
 

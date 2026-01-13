@@ -94,6 +94,10 @@ void main() {
       expect(signer.scheme, equals('v2:solana:exact'));
     });
 
+    test('should have correct address', () async {
+      expect(signer.address, equals(keyPair.publicKey.toBase58()));
+    });
+
     test('should support both standard and exact schemes', () {
       final reqStandard = PaymentRequirement(
         scheme: 'v2:solana:exact',

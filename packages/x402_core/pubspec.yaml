@@ -15,3 +15,4 @@ dependencies:
 
 dev_dependencies:
   test: ^1.28.0
+  mocktail: ^1.0.4
