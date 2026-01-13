@@ -6,9 +6,9 @@ import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
 import 'package:x402_svm/x402_svm.dart';
 
-class MockSolanaClient extends Mock implements SolanaClient {}
+class _MockSolanaClient extends Mock implements SolanaClient {}
 
-class MockRpcClient extends Mock implements RpcClient {}
+class _MockRpcClient extends Mock implements RpcClient {}
 
 void main() {
   setUpAll(() {
@@ -19,16 +19,16 @@ void main() {
 
   group('SvmSigner', () {
     late Ed25519HDKeyPair keyPair;
-    late MockSolanaClient mockSolanaClient;
-    late MockRpcClient mockRpcClient;
+    late _MockSolanaClient mockSolanaClient;
+    late _MockRpcClient mockRpcClient;
     late SvmSigner signer;
     late PaymentRequirement requirements;
     late ResourceInfo resource;
 
     setUp(() async {
       keyPair = await Ed25519HDKeyPair.random();
-      mockSolanaClient = MockSolanaClient();
-      mockRpcClient = MockRpcClient();
+      mockSolanaClient = _MockSolanaClient();
+      mockRpcClient = _MockRpcClient();
 
       when(() => mockSolanaClient.rpcClient).thenReturn(mockRpcClient);
 
