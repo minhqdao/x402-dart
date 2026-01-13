@@ -1,4 +1,0 @@
-include: package:lint/strict.yaml
-
-formatter:
-  page_width: 120

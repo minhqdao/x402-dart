@@ -8,9 +8,7 @@ environment:
   sdk: ^3.6.0
 
 workspace:
-  - examples/client_evm
   - examples/client_manual
-  - examples/client_svm
   - examples/client_wrapper
   - examples/server_evm
   - examples/server_svm
