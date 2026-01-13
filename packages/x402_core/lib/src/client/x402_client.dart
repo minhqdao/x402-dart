@@ -9,8 +9,8 @@ import 'package:x402_core/src/models/resource_info.dart';
 
 /// Callback to let the user approve a payment before it's sent.
 ///
-/// Returns the [X402Signer] to use (usually the one passed in), or `null` to deny.
-typedef PaymentApprovalCallback = Future<X402Signer?> Function(
+/// Returns `true` to approve the payment, `false` to deny.
+typedef PaymentApprovalCallback = Future<bool> Function(
   PaymentRequirement requirement,
   ResourceInfo resource,
   X402Signer signer,
@@ -107,17 +107,16 @@ class X402Client extends http.BaseClient {
 
           if (match != null) {
             // 6. Optional Consent Check
-            X402Signer? signerToUse = signer;
             if (onPaymentRequired != null) {
-              signerToUse = await onPaymentRequired!(match, paymentRequired.resource, signer);
-              if (signerToUse == null) {
+              final approved = await onPaymentRequired!(match, paymentRequired.resource, signer);
+              if (!approved) {
                 await response.stream.drain();
                 return response;
               }
             }
 
             // 7. Sign & Automatically Retry
-            final signature = await signerToUse.sign(
+            final signature = await signer.sign(
               match,
               paymentRequired.resource,
               extensions: paymentRequired.extensions,

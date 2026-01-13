@@ -59,7 +59,7 @@ void main() {
       registerFallbackValue(http.Request('GET', Uri.parse('http://example.com')));
     });
 
-    test('should invoke callback and proceed if signer is returned', () async {
+    test('should invoke callback with correct arguments and proceed if true returned', () async {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() => signerA.sign(any(), any(), extensions: any(named: 'extensions')))
           .thenAnswer((_) async => 'signature_A');
@@ -91,9 +91,11 @@ void main() {
         inner: mockInner,
         onPaymentRequired: (req, res, s) async {
           callbackCalled = true;
+          // Verify all three arguments
           expect(req.network, equals('net:A'));
+          expect(res.url, equals('http://res'));
           expect(s, equals(signerA));
-          return s; // Approve
+          return true; // Approve
         },
       );
 
@@ -105,7 +107,7 @@ void main() {
       verify(() => signerA.sign(any(), any(), extensions: any(named: 'extensions'))).called(1);
     });
 
-    test('should abort if callback returns null', () async {
+    test('should abort if callback returns false', () async {
       when(() => signerA.supports(any())).thenReturn(true);
 
       final response402 = http.StreamedResponse(
@@ -119,7 +121,13 @@ void main() {
       final client = X402Client(
         signers: [signerA],
         inner: mockInner,
-        onPaymentRequired: (req, res, s) async => null, // Deny
+        onPaymentRequired: (req, res, s) async {
+          // Verify arguments even in abort case
+          expect(req.network, equals('net:A'));
+          expect(res.url, equals('http://res'));
+          expect(s, equals(signerA));
+          return false; // Deny
+        },
       );
 
       final request = http.Request('GET', Uri.parse('http://example.com'));
@@ -191,45 +199,6 @@ void main() {
       final request = http.Request('GET', Uri.parse('http://example.com'));
       await client.send(request);
 
-      verify(() => signerB.sign(any(), any(), extensions: any(named: 'extensions'))).called(1);
-      verifyNever(() => signerA.sign(any(), any(), extensions: any(named: 'extensions')));
-    });
-
-    test('should use returned signer from callback (override)', () async {
-      when(() => signerA.supports(any())).thenReturn(true);
-      when(() => signerB.supports(any())).thenReturn(true); // Both support
-      
-      // Setup signerB to sign, even though A was first match
-      when(() => signerB.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_B');
-
-      final response402 = http.StreamedResponse(
-        Stream.value(utf8.encode('Payment Required')),
-        402,
-        headers: {kPaymentRequiredHeader: headerValue},
-      );
-      final response200 = http.StreamedResponse(Stream.value([]), 200);
-
-      var callCount = 0;
-      when(() => mockInner.send(any())).thenAnswer((_) async {
-        callCount++;
-        if (callCount == 1) return response402;
-        return response200;
-      });
-
-      final client = X402Client(
-        signers: [signerA, signerB], // A matches first
-        inner: mockInner,
-        onPaymentRequired: (req, res, s) async {
-            // Force use of signerB
-            return signerB;
-        }
-      );
-
-      final request = http.Request('GET', Uri.parse('http://example.com'));
-      await client.send(request);
-
-      // Verify B was used, not A
       verify(() => signerB.sign(any(), any(), extensions: any(named: 'extensions'))).called(1);
       verifyNever(() => signerA.sign(any(), any(), extensions: any(named: 'extensions')));
     });
