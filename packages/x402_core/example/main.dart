@@ -21,14 +21,16 @@ void main() async {
   );
 
   try {
-    final response = await client.get(Uri.parse('https://api.example.com/premium-content'));
+    final response =
+        await client.get(Uri.parse('https://api.example.com/premium-content'));
 
     if (response.statusCode == 200) {
       stdout.writeln('✅ Success! Received premium content:');
       stdout.writeln(response.body);
       // 402 is handled internally by X402Client
     } else {
-      throw Exception('Request failed with status ${response.statusCode}: ${response.body}');
+      throw Exception(
+          'Request failed with status ${response.statusCode}: ${response.body}');
     }
   } catch (e) {
     stdout.writeln('❌ Error during request: $e');
