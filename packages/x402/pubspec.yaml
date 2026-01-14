@@ -14,3 +14,6 @@ dependencies:
   x402_core: ^0.1.0
   x402_evm: ^0.1.0
   x402_svm: ^0.1.0
+
+dev_dependencies:
+  lint: ^2.8.0

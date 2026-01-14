@@ -17,5 +17,6 @@ dependencies:
   x402_core: ^0.1.0
 
 dev_dependencies:
+  lint: ^2.8.0
   mocktail: ^1.0.4
   test: ^1.29.0
