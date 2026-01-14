@@ -10,9 +10,6 @@ environment:
 workspace:
   - examples/client_manual
   - examples/client_wrapper
-  - examples/server_evm
-  - examples/server_svm
-  - examples/facilitator
   - packages/x402
   - packages/x402_core
   - packages/x402_evm

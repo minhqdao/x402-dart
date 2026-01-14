@@ -116,54 +116,10 @@ void main() {
     });
   });
 
-  group('VerificationResponse', () {
-    test('should handle valid payment', () {
-      const response = VerificationResponse(isValid: true);
-      final json = response.toJson();
-
-      expect(json['isValid'], isTrue);
-      expect(json.containsKey('invalidReason'), isFalse);
-    });
-
-    test('should handle invalid payment with reason', () {
-      const response = VerificationResponse(isValid: false, invalidReason: 'Insufficient balance');
-
-      final json = response.toJson();
-      final deserialized = VerificationResponse.fromJson(json);
-
-      expect(deserialized.isValid, isFalse);
-      expect(deserialized.invalidReason, equals('Insufficient balance'));
-    });
-  });
-
-  group('SettlementResponse', () {
-    test('should handle successful settlement', () {
-      const response = SettlementResponse(success: true, txHash: '0x789...', networkId: 'eip155:8453');
-
-      final json = response.toJson();
-      final deserialized = SettlementResponse.fromJson(json);
-
-      expect(deserialized.success, isTrue);
-      expect(deserialized.txHash, equals('0x789...'));
-      expect(deserialized.networkId, equals('eip155:8453'));
-    });
-
-    test('should handle failed settlement', () {
-      const response = SettlementResponse(success: false, error: 'Transaction reverted');
-
-      final json = response.toJson();
-      final deserialized = SettlementResponse.fromJson(json);
-
-      expect(deserialized.success, isFalse);
-      expect(deserialized.error, equals('Transaction reverted'));
-    });
-  });
-
   group('Constants', () {
     test('should have correct values', () {
       expect(kX402Version, equals(2));
       expect(kPaymentHeader, equals('X-PAYMENT'));
-      expect(kPaymentResponseHeader, equals('X-PAYMENT-RESPONSE'));
       expect(kPaymentRequiredStatus, equals(402));
     });
   });
@@ -178,8 +134,6 @@ void main() {
     });
 
     test('should support specialized exceptions', () {
-      expect(const PaymentVerificationException('Failed'), isA<X402Exception>());
-      expect(const PaymentSettlementException('Failed'), isA<X402Exception>());
       expect(const InvalidPayloadException('Invalid'), isA<X402Exception>());
       expect(const UnsupportedSchemeException('Unsupported'), isA<X402Exception>());
     });

@@ -14,16 +14,6 @@ class X402Exception implements Exception {
   }
 }
 
-/// Payment verification failed
-class PaymentVerificationException extends X402Exception {
-  const PaymentVerificationException(super.message, {super.code, super.originalError});
-}
-
-/// Payment settlement failed
-class PaymentSettlementException extends X402Exception {
-  const PaymentSettlementException(super.message, {super.code, super.originalError});
-}
-
 /// Invalid payment payload
 class InvalidPayloadException extends X402Exception {
   const InvalidPayloadException(super.message, {super.code, super.originalError});

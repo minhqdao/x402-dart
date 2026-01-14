@@ -14,12 +14,3 @@ abstract class SchemeClient {
     Map<String, dynamic>? extensions,
   });
 }
-
-/// Interface for payment scheme servers
-abstract class SchemeServer {
-  /// The scheme identifier
-  String get scheme;
-
-  /// Verifies a payment payload against requirements
-  Future<bool> verifyPayload(PaymentPayload payload, PaymentRequirement requirements);
-}

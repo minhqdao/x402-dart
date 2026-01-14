@@ -1,5 +1,3 @@
-import 'package:x402_core/x402_core.dart';
-
 /// EIP-3009 authorization data for exact scheme
 class ExactAuthorization {
   final String from;
@@ -38,25 +36,5 @@ class ExactAuthorization {
       'validBefore': validBefore,
       'nonce': nonce,
     };
-  }
-}
-
-/// Parsed exact scheme payload
-class ExactPayloadData {
-  final String signature;
-  final ExactAuthorization authorization;
-
-  const ExactPayloadData({required this.signature, required this.authorization});
-
-  factory ExactPayloadData.fromPaymentPayload(PaymentPayload payload) {
-    final payloadData = payload.payload;
-    return ExactPayloadData(
-      signature: payloadData['signature'] as String,
-      authorization: ExactAuthorization.fromJson(payloadData['authorization'] as Map<String, dynamic>),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'signature': signature, 'authorization': authorization.toJson()};
   }
 }
