@@ -1,12 +1,12 @@
-/// Resource information for payment models
+/// Metadata about the digital resource being requested.
 class ResourceInfo {
-  /// URL of the resource
+  /// The canonical URL of the resource.
   final String url;
 
-  /// Description of the resource
+  /// A human-readable description of what the resource provides.
   final String description;
 
-  /// MIME type of the resource
+  /// The MIME type of the resource content.
   final String mimeType;
 
   const ResourceInfo({

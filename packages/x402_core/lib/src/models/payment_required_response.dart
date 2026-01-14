@@ -1,21 +1,24 @@
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
 
-/// Response sent by server when payment is required (HTTP 402)
+/// The structured response body returned by a server when it requires payment (HTTP 402).
+///
+/// This response contains the list of acceptable payment methods and the
+/// metadata of the resource being requested.
 class PaymentRequiredResponse {
-  /// x402 protocol version
+  /// The version of the x402 protocol the server is using.
   final int x402Version;
 
-  /// Error message (if any)
+  /// A human-readable error message explaining why payment is required.
   final String? error;
 
-  /// Resource information
+  /// Metadata about the resource being protected by the 402 status.
   final ResourceInfo resource;
 
-  /// List of accepted payment requirements
+  /// A list of compatible payment options the server will accept.
   final List<PaymentRequirement> accepts;
 
-  /// Optional extensions
+  /// Arbitrary extra data included by the server.
   final Map<String, dynamic>? extensions;
 
   const PaymentRequiredResponse({

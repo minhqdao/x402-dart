@@ -1,26 +1,29 @@
 import 'dart:convert';
 
-/// Represents a payment option offered by the server
+/// Represents a specific payment option offered by a server in a 402 response.
+///
+/// A single 402 response may contain multiple [PaymentRequirement]s, allowing
+/// the client to choose the most suitable network, asset, and scheme.
 class PaymentRequirement {
-  /// Scheme of the payment protocol (e.g., "exact")
+  /// The protocol scheme to use for this payment (e.g., "exact", "v2:solana:exact").
   final String scheme;
 
-  /// Network identifier (e.g., "eip155:8453")
+  /// The CAIP-2 network identifier (e.g., "eip155:8453", "solana:5eykt4...").
   final String network;
 
-  /// Token/asset contract address
+  /// The contract address or identifier of the asset (e.g., USDC token address).
   final String asset;
 
-  /// Amount required in atomic units
+  /// The exact amount required in the asset's smallest atomic unit (e.g., units of 10^-6 for USDC).
   final String amount;
 
-  /// Address to send payment to
+  /// The destination address where the payment should be sent.
   final String payTo;
 
-  /// Maximum timeout in seconds
+  /// The number of seconds this requirement remains valid after it is issued.
   final int maxTimeoutSeconds;
 
-  /// Scheme-specific data
+  /// Arbitrary extra data required by the specific [scheme] or [network].
   final Map<String, dynamic> extra;
 
   const PaymentRequirement({

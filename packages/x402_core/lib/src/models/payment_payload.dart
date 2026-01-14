@@ -1,21 +1,24 @@
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
 
-/// Payment payload sent by client in X-PAYMENT header
+/// The payload sent by the client in the `payment-signature` (or `X-PAYMENT`) header.
+///
+/// This object contains the proof of payment (signature or transaction) and
+/// the context of the payment being made.
 class PaymentPayload {
-  /// x402 protocol version
+  /// The version of the x402 protocol being used.
   final int x402Version;
 
-  /// Resource information
+  /// Metadata about the resource being accessed.
   final ResourceInfo resource;
 
-  /// The accepted payment requirement
+  /// The specific requirement from the server that this payload satisfies.
   final PaymentRequirement accepted;
 
-  /// Scheme-specific payload data
+  /// The actual proof of payment (e.g., a signature or a transaction hash).
   final Map<String, dynamic> payload;
 
-  /// Optional extensions
+  /// Arbitrary extra data included in the payload.
   final Map<String, dynamic>? extensions;
 
   const PaymentPayload({

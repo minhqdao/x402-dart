@@ -4,6 +4,7 @@ import 'package:solana/solana.dart';
 import 'package:x402_core/x402_core.dart';
 import 'package:x402_svm/src/schemes/exact_svm_client.dart';
 
+/// Supported Solana networks for the [SvmSigner].
 enum SolanaNetwork {
   mainnet('5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d',
       'https://api.mainnet-beta.solana.com'),
@@ -17,6 +18,9 @@ enum SolanaNetwork {
   const SolanaNetwork(this.genesisHash, this.rpcUrl);
 }
 
+/// Concrete implementation of [X402Signer] for SVM (Solana) chains.
+///
+/// This signer uses an [Ed25519HDKeyPair] to sign SPL Token transfer transactions.
 class SvmSigner extends X402Signer {
   final Ed25519HDKeyPair _signer;
   final SolanaClient _client;
@@ -30,11 +34,13 @@ class SvmSigner extends X402Signer {
         _client = client,
         _genesisHash = genesisHash;
 
-  /// 🚀 The "Production" way: Load an existing key
+  /// Creates an [SvmSigner] from a hexadecimal private key string.
+  ///
+  /// [customRpcUrl] can be used to provide a private RPC endpoint (e.g., Helius, QuickNode).
   static Future<SvmSigner> fromHex({
     required String privateKeyHex,
     required SolanaNetwork network,
-    String? customRpcUrl, // Optional override for Helius/QuickNode
+    String? customRpcUrl,
   }) async {
     final keypair = await Ed25519HDKeyPair.fromPrivateKeyBytes(
         privateKey: hex.decode(privateKeyHex));

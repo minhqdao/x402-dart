@@ -7,7 +7,7 @@ import 'package:x402_core/src/models/payment_required_response.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
 
-/// Callback to let the user approve a payment before it's sent.
+/// Callback to let the user approve a payment before it's signed and sent.
 ///
 /// Returns `true` to approve the payment, `false` to deny.
 typedef PaymentApprovalCallback = Future<bool> Function(
@@ -16,22 +16,28 @@ typedef PaymentApprovalCallback = Future<bool> Function(
   X402Signer signer,
 );
 
-/// The interface every blockchain-specific package must implement.
+/// The interface every blockchain-specific package must implement to support
+/// signing x402 payment requirements.
 abstract class X402Signer {
-  /// The CAIP-2 network identifier this signer supports (e.g., 'eip155:8453')
+  /// The CAIP-2 network identifier this signer supports (e.g., 'eip155:8453').
   String get network;
 
-  /// The scheme this signer supports (e.g., 'exact')
+  /// The scheme this signer supports (e.g., 'exact').
   String get scheme;
 
-  /// The address/public key this signer uses
+  /// The public address or identifier this signer uses.
   String get address;
 
-  /// Checks if this signer supports the given requirement.
+  /// Checks if this signer supports the given [requirement] based on its
+  /// [network] and [scheme].
   bool supports(PaymentRequirement requirement) =>
       requirement.network == network && requirement.scheme == scheme;
 
-  /// Signs the requirements and returns the Base64 signature string.
+  /// Signs the [requirement] and returns a Base64-encoded JSON string
+  /// representing the [PaymentPayload].
+  ///
+  /// [resource] provides context about what is being paid for.
+  /// [extensions] allow for arbitrary extra data to be included in the signature.
   Future<String> sign(
     PaymentRequirement requirement,
     ResourceInfo resource, {
@@ -98,6 +104,8 @@ class X402Client extends http.BaseClient {
     }
   }
 
+  /// Sends an HTTP request and automatically handles any 402 Payment Required
+  /// responses by attempting to negotiate a payment and retrying the request.
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     // 1. Buffer the request bytes (so we can replay it for the retry)
@@ -181,6 +189,8 @@ class X402Client extends http.BaseClient {
     return PaymentRequiredResponse.fromJson(json);
   }
 
+  /// Closes the client and cleans up any resources used by the underlying
+  /// HTTP client.
   @override
   void close() {
     _inner.close();
