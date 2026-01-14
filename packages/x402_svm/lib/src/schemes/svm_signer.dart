@@ -128,7 +128,4 @@ class SvmSigner extends X402Signer {
     final payload = await schemeClient.createPaymentPayload(requirement, resource, extensions: extensions);
     return base64Encode(utf8.encode(jsonEncode(payload.toJson())));
   }
-
-  // Expose signer for those who might need it
-  Ed25519HDKeyPair get signer => _signer;
 }

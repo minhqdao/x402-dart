@@ -4,10 +4,12 @@ import 'package:x402_svm/src/utils/transaction_builder.dart';
 
 /// Client-side implementation of the exact scheme for SVM
 class ExactSvmSchemeClient implements SchemeClient {
-  final Ed25519HDKeyPair signer;
-  final SolanaClient solanaClient;
+  final Ed25519HDKeyPair _signer;
+  final SolanaClient _solanaClient;
 
-  const ExactSvmSchemeClient({required this.signer, required this.solanaClient});
+  const ExactSvmSchemeClient({required Ed25519HDKeyPair signer, required SolanaClient solanaClient})
+      : _signer = signer,
+        _solanaClient = solanaClient;
 
   @override
   String get scheme => 'v2:solana:exact';
@@ -42,12 +44,12 @@ class ExactSvmSchemeClient implements SchemeClient {
 
     // Build transfer transaction
     final encodedTransaction = await SvmTransactionBuilder.createTransferTransaction(
-      signer: signer,
+      signer: _signer,
       recipient: requirements.payTo,
       amount: amount,
       tokenMint: requirements.asset,
       feePayer: feePayer,
-      solanaClient: solanaClient,
+      solanaClient: _solanaClient,
     );
 
     // Create payment payload

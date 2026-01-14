@@ -6,9 +6,9 @@ import 'package:x402_evm/src/utils/eip3009.dart';
 
 /// Client-side implementation of the exact scheme for EVM chains
 class ExactEvmSchemeClient implements SchemeClient {
-  final EthPrivateKey privateKey;
+  final EthPrivateKey _privateKey;
 
-  const ExactEvmSchemeClient({required this.privateKey});
+  const ExactEvmSchemeClient({required EthPrivateKey privateKey}) : _privateKey = privateKey;
 
   @override
   String get scheme => 'exact';
@@ -50,7 +50,7 @@ class ExactEvmSchemeClient implements SchemeClient {
 
     // Create signature
     final signature = EIP3009.createAuthorizationSignature(
-      privateKey: privateKey,
+      privateKey: _privateKey,
       tokenAddress: requirements.asset.toLowerCase(),
       chainId: chainId,
       tokenName: tokenName,
@@ -64,7 +64,7 @@ class ExactEvmSchemeClient implements SchemeClient {
 
     // Create authorization object
     final authorization = ExactAuthorization(
-      from: privateKey.address.hex.toLowerCase(),
+      from: _privateKey.address.hex.toLowerCase(),
       to: requirements.payTo.toLowerCase(),
       value: amount.toString(),
       validAfter: validAfter.toString(),

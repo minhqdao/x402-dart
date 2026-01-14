@@ -72,7 +72,7 @@ void main() {
         chainId: 1,
       );
       expect(hexSigner.network, equals('eip155:1'));
-      expect(hexSigner.privateKey.address, equals(privateKey.address));
+      expect(hexSigner.address, equals(privateKey.address.hex));
     });
 
     test('same address with upper-case private key', () {
@@ -81,7 +81,7 @@ void main() {
         chainId: 1,
       );
       expect(hexSigner.network, equals('eip155:1'));
-      expect(hexSigner.privateKey.address, equals(privateKey.address));
+      expect(hexSigner.address, equals(privateKey.address.hex));
     });
   });
 }

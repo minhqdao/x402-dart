@@ -7,4 +7,3 @@ export 'src/schemes/evm_signer.dart';
 export 'src/schemes/exact_evm_client.dart';
 export 'src/schemes/exact_evm_server.dart';
 export 'src/utils/eip3009.dart';
-export 'src/utils/eip712.dart';
