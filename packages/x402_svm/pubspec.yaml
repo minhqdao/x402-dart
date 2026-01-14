@@ -3,6 +3,7 @@ description: SVM blockchain implementation of the x402 protocol.
 version: 0.1.0
 repository: https://github.com/minhqdao/x402
 homepage: https://github.com/minhqdao/x402
+issue_tracker: https://github.com/minhqdao/x402/issues
 
 environment:
   sdk: ^3.6.0
