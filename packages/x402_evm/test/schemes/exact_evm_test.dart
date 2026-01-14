@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_evm/x402_evm.dart';
+import 'package:x402_evm/src/schemes/exact_evm_client.dart';
 
 void main() {
   group('ExactEvmSchemeClient', () {

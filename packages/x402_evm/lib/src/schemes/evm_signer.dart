@@ -33,11 +33,7 @@ class EvmSigner extends X402Signer {
   String get scheme => _client.scheme;
 
   @override
-  Future<String> sign(
-    PaymentRequirement requirement,
-    ResourceInfo resource, {
-    Map<String, dynamic>? extensions,
-  }) async {
+  Future<String> sign(PaymentRequirement requirement, ResourceInfo resource, {Map<String, dynamic>? extensions}) async {
     final payload = await _client.createPaymentPayload(requirement, resource, extensions: extensions);
     return base64Encode(utf8.encode(jsonEncode(payload.toJson())));
   }

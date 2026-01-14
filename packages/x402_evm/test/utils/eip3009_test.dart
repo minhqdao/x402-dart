@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:x402_evm/x402_evm.dart';
+import 'package:x402_evm/src/utils/eip3009.dart';
 
 void main() {
   group('EIP3009', () {
