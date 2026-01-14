@@ -9,7 +9,3 @@ This package contains the core protocol definitions, interfaces, and shared logi
 - Base `X402Signer` and `SchemeClient` interfaces.
 - Standard protocol models (`PaymentPayload`, `PaymentRequirement`).
 - `X402Client` base logic.
-
-## License
-
-Apache-2.0

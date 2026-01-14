@@ -9,7 +9,3 @@ SVM (Solana) blockchain implementation for the x402 payment protocol. This packa
 - `SvmSigner`: Signature handling using Solana keypairs.
 - Support for SPL Token transfers.
 - Automated Solana transaction building and signing for x402 payloads.
-
-## License
-
-Apache-2.0

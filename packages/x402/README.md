@@ -55,7 +55,3 @@ Take a look at the [examples](https://github.com/minhqdao/x402/tree/main/example
 - [x402_core](https://pub.dev/packages/x402_core): Internal protocol definitions.
 - [x402_evm](https://pub.dev/packages/x402_evm): EVM implementation details.
 - [x402_svm](https://pub.dev/packages/x402_svm): SVM implementation details.
-
-## License
-
-Apache-2.0

@@ -10,6 +10,3 @@ EVM-compatible blockchain implementation for the x402 payment protocol. This pac
 - EIP-3009 (USDC) authorization support.
 - EIP-712 typed data signing.
 
-## License
-
-Apache-2.0
