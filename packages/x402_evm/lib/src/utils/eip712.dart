@@ -19,7 +19,12 @@ class EIP712Domain {
   });
 
   Map<String, dynamic> toJson() {
-    return {'name': name, 'version': version, 'chainId': chainId, 'verifyingContract': verifyingContract};
+    return {
+      'name': name,
+      'version': version,
+      'chainId': chainId,
+      'verifyingContract': verifyingContract
+    };
   }
 }
 
@@ -27,7 +32,8 @@ class EIP712Domain {
 class EIP712Utils {
   const EIP712Utils._();
 
-  static const String domainTypeHash = '0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f';
+  static const String domainTypeHash =
+      '0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f';
 
   /// Compute domain separator
   static Uint8List computeDomainSeparator(EIP712Domain domain) {
@@ -50,7 +56,8 @@ class EIP712Utils {
     required BigInt validBefore,
     required Uint8List nonce,
   }) {
-    const typeHash = '0x7c7c6cdb67a18743f49ec6fa9b35f50d52ed05cbed4cc592e13b44501c1a2267';
+    const typeHash =
+        '0x7c7c6cdb67a18743f49ec6fa9b35f50d52ed05cbed4cc592e13b44501c1a2267';
 
     final encoded = encodePacked([
       hexToBytes(typeHash),
@@ -66,7 +73,8 @@ class EIP712Utils {
   }
 
   /// Create EIP-712 message hash
-  static Uint8List createMessageHash({required Uint8List domainSeparator, required Uint8List structHash}) {
+  static Uint8List createMessageHash(
+      {required Uint8List domainSeparator, required Uint8List structHash}) {
     final encoded = encodePacked([
       Uint8List.fromList([0x19, 0x01]),
       domainSeparator,
@@ -82,7 +90,8 @@ class EIP712Utils {
     required Uint8List structHash,
   }) {
     final domainSeparator = computeDomainSeparator(domain);
-    final messageHash = createMessageHash(domainSeparator: domainSeparator, structHash: structHash);
+    final messageHash = createMessageHash(
+        domainSeparator: domainSeparator, structHash: structHash);
 
     return sign(messageHash, privateKey.privateKey);
   }
@@ -94,7 +103,8 @@ class EIP712Utils {
     required MsgSignature signature,
   }) {
     final domainSeparator = computeDomainSeparator(domain);
-    final messageHash = createMessageHash(domainSeparator: domainSeparator, structHash: structHash);
+    final messageHash = createMessageHash(
+        domainSeparator: domainSeparator, structHash: structHash);
 
     final publicKey = ecRecover(messageHash, signature);
     final addressBytes = publicKeyToAddress(publicKey);
@@ -126,7 +136,8 @@ class EIP712Utils {
   }
 
   static Uint8List hexToBytes(String hexString) {
-    final cleanHex = hexString.startsWith('0x') ? hexString.substring(2) : hexString;
+    final cleanHex =
+        hexString.startsWith('0x') ? hexString.substring(2) : hexString;
     // SAFETY CHECK: Ensure even length
     final evenHex = cleanHex.length.isEven ? cleanHex : '0$cleanHex';
     return Uint8List.fromList(List<int>.from(hex.decode(evenHex)));

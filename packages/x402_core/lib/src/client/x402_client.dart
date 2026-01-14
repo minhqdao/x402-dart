@@ -28,7 +28,8 @@ abstract class X402Signer {
   String get address;
 
   /// Checks if this signer supports the given requirement.
-  bool supports(PaymentRequirement requirement) => requirement.network == network && requirement.scheme == scheme;
+  bool supports(PaymentRequirement requirement) =>
+      requirement.network == network && requirement.scheme == scheme;
 
   /// Signs the requirements and returns the Base64 signature string.
   Future<String> sign(
@@ -92,7 +93,9 @@ class X402Client extends http.BaseClient {
     http.Client? inner,
   })  : _signers = signers,
         _inner = inner ?? http.Client() {
-    if (signers.isEmpty) throw ArgumentError('At least one signer must be provided');
+    if (signers.isEmpty) {
+      throw ArgumentError('At least one signer must be provided');
+    }
   }
 
   @override
@@ -123,7 +126,8 @@ class X402Client extends http.BaseClient {
           if (match != null) {
             // 6. Optional Consent Check
             if (onPaymentRequired != null) {
-              final approved = await onPaymentRequired!(match, paymentRequired.resource, signer);
+              final approved = await onPaymentRequired!(
+                  match, paymentRequired.resource, signer);
               if (!approved) {
                 await response.stream.drain();
                 return response;
@@ -172,7 +176,8 @@ class X402Client extends http.BaseClient {
 
   /// Parse the X-Payment-Required header
   PaymentRequiredResponse _parseHeader(String headerBase64) {
-    final json = jsonDecode(utf8.decode(base64Decode(headerBase64))) as Map<String, dynamic>;
+    final json = jsonDecode(utf8.decode(base64Decode(headerBase64)))
+        as Map<String, dynamic>;
     return PaymentRequiredResponse.fromJson(json);
   }
 

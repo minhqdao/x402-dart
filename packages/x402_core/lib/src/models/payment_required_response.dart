@@ -31,7 +31,9 @@ class PaymentRequiredResponse {
       x402Version: json['x402Version'] as int,
       error: json['error'] as String?,
       resource: ResourceInfo.fromJson(json['resource'] as Map<String, dynamic>),
-      accepts: (json['accepts'] as List).map((e) => PaymentRequirement.fromJson(e as Map<String, dynamic>)).toList(),
+      accepts: (json['accepts'] as List)
+          .map((e) => PaymentRequirement.fromJson(e as Map<String, dynamic>))
+          .toList(),
       extensions: json['extensions'] as Map<String, dynamic>?,
     );
   }

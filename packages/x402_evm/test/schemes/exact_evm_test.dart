@@ -11,7 +11,8 @@ void main() {
     late ResourceInfo resource;
 
     setUp(() {
-      privateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
+      privateKey = EthPrivateKey.fromHex(
+          '0x1234567890123456789012345678901234567890123456789012345678901234');
       client = ExactEvmSchemeClient(privateKey: privateKey);
 
       resource = const ResourceInfo(

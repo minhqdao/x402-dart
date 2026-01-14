@@ -12,7 +12,10 @@ class EvmSigner extends X402Signer {
 
   /// Creates an EvmSigner.
   /// `networkNamespace` defaults to "eip155".
-  EvmSigner({required int chainId, required EthPrivateKey privateKey, String networkNamespace = 'eip155'})
+  EvmSigner(
+      {required int chainId,
+      required EthPrivateKey privateKey,
+      String networkNamespace = 'eip155'})
       : network = '$networkNamespace:$chainId',
         _privateKey = privateKey,
         _client = ExactEvmSchemeClient(privateKey: privateKey);
@@ -20,10 +23,18 @@ class EvmSigner extends X402Signer {
   /// Creates an EvmSigner from a hexadecimal private key string.
   /// The `privateKeyHex` string can optionally be prefixed with "0x".
   /// `networkNamespace` defaults to "eip155".
-  factory EvmSigner.fromHex({required String privateKeyHex, required int chainId, String networkNamespace = 'eip155'}) {
-    final cleanedHex = (privateKeyHex.startsWith('0x') ? privateKeyHex : '0x$privateKeyHex').toLowerCase();
+  factory EvmSigner.fromHex(
+      {required String privateKeyHex,
+      required int chainId,
+      String networkNamespace = 'eip155'}) {
+    final cleanedHex =
+        (privateKeyHex.startsWith('0x') ? privateKeyHex : '0x$privateKeyHex')
+            .toLowerCase();
     final privateKey = EthPrivateKey.fromHex(cleanedHex);
-    return EvmSigner(chainId: chainId, privateKey: privateKey, networkNamespace: networkNamespace);
+    return EvmSigner(
+        chainId: chainId,
+        privateKey: privateKey,
+        networkNamespace: networkNamespace);
   }
 
   @override
@@ -33,8 +44,10 @@ class EvmSigner extends X402Signer {
   String get scheme => _client.scheme;
 
   @override
-  Future<String> sign(PaymentRequirement requirement, ResourceInfo resource, {Map<String, dynamic>? extensions}) async {
-    final payload = await _client.createPaymentPayload(requirement, resource, extensions: extensions);
+  Future<String> sign(PaymentRequirement requirement, ResourceInfo resource,
+      {Map<String, dynamic>? extensions}) async {
+    final payload = await _client.createPaymentPayload(requirement, resource,
+        extensions: extensions);
     return base64Encode(utf8.encode(jsonEncode(payload.toJson())));
   }
 }

@@ -56,12 +56,16 @@ void main() {
 
       registerFallbackValue(requirementA);
       registerFallbackValue(resourceInfo);
-      registerFallbackValue(http.Request('GET', Uri.parse('http://example.com')));
+      registerFallbackValue(
+          http.Request('GET', Uri.parse('http://example.com')));
     });
 
-    test('should invoke callback with correct arguments and proceed if true returned', () async {
+    test(
+        'should invoke callback with correct arguments and proceed if true returned',
+        () async {
       when(() => signerA.supports(any())).thenReturn(true);
-      when(() => signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+      when(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
           .thenAnswer((_) async => 'signature_A');
 
       // Mock 402 response
@@ -104,7 +108,9 @@ void main() {
 
       expect(callbackCalled, isTrue);
       expect(response.statusCode, equals(200));
-      verify(() => signerA.sign(any(), any(), extensions: any(named: 'extensions'))).called(1);
+      verify(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+          .called(1);
     });
 
     test('should abort if callback returns false', () async {
@@ -134,14 +140,16 @@ void main() {
       final response = await client.send(request);
 
       expect(response.statusCode, equals(402));
-      verifyNever(() => signerA.sign(any(), any(), extensions: any(named: 'extensions')));
+      verifyNever(() =>
+          signerA.sign(any(), any(), extensions: any(named: 'extensions')));
     });
 
     test('should use first matching signer (A before B)', () async {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() => signerB.supports(any())).thenReturn(true);
 
-      when(() => signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+      when(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
           .thenAnswer((_) async => 'signature_A');
 
       final response402 = http.StreamedResponse(
@@ -166,15 +174,19 @@ void main() {
       final request = http.Request('GET', Uri.parse('http://example.com'));
       await client.send(request);
 
-      verify(() => signerA.sign(any(), any(), extensions: any(named: 'extensions'))).called(1);
-      verifyNever(() => signerB.sign(any(), any(), extensions: any(named: 'extensions')));
+      verify(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+          .called(1);
+      verifyNever(() =>
+          signerB.sign(any(), any(), extensions: any(named: 'extensions')));
     });
 
     test('should use first matching signer (B before A)', () async {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() => signerB.supports(any())).thenReturn(true);
 
-      when(() => signerB.sign(any(), any(), extensions: any(named: 'extensions')))
+      when(() =>
+              signerB.sign(any(), any(), extensions: any(named: 'extensions')))
           .thenAnswer((_) async => 'signature_B');
 
       final response402 = http.StreamedResponse(
@@ -199,8 +211,11 @@ void main() {
       final request = http.Request('GET', Uri.parse('http://example.com'));
       await client.send(request);
 
-      verify(() => signerB.sign(any(), any(), extensions: any(named: 'extensions'))).called(1);
-      verifyNever(() => signerA.sign(any(), any(), extensions: any(named: 'extensions')));
+      verify(() =>
+              signerB.sign(any(), any(), extensions: any(named: 'extensions')))
+          .called(1);
+      verifyNever(() =>
+          signerA.sign(any(), any(), extensions: any(named: 'extensions')));
     });
   });
 }

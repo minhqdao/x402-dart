@@ -8,7 +8,8 @@ import 'package:x402_evm/src/utils/eip3009.dart';
 class ExactEvmSchemeClient implements SchemeClient {
   final EthPrivateKey _privateKey;
 
-  const ExactEvmSchemeClient({required EthPrivateKey privateKey}) : _privateKey = privateKey;
+  const ExactEvmSchemeClient({required EthPrivateKey privateKey})
+      : _privateKey = privateKey;
 
   @override
   String get scheme => 'exact';
@@ -21,13 +22,15 @@ class ExactEvmSchemeClient implements SchemeClient {
   }) async {
     // Validate scheme
     if (requirements.scheme != scheme) {
-      throw UnsupportedSchemeException('Expected scheme "$scheme", got "${requirements.scheme}"');
+      throw UnsupportedSchemeException(
+          'Expected scheme "$scheme", got "${requirements.scheme}"');
     }
 
     // Parse network (format: eip155:chainId)
     final networkParts = requirements.network.split(':');
     if (networkParts.length != 2 || networkParts[0] != 'eip155') {
-      throw InvalidPayloadException('Invalid network format. Expected "eip155:chainId", got "${requirements.network}"');
+      throw InvalidPayloadException(
+          'Invalid network format. Expected "eip155:chainId", got "${requirements.network}"');
     }
     final chainId = int.parse(networkParts[1]);
 
@@ -38,7 +41,8 @@ class ExactEvmSchemeClient implements SchemeClient {
     final tokenName = requirements.extra['name']?.toString();
     final tokenVersion = requirements.extra['version']?.toString();
     if (tokenName == null || tokenVersion == null) {
-      throw const InvalidPayloadException('Missing name or version in extra field');
+      throw const InvalidPayloadException(
+          'Missing name or version in extra field');
     }
 
     // Generate nonce and validity window
@@ -77,7 +81,10 @@ class ExactEvmSchemeClient implements SchemeClient {
       x402Version: kX402Version,
       resource: resource,
       accepted: requirements,
-      payload: {'signature': EIP3009.encodeSignature(signature), 'authorization': authorization.toJson()},
+      payload: {
+        'signature': EIP3009.encodeSignature(signature),
+        'authorization': authorization.toJson()
+      },
       extensions: extensions,
     );
   }

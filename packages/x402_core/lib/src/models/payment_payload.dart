@@ -30,7 +30,8 @@ class PaymentPayload {
     return PaymentPayload(
       x402Version: json['x402Version'] as int,
       resource: ResourceInfo.fromJson(json['resource'] as Map<String, dynamic>),
-      accepted: PaymentRequirement.fromJson(json['accepted'] as Map<String, dynamic>),
+      accepted:
+          PaymentRequirement.fromJson(json['accepted'] as Map<String, dynamic>),
       payload: json['payload'] as Map<String, dynamic>,
       extensions: json['extensions'] as Map<String, dynamic>?,
     );

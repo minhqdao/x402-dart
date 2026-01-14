@@ -7,7 +7,8 @@ class ExactSvmSchemeClient implements SchemeClient {
   final Ed25519HDKeyPair _signer;
   final SolanaClient _solanaClient;
 
-  const ExactSvmSchemeClient({required Ed25519HDKeyPair signer, required SolanaClient solanaClient})
+  const ExactSvmSchemeClient(
+      {required Ed25519HDKeyPair signer, required SolanaClient solanaClient})
       : _signer = signer,
         _solanaClient = solanaClient;
 
@@ -22,7 +23,8 @@ class ExactSvmSchemeClient implements SchemeClient {
   }) async {
     // Validate scheme
     if (requirements.scheme != scheme && requirements.scheme != 'exact') {
-      throw UnsupportedSchemeException('Expected scheme "$scheme" or "exact", got "${requirements.scheme}"');
+      throw UnsupportedSchemeException(
+          'Expected scheme "$scheme" or "exact", got "${requirements.scheme}"');
     }
 
     // Parse network (format: solana:genesisHash)
@@ -39,11 +41,13 @@ class ExactSvmSchemeClient implements SchemeClient {
     // Extract feePayer from requirements.extra
     final feePayer = requirements.extra['feePayer'] as String?;
     if (feePayer == null) {
-      throw const InvalidPayloadException('feePayer is required in paymentRequirements.extra for SVM transactions');
+      throw const InvalidPayloadException(
+          'feePayer is required in paymentRequirements.extra for SVM transactions');
     }
 
     // Build transfer transaction
-    final encodedTransaction = await SvmTransactionBuilder.createTransferTransaction(
+    final encodedTransaction =
+        await SvmTransactionBuilder.createTransferTransaction(
       signer: _signer,
       recipient: requirements.payTo,
       amount: amount,

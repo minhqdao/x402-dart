@@ -10,7 +10,8 @@ void main() {
 
     setUp(() {
       // Test private key
-      privateKey = EthPrivateKey.fromHex('0x1234567890123456789012345678901234567890123456789012345678901234');
+      privateKey = EthPrivateKey.fromHex(
+          '0x1234567890123456789012345678901234567890123456789012345678901234');
       tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
       chainId = 8453; // Base mainnet
     });

@@ -30,7 +30,8 @@ void main() {
     });
 
     group('Instruction Order Tests', () {
-      test('instructions should be in correct order: Limit, Price, Transfer', () async {
+      test('instructions should be in correct order: Limit, Price, Transfer',
+          () async {
         // Arrange
         const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
         const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
@@ -80,7 +81,8 @@ void main() {
         final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
 
         // Assert
-        expect(decoded.instructions.length, equals(3), reason: 'Should have exactly 3 instructions');
+        expect(decoded.instructions.length, equals(3),
+            reason: 'Should have exactly 3 instructions');
 
         // Check instruction order by program IDs and discriminators
         final ix0 = decoded.instructions[0];
@@ -96,7 +98,8 @@ void main() {
         expect(
           ix0.data.toList().first,
           equals(2),
-          reason: 'First instruction should be SetComputeUnitLimit (discriminator 2)',
+          reason:
+              'First instruction should be SetComputeUnitLimit (discriminator 2)',
         );
 
         // Instruction 1: SetComputeUnitPrice
@@ -108,7 +111,8 @@ void main() {
         expect(
           ix1.data.toList().first,
           equals(3),
-          reason: 'Second instruction should be SetComputeUnitPrice (discriminator 3)',
+          reason:
+              'Second instruction should be SetComputeUnitPrice (discriminator 3)',
         );
 
         // Instruction 2: TransferChecked
@@ -120,7 +124,8 @@ void main() {
         expect(
           ix2.data.toList().first,
           equals(12),
-          reason: 'Third instruction should be TransferChecked (discriminator 12)',
+          reason:
+              'Third instruction should be TransferChecked (discriminator 12)',
         );
       });
 
@@ -151,7 +156,8 @@ void main() {
         final limitBytes = limitIx.data.toList().sublist(1, 5);
         final limit = _readU32LE(limitBytes);
 
-        expect(limit, equals(200000), reason: 'Compute unit limit should be exactly 200000');
+        expect(limit, equals(200000),
+            reason: 'Compute unit limit should be exactly 200000');
       });
 
       test('compute unit price should be 1 microlamport', () async {
@@ -180,7 +186,8 @@ void main() {
         final priceBytes = priceIx.data.toList().sublist(1, 9);
         final price = _readU64LE(priceBytes.toList(), 0);
 
-        expect(price, equals(1), reason: 'Compute unit price should be exactly 1 microlamport');
+        expect(price, equals(1),
+            reason: 'Compute unit price should be exactly 1 microlamport');
       });
     });
 
@@ -208,7 +215,8 @@ void main() {
         final transferIx = decoded.instructions[2];
 
         // Assert
-        expect(transferIx.accountKeyIndexes.length, equals(4), reason: 'TransferChecked should have 4 accounts');
+        expect(transferIx.accountKeyIndexes.length, equals(4),
+            reason: 'TransferChecked should have 4 accounts');
 
         // Account 0: source (writable, not signer)
         // Account 1: mint (readable, not signer)
@@ -240,10 +248,12 @@ void main() {
 
         // Assert
         // Data format: [discriminator:1][amount:8][decimals:1]
-        expect(transferIx.data.length, equals(10), reason: 'TransferChecked data should be 10 bytes');
+        expect(transferIx.data.length, equals(10),
+            reason: 'TransferChecked data should be 10 bytes');
 
         final actualAmount = _readU64LE(transferIx.data.toList(), 1);
-        expect(actualAmount, equals(1500000), reason: 'Amount should match the input');
+        expect(actualAmount, equals(1500000),
+            reason: 'Amount should match the input');
 
         final actualDecimals = transferIx.data.toList()[9];
         expect(actualDecimals, equals(6), reason: 'Decimals should be 6');
@@ -251,11 +261,13 @@ void main() {
     });
 
     group('Partial Signing Tests', () {
-      test('should include placeholder signature for different feePayer', () async {
+      test('should include placeholder signature for different feePayer',
+          () async {
         // Arrange
         const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
         const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
-        const testFeePayer = '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC'; // Different from signer
+        const testFeePayer =
+            '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC'; // Different from signer
         final amount = BigInt.from(1000000);
 
         _setupMocks(mockRpcClient, testMintAddress);
@@ -274,7 +286,8 @@ void main() {
 
         // Assert
         expect(decoded.signatures.length, equals(2),
-            reason: 'Should have 2 signatures when feePayer differs from signer');
+            reason:
+                'Should have 2 signatures when feePayer differs from signer');
 
         // First signature should be all zeros (placeholder)
         final firstSigBytes = decoded.signatures[0].bytes;
@@ -310,12 +323,14 @@ void main() {
         final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
 
         // Assert
-        expect(decoded.signatures.length, equals(1), reason: 'Should have 1 signature when feePayer is same as signer');
+        expect(decoded.signatures.length, equals(1),
+            reason: 'Should have 1 signature when feePayer is same as signer');
       });
     });
 
     group('Verification Tests', () {
-      test('verifyTransactionStructure should pass for valid transaction', () async {
+      test('verifyTransactionStructure should pass for valid transaction',
+          () async {
         // Arrange
         const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
         const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
@@ -344,7 +359,8 @@ void main() {
         );
 
         // Assert
-        expect(isValid, isTrue, reason: 'Valid transaction should pass verification');
+        expect(isValid, isTrue,
+            reason: 'Valid transaction should pass verification');
       });
 
       test('verifyTransactionStructure should fail for wrong amount', () async {
@@ -376,14 +392,16 @@ void main() {
         );
 
         // Assert
-        expect(isValid, isFalse, reason: 'Transaction with wrong amount should fail verification');
+        expect(isValid, isFalse,
+            reason: 'Transaction with wrong amount should fail verification');
       });
     });
   });
 }
 
 // Helper functions
-void _setupMocks(_MockRpcClient mockRpcClient, String mintAddress, {int decimals = 9}) {
+void _setupMocks(_MockRpcClient mockRpcClient, String mintAddress,
+    {int decimals = 9}) {
   final mockMintData = List<int>.filled(82, 0);
   mockMintData[44] = decimals;
 

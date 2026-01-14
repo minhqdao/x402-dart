@@ -11,11 +11,16 @@ class SvmTransactionData {
   const SvmTransactionData({required this.transaction, this.blockhash});
 
   factory SvmTransactionData.fromJson(Map<String, dynamic> json) {
-    return SvmTransactionData(transaction: json['transaction'] as String, blockhash: json['blockhash'] as String?);
+    return SvmTransactionData(
+        transaction: json['transaction'] as String,
+        blockhash: json['blockhash'] as String?);
   }
 
   Map<String, dynamic> toJson() {
-    return {'transaction': transaction, if (blockhash != null) 'blockhash': blockhash};
+    return {
+      'transaction': transaction,
+      if (blockhash != null) 'blockhash': blockhash
+    };
   }
 }
 
@@ -26,7 +31,8 @@ class ExactSvmPayloadData {
   const ExactSvmPayloadData({required this.transactionData});
 
   factory ExactSvmPayloadData.fromPaymentPayload(PaymentPayload payload) {
-    return ExactSvmPayloadData(transactionData: SvmTransactionData.fromJson(payload.payload));
+    return ExactSvmPayloadData(
+        transactionData: SvmTransactionData.fromJson(payload.payload));
   }
 
   Map<String, dynamic> toJson() {

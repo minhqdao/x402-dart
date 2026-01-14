@@ -44,7 +44,8 @@ class EIP3009 {
       nonce: nonce,
     );
 
-    return EIP712Utils.signTypedData(privateKey: privateKey, domain: domain, structHash: structHash);
+    return EIP712Utils.signTypedData(
+        privateKey: privateKey, domain: domain, structHash: structHash);
   }
 
   /// Verify authorization signature
@@ -77,7 +78,8 @@ class EIP3009 {
       nonce: nonce,
     );
 
-    final recoveredAddress = EIP712Utils.recoverSigner(domain: domain, structHash: structHash, signature: signature);
+    final recoveredAddress = EIP712Utils.recoverSigner(
+        domain: domain, structHash: structHash, signature: signature);
 
     return recoveredAddress.hex.toLowerCase() == from.toLowerCase();
   }
@@ -112,6 +114,7 @@ class EIP3009 {
     final sBytes = signatureBytes.sublist(32, 64);
     final vValue = signatureBytes[64];
 
-    return MsgSignature(bytesToUnsignedInt(rBytes), bytesToUnsignedInt(sBytes), vValue);
+    return MsgSignature(
+        bytesToUnsignedInt(rBytes), bytesToUnsignedInt(sBytes), vValue);
   }
 }

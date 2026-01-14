@@ -24,7 +24,8 @@ class SvmTransactionBuilder {
     final feePayerPublicKey = Ed25519HDPublicKey.fromBase58(feePayer);
 
     // Get token mint info to determine decimals and validate program
-    final mintInfo = await solanaClient.rpcClient.getAccountInfo(tokenMint, encoding: Encoding.base64);
+    final mintInfo = await solanaClient.rpcClient
+        .getAccountInfo(tokenMint, encoding: Encoding.base64);
     if (mintInfo.value == null) throw Exception('Token mint account not found');
 
     // BinaryAccountData has a 'data' property that contains the bytes
@@ -38,8 +39,10 @@ class SvmTransactionBuilder {
     }
 
     // Find associated token accounts
-    final sourceATA = await getAssociatedTokenAddress(mint: mintPublicKey, owner: signerPublicKey);
-    final destinationATA = await getAssociatedTokenAddress(mint: mintPublicKey, owner: recipientPublicKey);
+    final sourceATA = await getAssociatedTokenAddress(
+        mint: mintPublicKey, owner: signerPublicKey);
+    final destinationATA = await getAssociatedTokenAddress(
+        mint: mintPublicKey, owner: recipientPublicKey);
 
     // Get recent blockhash
     final blockhashResult = await solanaClient.rpcClient.getLatestBlockhash();
@@ -66,7 +69,8 @@ class SvmTransactionBuilder {
 
     // Create message with feePayer
     final message = Message(instructions: instructions);
-    final compiledMessage = message.compile(recentBlockhash: blockhash, feePayer: feePayerPublicKey);
+    final compiledMessage = message.compile(
+        recentBlockhash: blockhash, feePayer: feePayerPublicKey);
 
     // Partially sign with only the signer (authority)
     final signature = await signer.sign(compiledMessage.toByteArray());
@@ -74,11 +78,13 @@ class SvmTransactionBuilder {
     final signatures = <Signature>[];
 
     if (feePayerPublicKey.toBase58() != signerPublicKey.toBase58()) {
-      signatures.add(Signature(List.filled(64, 0), publicKey: feePayerPublicKey));
+      signatures
+          .add(Signature(List.filled(64, 0), publicKey: feePayerPublicKey));
     }
 
     signatures.add(Signature(signature.bytes, publicKey: signerPublicKey));
-    final transaction = SignedTx(compiledMessage: compiledMessage, signatures: signatures);
+    final transaction =
+        SignedTx(compiledMessage: compiledMessage, signatures: signatures);
 
     final base64EncodedWireTransaction = transaction.encode();
     return base64EncodedWireTransaction;
@@ -178,7 +184,8 @@ class SvmTransactionBuilder {
 
     // 2. Instruction data
     final data = ix.data;
-    if (data.isEmpty || data.first != TokenProgram.transferCheckedInstructionIndex.first) {
+    if (data.isEmpty ||
+        data.first != TokenProgram.transferCheckedInstructionIndex.first) {
       return false;
     }
 

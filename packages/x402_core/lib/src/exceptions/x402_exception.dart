@@ -16,10 +16,12 @@ class X402Exception implements Exception {
 
 /// Invalid payment payload
 class InvalidPayloadException extends X402Exception {
-  const InvalidPayloadException(super.message, {super.code, super.originalError});
+  const InvalidPayloadException(super.message,
+      {super.code, super.originalError});
 }
 
 /// Unsupported scheme or network
 class UnsupportedSchemeException extends X402Exception {
-  const UnsupportedSchemeException(super.message, {super.code, super.originalError});
+  const UnsupportedSchemeException(super.message,
+      {super.code, super.originalError});
 }

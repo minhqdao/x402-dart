@@ -48,7 +48,11 @@ void main() {
         accepted: requirement,
         payload: {
           'signature': '0x123...',
-          'authorization': {'from': '0xabc...', 'to': '0xdef...', 'value': '10000'},
+          'authorization': {
+            'from': '0xabc...',
+            'to': '0xdef...',
+            'value': '10000'
+          },
         },
       );
 
@@ -127,15 +131,19 @@ void main() {
   group('Exceptions', () {
     test('should format messages correctly', () {
       const exception = X402Exception('Something went wrong');
-      expect(exception.toString(), equals('X402Exception: Something went wrong'));
+      expect(
+          exception.toString(), equals('X402Exception: Something went wrong'));
 
-      const exceptionWithCode = X402Exception('Invalid payload', code: 'INVALID_PAYLOAD');
-      expect(exceptionWithCode.toString(), equals('X402Exception [INVALID_PAYLOAD]: Invalid payload'));
+      const exceptionWithCode =
+          X402Exception('Invalid payload', code: 'INVALID_PAYLOAD');
+      expect(exceptionWithCode.toString(),
+          equals('X402Exception [INVALID_PAYLOAD]: Invalid payload'));
     });
 
     test('should support specialized exceptions', () {
       expect(const InvalidPayloadException('Invalid'), isA<X402Exception>());
-      expect(const UnsupportedSchemeException('Unsupported'), isA<X402Exception>());
+      expect(const UnsupportedSchemeException('Unsupported'),
+          isA<X402Exception>());
     });
   });
 }

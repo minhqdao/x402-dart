@@ -146,7 +146,8 @@ void main() {
       final signature = await signer.sign(requirements, resource);
 
       expect(signature, isA<String>());
-      final decodedJson = jsonDecode(utf8.decode(base64Decode(signature))) as Map<String, dynamic>;
+      final decodedJson = jsonDecode(utf8.decode(base64Decode(signature)))
+          as Map<String, dynamic>;
       final payload = PaymentPayload.fromJson(decodedJson);
 
       expect(payload.x402Version, equals(kX402Version));
@@ -156,9 +157,11 @@ void main() {
 
     test('should include extensions if provided', () async {
       final extensions = {'test': 'extension'};
-      final signature = await signer.sign(requirements, resource, extensions: extensions);
+      final signature =
+          await signer.sign(requirements, resource, extensions: extensions);
 
-      final decodedJson = jsonDecode(utf8.decode(base64Decode(signature))) as Map<String, dynamic>;
+      final decodedJson = jsonDecode(utf8.decode(base64Decode(signature)))
+          as Map<String, dynamic>;
       final payload = PaymentPayload.fromJson(decodedJson);
 
       expect(payload.extensions, equals(extensions));
