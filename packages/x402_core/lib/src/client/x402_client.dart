@@ -61,16 +61,31 @@ abstract class X402Signer {
 class X402Client extends http.BaseClient {
   final List<X402Signer> _signers;
   final http.Client _inner;
+
+  /// Callback invoked when a 402 Payment Required response is received.
+  ///
+  /// This allows the application to ask for user approval before a payment
+  /// is signed and sent.
+  ///
+  /// If this callback returns `false`, the payment is aborted and the original
+  /// 402 response is returned.
+  ///
+  /// If this callback is `null`, the client will automatically approve and
+  /// process the payment using the first compatible signer found in [_signers].
   final PaymentApprovalCallback? onPaymentRequired;
 
-  /// Creates an X402Client.
+  /// Creates an [X402Client] that automatically handles 402 Payment Required flows.
   ///
-  /// [signers] are checked in order - the first compatible signer is used.
-  /// This gives you control over payment method preference (e.g., prefer EVM over SVM).
+  /// The [signers] list provides the available payment methods. They are checked
+  /// in the provided order; the first signer that supports a server's
+  /// requirement will be used.
   ///
-  /// [onPaymentRequired] is called before making a payment. Return false to abort.
+  /// The [onPaymentRequired] callback is called before any payment is made.
+  /// You can use it to show a confirmation UI to the user. If omitted (or set to `null`),
+  /// the client will proceed with payments automatically without user intervention.
   ///
-  /// [inner] is the underlying HTTP client (defaults to a new http.Client).
+  /// The [inner] parameter allows providing a custom [http.Client]. If omitted,
+  /// a default [http.Client] is used.
   X402Client({
     required List<X402Signer> signers,
     this.onPaymentRequired,
