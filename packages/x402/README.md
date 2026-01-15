@@ -48,7 +48,7 @@ if (response.statusCode == 402) {
 }
 ```
 
-Take a look at the [examples](https://github.com/minhqdao/x402/tree/main/examples) folder for complete implementations of both approaches.
+Take a look at the [examples](https://github.com/minhqdao/x402-dart/tree/main/examples) folder for complete implementations of both approaches.
 
 ## Related Packages
 

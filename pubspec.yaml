@@ -1,7 +1,6 @@
-name: x402_workspace
+name: x402_dart
 description: Workspace for the x402 protocol that supports multiple blockchains.
-repository: https://github.com/minhqdao/x402
-version: 0.1.0
+repository: https://github.com/minhqdao/x402-dart
 publish_to: none
 
 environment:
