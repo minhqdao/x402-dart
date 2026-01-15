@@ -1,4 +1,4 @@
-# x402
+# x402-dart
 
 This repository contains the **Dart implementation** of the [x402 protocol](https://x402.org), a machine-native payment standard designed for the modern web. 
 
