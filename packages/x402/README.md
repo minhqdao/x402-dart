@@ -1,6 +1,6 @@
 # x402
 
-x402 is the main client-side library for the x402 payment protocol in Dart. It provides a unified interface to handle "402 Payment Required" flows across multiple blockchain ecosystems, currently supporting EVM (Ethereum) and SVM (Solana).
+A client-side library for the x402 payment protocol in Dart. It provides a unified interface to handle "402 Payment Required" flows across multiple blockchain ecosystems, currently supporting EVM (Ethereum) and SVM (Solana).
 
 This is the primary package intended for general use. You typically do not need to import `x402_core`, `x402_evm`, or `x402_svm` separately, as this package exports all necessary components.
 
@@ -27,11 +27,17 @@ There are two primary ways to interact with the protocol:
 The `X402Client` is a high-level wrapper around the standard `http.Client`. It automatically detects 402 responses, finds a compatible signer, and retries the request with the required payment proof.
 
 ```dart
+final evmSigner = EvmSigner.fromHex(chainId: 123, privateKeyHex: 'EVM_PRIVATE_KEY');
+final svmSigner = await SvmSigner.fromHex(privateKeyHex: 'SVM_PRIVATE_KEY', network: SolanaNetwork.devnet);
+
 final client = X402Client(
-  signers: [evmSigner, svmSigner],
+  signers: [
+    evmSigner, // Checked first (higher priority)
+    svmSigner
+  ],
   onPaymentRequired: (req, resource, signer) async {
     // Optional: Ask for user confirmation or add condition
-    return true; 
+    return true;
   },
 );
 

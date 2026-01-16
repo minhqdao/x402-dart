@@ -5,7 +5,7 @@ repository: https://github.com/minhqdao/x402-dart
 homepage: https://github.com/minhqdao/x402-dart
 issue_tracker: https://github.com/minhqdao/x402-dart/issues
 topics:
-  - x402
+  - solana
   - payment
   - web3
   - blockchain

@@ -5,11 +5,11 @@ repository: https://github.com/minhqdao/x402-dart
 homepage: https://github.com/minhqdao/x402-dart
 issue_tracker: https://github.com/minhqdao/x402-dart/issues
 topics:
-  - x402
+  - http
   - payment
   - web3
   - blockchain
-  - http
+  - crypto
 
 environment:
   sdk: ^3.6.0

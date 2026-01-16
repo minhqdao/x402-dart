@@ -42,10 +42,16 @@ dependencies:
 import 'package:x402/x402.dart';
 
 void main() async {
+  final evmSigner = EvmSigner.fromHex(chainId: 123, privateKeyHex: 'EVM_PRIVATE_KEY');
+  final svmSigner = await SvmSigner.fromHex(privateKeyHex: 'SVM_PRIVATE_KEY', network: SolanaNetwork.devnet);
+
   final client = X402Client(
-    signers: [evmSigner, svmSigner],
+    signers: [
+      evmSigner, // Checked first (higher priority)
+      svmSigner
+    ],
     onPaymentRequired: (req, resource, signer) async {
-      print('Approving payment for ${resource.description}');
+      // Optional: Ask for user confirmation or add condition
       return true;
     },
   );
@@ -70,6 +76,9 @@ melos run test
 
 # Analyze all packages
 melos run analyze
+
+# Format all Dart files
+melos format
 ```
 
 ## License
