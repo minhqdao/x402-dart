@@ -19,6 +19,7 @@ This project is organized as a monorepo managed with [Melos](https://melos.inver
 | [**x402_core**](./packages/x402_core) | Core protocol definitions, models, and blockchain-agnostic interfaces. |
 | [**x402_evm**](./packages/x402_evm) | EVM implementation supporting Ethereum and compatible chains (e.g., Base). |
 | [**x402_svm**](./packages/x402_svm) | SVM implementation supporting Solana and compatible chains. |
+| [**x402_dio**](./packages/x402_dio) | Dio-based client library providing an `X402Interceptor`. |
 
 ## Why use x402 Dart?
 
@@ -34,6 +35,14 @@ For most use cases, you only need to add the main `x402` package to your project
 ```yaml
 dependencies:
   x402: ^0.1.0
+```
+
+If you prefer using **Dio**, you can use the `x402_dio` package:
+
+```yaml
+dependencies:
+  x402: ^0.1.0     # For signers (EvmSigner, SvmSigner)
+  x402_dio: ^0.1.0 # For X402Interceptor
 ```
 
 ### Quick Example
@@ -57,7 +66,13 @@ void main() async {
   );
 
   final response = await client.get(Uri.parse('https://api.example.com/premium'));
-  print(response.body);
+  if (response.statusCode == 200) {
+    print('Success: ${response.body}');
+    // HTTP 402 is automatically handled inside X402Client (payment + retry),
+    // so it will never reach this point and does not need to be checked here.
+  } else {
+    print('Request failed (${response.statusCode}): ${response.body}');
+  }
 }
 ```
 
