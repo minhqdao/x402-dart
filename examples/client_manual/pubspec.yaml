@@ -1,6 +1,5 @@
 name: client_manual
 description: x402 Manual Client Example
-version: 1.0.0
 publish_to: none
 
 environment:

@@ -1,6 +1,5 @@
 name: client_wrapper
 description: x402 Client Wrapper Example
-version: 1.0.0
 publish_to: none
 
 environment:
