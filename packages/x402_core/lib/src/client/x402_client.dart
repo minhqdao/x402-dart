@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 import 'package:x402_core/src/constants.dart';
 import 'package:x402_core/src/models/payment_required_response.dart';
@@ -129,7 +128,13 @@ class X402Client extends http.BaseClient {
         // 5. Negotiation: Iterate through YOUR signers (client preference order)
         for (final signer in _signers) {
           // Does this signer match ANY of the server's requirements?
-          final match = requirements.firstWhereOrNull(signer.supports);
+          PaymentRequirement? match;
+          for (final r in requirements) {
+            if (signer.supports(r)) {
+              match = r;
+              break;
+            }
+          }
 
           if (match != null) {
             // 6. Optional Consent Check

@@ -17,8 +17,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  collection: ^1.18.0
-  http: ^1.1.0
+  http: ^1.6.0
 
 dev_dependencies:
   lint: ^2.8.0

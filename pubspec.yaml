@@ -7,12 +7,12 @@ environment:
   sdk: ^3.6.0
 
 workspace:
-  - examples/client_manual
-  - examples/client_wrapper
   - packages/x402
   - packages/x402_core
   - packages/x402_evm
   - packages/x402_svm
+  - examples/client_wrapper
+  - examples/client_manual
 
 dev_dependencies:
   lint: ^2.8.0

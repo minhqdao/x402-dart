@@ -10,7 +10,7 @@ resolution: workspace
 
 dependencies:
   dotenv: ^4.2.0
-  http: ^1.1.0
+  http: ^1.6.0
   web3dart: ^2.7.3
   x402:
 

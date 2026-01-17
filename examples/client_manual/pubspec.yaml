@@ -9,9 +9,9 @@ environment:
 resolution: workspace
 
 dependencies:
-  collection: ^1.18.0
+  collection: ^1.19.1
   dotenv: ^4.2.0
-  http: ^1.1.0
+  http: ^1.6.0
   x402:
 
 dev_dependencies:
