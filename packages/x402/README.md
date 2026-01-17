@@ -32,7 +32,7 @@ final svmSigner = await SvmSigner.fromHex(privateKeyHex: 'SVM_PRIVATE_KEY', netw
 
 final client = X402Client(
   signers: [
-    evmSigner, // Checked first (higher priority)
+    evmSigner, // The first signer is checked first
     svmSigner
   ],
   onPaymentRequired: (req, resource, signer) async {
@@ -42,6 +42,13 @@ final client = X402Client(
 );
 
 final response = await client.get(Uri.parse('https://api.example.com/premium'));
+if (response.statusCode == 200) {
+  print('Success: ${response.body}');
+  // HTTP 402 is automatically handled inside X402Client (payment + retry),
+  // so it will never reach this point and does not need to be checked here.
+} else {
+  print('Request failed (${response.statusCode}): ${response.body}');
+}
 ```
 
 ### 2. Manual Handling

@@ -47,7 +47,7 @@ void main() async {
 
   final client = X402Client(
     signers: [
-      evmSigner, // Checked first (higher priority)
+      evmSigner, // The first signer is checked first
       svmSigner
     ],
     onPaymentRequired: (req, resource, signer) async {
