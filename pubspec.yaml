@@ -11,8 +11,10 @@ workspace:
   - packages/x402_core
   - packages/x402_evm
   - packages/x402_svm
+  - packages/x402_dio
   - examples/client_wrapper
   - examples/client_manual
+  - examples/client_dio
 
 dev_dependencies:
   lint: ^2.8.0

@@ -61,3 +61,4 @@ Take a look at the [examples](https://github.com/minhqdao/x402-dart/tree/main/ex
 - [x402_core](https://pub.dev/packages/x402_core): Internal protocol definitions.
 - [x402_evm](https://pub.dev/packages/x402_evm): EVM implementation details.
 - [x402_svm](https://pub.dev/packages/x402_svm): SVM implementation details.
+- [x402_dio](https://pub.dev/packages/x402_dio): Dio-based client library.

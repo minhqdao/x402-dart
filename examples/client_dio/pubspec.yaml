@@ -1,0 +1,17 @@
+name: client_dio
+description: x402 Dio Client Example
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+resolution: workspace
+
+dependencies:
+  dio: ^5.9.0
+  dotenv: ^4.2.0
+  x402:
+  x402_dio:
+
+dev_dependencies:
+  lint: ^2.8.0
