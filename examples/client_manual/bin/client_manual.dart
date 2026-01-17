@@ -76,13 +76,15 @@ void main(List<String> args) async {
     String? signature;
 
     // Initialize EVM signer
-    final evmSigner = EvmSigner.fromHex(chainId: 84532, privateKeyHex: evmPrivateKey);
+    final evmSigner =
+        EvmSigner.fromHex(chainId: 84532, privateKeyHex: evmPrivateKey);
     stdout.writeln('EVM Address: ${evmSigner.address}');
 
     // Try EVM first
     final evmReq = paymentResponse.accepts.firstWhereOrNull(evmSigner.supports);
     if (evmReq != null) {
-      stdout.writeln('Negotiated EVM payment via ${evmReq.network} (amount: ${evmReq.amount})');
+      stdout.writeln(
+          'Negotiated EVM payment via ${evmReq.network} (amount: ${evmReq.amount})');
       chosenSigner = evmSigner;
       chosenRequirement = evmReq;
     } else {
@@ -93,13 +95,16 @@ void main(List<String> args) async {
         return;
       }
 
-      final svmSigner = await SvmSigner.fromHex(privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
+      final svmSigner = await SvmSigner.fromHex(
+          privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
       stdout.writeln('SVM Address: ${svmSigner.address}');
 
       // Try SVM
-      final svmReq = paymentResponse.accepts.firstWhereOrNull(svmSigner.supports);
+      final svmReq =
+          paymentResponse.accepts.firstWhereOrNull(svmSigner.supports);
       if (svmReq != null) {
-        stdout.writeln('Negotiated SVM payment via ${svmReq.network} (amount: ${svmReq.amount})');
+        stdout.writeln(
+            'Negotiated SVM payment via ${svmReq.network} (amount: ${svmReq.amount})');
         chosenSigner = svmSigner;
         chosenRequirement = svmReq;
       }

@@ -29,13 +29,15 @@ void main(List<String> args) async {
     return;
   }
 
-  final evmSigner = EvmSigner.fromHex(chainId: 84532, privateKeyHex: evmPrivateKey);
-  final svmSigner = await SvmSigner.fromHex(privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
+  final evmSigner =
+      EvmSigner.fromHex(chainId: 84532, privateKeyHex: evmPrivateKey);
+  final svmSigner = await SvmSigner.fromHex(
+      privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
 
   final client = X402Client(
     signers: [
-      evmSigner,
-      svmSigner, // Move this to the top to prefer SVM over EVM
+      evmSigner, // The first signer is checked first
+      svmSigner, // Move this signer to the top to prefer SVM over EVM
     ],
     onPaymentRequired: (req, resource, signer) async {
       if (int.parse(req.amount) > 10000000) {
