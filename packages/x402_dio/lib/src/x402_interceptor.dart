@@ -113,8 +113,6 @@ class X402Interceptor extends Interceptor {
     // Use the header key that we add during signing.
     final existingSignature =
         err.requestOptions.headers[kPaymentSignatureHeader];
-    // print('DEBUG: Headers keys: ${err.requestOptions.headers.keys.toList()}');
-    // print('DEBUG: Checking for $kPaymentSignatureHeader. Found: $existingSignature');
 
     if (existingSignature != null) {
       // We already signed this request, but it still failed with 402.
@@ -192,6 +190,7 @@ class X402Interceptor extends Interceptor {
       }
     } catch (e) {
       // If anything fails during negotiation/signing, pass the original error
+      return handler.next(err);
     }
 
     return handler.next(err);
