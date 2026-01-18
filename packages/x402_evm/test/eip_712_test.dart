@@ -45,6 +45,7 @@ void main() {
     final validBefore = BigInt.from(3600);
     final nonce = Uint8List(32); // Zero nonce
 
+    // A valid private key for testing signing/recovery
     final privateKey = EthPrivateKey.fromHex(
         '0x4efa000000000000000000000000000000000000000000000000000000000001');
 
@@ -52,7 +53,7 @@ void main() {
       final separator = EIP712Utils.computeDomainSeparator(domain);
       expect(separator, isA<Uint8List>());
       expect(separator.length, 32);
-      // Value depends on implementation details, but we can check consistency
+      // Ensure determinism
       final separator2 = EIP712Utils.computeDomainSeparator(domain);
       expect(bytesToHex(separator), bytesToHex(separator2));
     });
@@ -199,11 +200,11 @@ void main() {
     test('signTypedData matches ethers + recoverSigner works', () {
       final structHash = EIP712Utils.hashTransferWithAuthorization(
         from: privateKey.address.hex,
-        to: '0x0987654321098765432109876543210987654321',
-        value: BigInt.from(1000),
-        validAfter: BigInt.zero,
-        validBefore: BigInt.from(3600),
-        nonce: Uint8List(32),
+        to: to,
+        value: value,
+        validAfter: validAfter,
+        validBefore: validBefore,
+        nonce: nonce,
       );
 
       final sig = EIP712Utils.signTypedData(
@@ -290,18 +291,84 @@ void main() {
       expect(sig.v, 27);
     });
 
-    test('hexToBytes should handle 0x prefix', () {
-      final bytes = EIP712Utils.hexToBytes('0x1234');
-      expect(bytes.length, 2);
-      expect(bytes[0], 0x12);
-      expect(bytes[1], 0x34);
+    group('uint256Bytes', () {
+      test('should pad small numbers to 32 bytes', () {
+        final result = EIP712Utils.uint256Bytes(BigInt.one);
+        expect(result.length, 32);
+        expect(result.last, 1);
+        expect(result.sublist(0, 31).every((b) => b == 0), isTrue);
+      });
+
+      test('should handle zero', () {
+        final result = EIP712Utils.uint256Bytes(BigInt.zero);
+        expect(result.length, 32);
+        expect(result.every((b) => b == 0), isTrue);
+      });
+
+      test('should handle max uint256', () {
+        final maxUint256 = BigInt.parse('F' * 64, radix: 16);
+        final result = EIP712Utils.uint256Bytes(maxUint256);
+        expect(result.length, 32);
+        expect(result.every((b) => b == 255), isTrue);
+      });
     });
 
-    test('encodePacked should verify simple concatenation', () {
-      final a = Uint8List.fromList([1, 2]);
-      final b = Uint8List.fromList([3, 4]);
-      final packed = EIP712Utils.encodePacked([a, b]);
-      expect(packed, Uint8List.fromList([1, 2, 3, 4]));
+    group('hexToBytes', () {
+      test('should handle 0x prefix', () {
+        final bytes = EIP712Utils.hexToBytes('0x1234');
+        expect(bytes.length, 2);
+        expect(bytes[0], 0x12);
+        expect(bytes[1], 0x34);
+      });
+
+      test('should handle no prefix', () {
+        final bytes = EIP712Utils.hexToBytes('1234');
+        expect(bytes.length, 2);
+        expect(bytes[0], 0x12);
+        expect(bytes[1], 0x34);
+      });
+
+      test('should handle mixed case', () {
+        final bytes = EIP712Utils.hexToBytes('0xAbCd');
+        expect(bytes.length, 2);
+        expect(bytes[0], 0xab);
+        expect(bytes[1], 0xcd);
+      });
+
+      test('should throw on odd length strings', () {
+        expect(() => EIP712Utils.hexToBytes('abc'), throwsArgumentError);
+      });
+      test('should throw on empty string', () {
+        expect(() => EIP712Utils.hexToBytes(''), throwsArgumentError);
+        expect(() => EIP712Utils.hexToBytes('0x'), throwsArgumentError);
+      });
+
+      test('should throw on non-hex characters', () {
+        expect(() => EIP712Utils.hexToBytes('0xg'), throwsArgumentError);
+        expect(() => EIP712Utils.hexToBytes('zz'), throwsArgumentError);
+      });
+    });
+
+    group('encodePacked', () {
+      test('should verify simple concatenation', () {
+        final a = Uint8List.fromList([1, 2]);
+        final b = Uint8List.fromList([3, 4]);
+        final packed = EIP712Utils.encodePacked([a, b]);
+        expect(packed, Uint8List.fromList([1, 2, 3, 4]));
+      });
+
+      test('should handle empty lists in input', () {
+        final a = Uint8List.fromList([1, 2]);
+        final empty = Uint8List(0);
+        final b = Uint8List.fromList([3, 4]);
+        final packed = EIP712Utils.encodePacked([a, empty, b]);
+        expect(packed, Uint8List.fromList([1, 2, 3, 4]));
+      });
+
+      test('should handle empty input list', () {
+        final packed = EIP712Utils.encodePacked([]);
+        expect(packed, isEmpty);
+      });
     });
   });
 }
