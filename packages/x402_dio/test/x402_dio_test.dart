@@ -106,6 +106,47 @@ void main() {
           .called(1);
     });
 
+    test('should proceed automatically if no callback provided', () async {
+      when(() => signerA.supports(any())).thenReturn(true);
+      when(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+          .thenAnswer((_) async => 'signature_A');
+
+      var callCount = 0;
+      when(() => mockAdapter.fetch(any(), any(), any()))
+          .thenAnswer((invocation) async {
+        callCount++;
+        final options = invocation.positionalArguments[0] as RequestOptions;
+
+        if (callCount == 1) {
+          return ResponseBody.fromBytes(
+            utf8.encode('Payment Required'),
+            402,
+            headers: {
+              kPaymentRequiredHeader: [headerValue],
+            },
+          );
+        }
+
+        if (options.headers[kPaymentSignatureHeader] == 'signature_A') {
+          return ResponseBody.fromBytes(utf8.encode('Success'), 200);
+        }
+
+        return ResponseBody.fromBytes(utf8.encode('Fail'), 500);
+      });
+
+      // No onPaymentRequired callback provided
+      dio.interceptors.add(X402Interceptor(dio: dio, signers: [signerA]));
+
+      final response = await dio.get('http://example.com');
+
+      expect(response.statusCode, 200);
+      expect(response.data, 'Success');
+      verify(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+          .called(1);
+    });
+
     test('should use first matching signer if multiple match', () async {
       const requirementB = PaymentRequirement(
         network: 'net:B',

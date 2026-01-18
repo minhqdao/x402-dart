@@ -60,6 +60,64 @@ void main() {
           http.Request('GET', Uri.parse('http://example.com')));
     });
 
+    test('should throw ArgumentError if signers list is empty', () {
+      expect(() => X402Client(signers: [], inner: mockInner),
+          throwsA(isA<ArgumentError>()));
+    });
+
+    test('should handle 402 and retry', () async {
+      when(() => signerA.supports(any())).thenReturn(true);
+      when(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+          .thenAnswer((_) async => 'signature_A');
+
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: headerValue});
+      final response200 = http.StreamedResponse(Stream.value([]), 200);
+
+      var callCount = 0;
+      when(() => mockInner.send(any())).thenAnswer((_) async {
+        callCount++;
+        if (callCount == 1) return response402;
+        return response200;
+      });
+
+      final client = X402Client(signers: [signerA], inner: mockInner);
+      final response = await client.get(Uri.parse('http://example.com'));
+
+      expect(response.statusCode, 200);
+      verify(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+          .called(1);
+    });
+
+    test('should proceed automatically if no callback provided', () async {
+      when(() => signerA.supports(any())).thenReturn(true);
+      when(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+          .thenAnswer((_) async => 'signature_A');
+
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: headerValue});
+      final response200 = http.StreamedResponse(Stream.value([]), 200);
+
+      var callCount = 0;
+      when(() => mockInner.send(any())).thenAnswer((_) async {
+        callCount++;
+        if (callCount == 1) return response402;
+        return response200;
+      });
+
+      // No onPaymentRequired provided
+      final client = X402Client(signers: [signerA], inner: mockInner);
+      final response = await client.get(Uri.parse('http://example.com'));
+
+      expect(response.statusCode, 200);
+      verify(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+          .called(1);
+    });
+
     test(
         'should invoke callback with correct arguments and proceed if true returned',
         () async {
@@ -68,22 +126,12 @@ void main() {
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
           .thenAnswer((_) async => 'signature_A');
 
-      // Mock 402 response
-      final response402 = http.StreamedResponse(
-        Stream.value(utf8.encode('Payment Required')),
-        402,
-        headers: {kPaymentRequiredHeader: headerValue},
-      );
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: headerValue});
+      final response200 = http.StreamedResponse(Stream.value([]), 200);
 
-      // Mock 200 response (after payment)
-      final response200 = http.StreamedResponse(
-        Stream.value(utf8.encode('Success')),
-        200,
-      );
-
-      // Setup http client
       var callCount = 0;
-      when(() => mockInner.send(any())).thenAnswer((invocation) async {
+      when(() => mockInner.send(any())).thenAnswer((_) async {
         callCount++;
         if (callCount == 1) return response402;
         return response200;
@@ -102,46 +150,127 @@ void main() {
           return true; // Approve
         },
       );
+      final response = await client.get(Uri.parse('http://example.com'));
 
+      expect(response.statusCode, 200);
+      expect(callbackCalled, isTrue);
+    });
+
+    test('should ignore non-402 responses (e.g., 200)', () async {
+      when(() => mockInner.send(any())).thenAnswer(
+          (_) async => http.StreamedResponse(Stream.value([]), 200));
+
+      final client = X402Client(signers: [signerA], inner: mockInner);
+      final response = await client.get(Uri.parse('http://example.com'));
+
+      expect(response.statusCode, 200);
+      verifyNever(() => signerA.supports(any()));
+    });
+
+    test('should ignore non-402 responses (e.g., 404)', () async {
+      when(() => mockInner.send(any())).thenAnswer(
+          (_) async => http.StreamedResponse(Stream.value([]), 404));
+
+      final client = X402Client(signers: [signerA], inner: mockInner);
+      final response = await client.get(Uri.parse('http://example.com'));
+
+      expect(response.statusCode, 404);
+      verifyNever(() => signerA.supports(any()));
+    });
+
+    test('should pass through 402 if header is missing', () async {
+      final response402 = http.StreamedResponse(Stream.value([]), 402);
+      when(() => mockInner.send(any())).thenAnswer((_) async => response402);
+
+      final client = X402Client(signers: [signerA], inner: mockInner);
       final request = http.Request('GET', Uri.parse('http://example.com'));
       final response = await client.send(request);
 
-      expect(callbackCalled, isTrue);
-      expect(response.statusCode, equals(200));
-      verify(() =>
-              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
-          .called(1);
+      expect(response.statusCode, 402);
+    });
+
+    test('should pass through 402 if header is malformatted', () async {
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: 'not-base64'});
+      when(() => mockInner.send(any())).thenAnswer((_) async => response402);
+
+      final client = X402Client(signers: [signerA], inner: mockInner);
+      final request = http.Request('GET', Uri.parse('http://example.com'));
+      final response = await client.send(request);
+
+      expect(response.statusCode, 402);
+    });
+
+    test('should pass through 402 if requirements are empty', () async {
+      final emptyHeader = base64Encode(utf8.encode(jsonEncode({
+        'x402Version': kX402Version,
+        'accepts': [],
+        'resource': resourceInfo.toJson(),
+      })));
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: emptyHeader});
+      when(() => mockInner.send(any())).thenAnswer((_) async => response402);
+
+      final client = X402Client(signers: [signerA], inner: mockInner);
+      final request = http.Request('GET', Uri.parse('http://example.com'));
+      final response = await client.send(request);
+
+      expect(response.statusCode, 402);
     });
 
     test('should abort if callback returns false', () async {
       when(() => signerA.supports(any())).thenReturn(true);
 
-      final response402 = http.StreamedResponse(
-        Stream.value(utf8.encode('Payment Required')),
-        402,
-        headers: {kPaymentRequiredHeader: headerValue},
-      );
-
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: headerValue});
       when(() => mockInner.send(any())).thenAnswer((_) async => response402);
 
       final client = X402Client(
         signers: [signerA],
         inner: mockInner,
-        onPaymentRequired: (req, res, s) async {
-          // Verify arguments even in abort case
-          expect(req.network, equals('net:A'));
-          expect(res.url, equals('http://res'));
-          expect(s, equals(signerA));
-          return false; // Deny
-        },
+        onPaymentRequired: (req, res, s) async => false, // Deny
       );
-
       final request = http.Request('GET', Uri.parse('http://example.com'));
       final response = await client.send(request);
 
-      expect(response.statusCode, equals(402));
+      expect(response.statusCode, 402);
       verifyNever(() =>
           signerA.sign(any(), any(), extensions: any(named: 'extensions')));
+    });
+
+    test('should pass through 402 if onPaymentRequired throws', () async {
+      when(() => signerA.supports(any())).thenReturn(true);
+
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: headerValue});
+      when(() => mockInner.send(any())).thenAnswer((_) async => response402);
+
+      final client = X402Client(
+        signers: [signerA],
+        inner: mockInner,
+        onPaymentRequired: (req, res, s) async => throw Exception('User Error'),
+      );
+      final request = http.Request('GET', Uri.parse('http://example.com'));
+      final response = await client.send(request);
+
+      expect(response.statusCode, 402);
+    });
+
+    test('should pass through 402 if sign throws', () async {
+      when(() => signerA.supports(any())).thenReturn(true);
+      when(() =>
+              signerA.sign(any(), any(), extensions: any(named: 'extensions')))
+          .thenThrow(Exception('Sign Error'));
+
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: headerValue});
+      when(() => mockInner.send(any())).thenAnswer((_) async => response402);
+
+      final client = X402Client(signers: [signerA], inner: mockInner);
+      final request = http.Request('GET', Uri.parse('http://example.com'));
+      final response = await client.send(request);
+
+      expect(response.statusCode, 402);
     });
 
     test('should use first matching signer (A before B)', () async {
@@ -152,11 +281,8 @@ void main() {
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
           .thenAnswer((_) async => 'signature_A');
 
-      final response402 = http.StreamedResponse(
-        Stream.value(utf8.encode('Payment Required')),
-        402,
-        headers: {kPaymentRequiredHeader: headerValue},
-      );
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: headerValue});
       final response200 = http.StreamedResponse(Stream.value([]), 200);
 
       var callCount = 0;
@@ -166,13 +292,8 @@ void main() {
         return response200;
       });
 
-      final client = X402Client(
-        signers: [signerA, signerB], // A is preferred
-        inner: mockInner,
-      );
-
-      final request = http.Request('GET', Uri.parse('http://example.com'));
-      await client.send(request);
+      final client = X402Client(signers: [signerA, signerB], inner: mockInner);
+      await client.get(Uri.parse('http://example.com'));
 
       verify(() =>
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
@@ -189,11 +310,8 @@ void main() {
               signerB.sign(any(), any(), extensions: any(named: 'extensions')))
           .thenAnswer((_) async => 'signature_B');
 
-      final response402 = http.StreamedResponse(
-        Stream.value(utf8.encode('Payment Required')),
-        402,
-        headers: {kPaymentRequiredHeader: headerValue},
-      );
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: headerValue});
       final response200 = http.StreamedResponse(Stream.value([]), 200);
 
       var callCount = 0;
@@ -203,17 +321,82 @@ void main() {
         return response200;
       });
 
-      final client = X402Client(
-        signers: [signerB, signerA], // B is preferred
-        inner: mockInner,
-      );
-
-      final request = http.Request('GET', Uri.parse('http://example.com'));
-      await client.send(request);
+      final client = X402Client(signers: [signerB, signerA], inner: mockInner);
+      await client.get(Uri.parse('http://example.com'));
 
       verify(() =>
               signerB.sign(any(), any(), extensions: any(named: 'extensions')))
           .called(1);
+      verifyNever(() =>
+          signerA.sign(any(), any(), extensions: any(named: 'extensions')));
+    });
+
+    test('should use second signer if first one does not match', () async {
+      const requirementB = PaymentRequirement(
+        network: 'net:B',
+        scheme: 'scheme:B',
+        amount: '100',
+        payTo: 'someone',
+        asset: 'asset',
+        maxTimeoutSeconds: 100,
+        extra: {},
+      );
+      final multiHeader = base64Encode(utf8.encode(jsonEncode({
+        'x402Version': kX402Version,
+        'accepts': [requirementB.toJson()],
+        'resource': resourceInfo.toJson(),
+      })));
+
+      when(() => signerA.supports(any(
+              that:
+                  predicate<PaymentRequirement>((p) => p.network == 'net:B'))))
+          .thenReturn(false);
+      when(() => signerB.supports(any(
+              that:
+                  predicate<PaymentRequirement>((p) => p.network == 'net:B'))))
+          .thenReturn(true);
+
+      when(() =>
+              signerB.sign(any(), any(), extensions: any(named: 'extensions')))
+          .thenAnswer((_) async => 'signature_B');
+
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: multiHeader});
+      final response200 = http.StreamedResponse(Stream.value([]), 200);
+
+      var callCount = 0;
+      when(() => mockInner.send(any())).thenAnswer((_) async {
+        callCount++;
+        if (callCount == 1) return response402;
+        return response200;
+      });
+
+      final client = X402Client(signers: [signerA, signerB], inner: mockInner);
+      await client.get(Uri.parse('http://example.com'));
+
+      verifyNever(() =>
+          signerA.sign(any(), any(), extensions: any(named: 'extensions')));
+      verify(() =>
+              signerB.sign(any(), any(), extensions: any(named: 'extensions')))
+          .called(1);
+    });
+
+    test('should avoid infinite loop if signature already present', () async {
+      when(() => signerA.supports(any())).thenReturn(true);
+
+      final response402 = http.StreamedResponse(Stream.value([]), 402,
+          headers: {kPaymentRequiredHeader: headerValue});
+
+      when(() => mockInner.send(any())).thenAnswer((_) async => response402);
+
+      final client = X402Client(signers: [signerA], inner: mockInner);
+
+      final request = http.Request('GET', Uri.parse('http://example.com'))
+        ..headers[kPaymentSignatureHeader] = 'already_signed';
+
+      final response = await client.send(request);
+
+      expect(response.statusCode, 402);
       verifyNever(() =>
           signerA.sign(any(), any(), extensions: any(named: 'extensions')));
     });

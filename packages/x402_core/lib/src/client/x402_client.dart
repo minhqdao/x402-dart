@@ -37,11 +37,8 @@ abstract class X402Signer {
   ///
   /// [resource] provides context about what is being paid for.
   /// [extensions] allow for arbitrary extra data to be included in the signature.
-  Future<String> sign(
-    PaymentRequirement requirement,
-    ResourceInfo resource, {
-    Map<String, dynamic>? extensions,
-  });
+  Future<String> sign(PaymentRequirement requirement, ResourceInfo resource,
+      {Map<String, dynamic>? extensions});
 }
 
 /// A high-level HTTP client that automatically handles 402 Payment Required flows.
@@ -115,6 +112,12 @@ class X402Client extends http.BaseClient {
 
     // 3. Automated Handshake Loop
     if (response.statusCode == kPaymentRequiredStatus) {
+      // Check if we already tried to pay to prevent infinite loops
+      if (request.headers.containsKey(kPaymentSignatureHeader)) {
+        await response.stream.drain();
+        return response;
+      }
+
       final header = response.headers[kPaymentRequiredHeader];
       if (header == null) return response;
 
@@ -160,7 +163,7 @@ class X402Client extends http.BaseClient {
             retryRequest.headers[kPaymentSignatureHeader] = signature;
             retryRequest.headers[kPaymentHeader] = signature;
 
-            // Consume the original 402 response stream
+            // Consume the original 402 response stream before retrying
             await response.stream.drain();
 
             // Make the payment request
