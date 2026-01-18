@@ -32,13 +32,13 @@ class EIP712Domain {
 class EIP712Utils {
   const EIP712Utils._();
 
-  static const String domainTypeHash =
+  static const String _domainTypeHash =
       '0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f';
 
   /// Compute domain separator
   static Uint8List computeDomainSeparator(EIP712Domain domain) {
     final encoded = encodePacked([
-      hexToBytes(domainTypeHash),
+      hexToBytes(_domainTypeHash),
       keccak256(utf8.encode(domain.name)),
       keccak256(utf8.encode(domain.version)),
       _uint256(domain.chainId),
@@ -63,9 +63,9 @@ class EIP712Utils {
       hexToBytes(typeHash),
       _addressToBytes(from),
       _addressToBytes(to),
-      _uint256Bytes(value),
-      _uint256Bytes(validAfter),
-      _uint256Bytes(validBefore),
+      uint256Bytes(value),
+      uint256Bytes(validAfter),
+      uint256Bytes(validBefore),
       nonce,
     ]);
 
@@ -113,11 +113,9 @@ class EIP712Utils {
   }
 
   // Helper functions
-  static Uint8List _uint256(int value) {
-    return _uint256Bytes(BigInt.from(value));
-  }
+  static Uint8List _uint256(int value) => uint256Bytes(BigInt.from(value));
 
-  static Uint8List _uint256Bytes(BigInt value) {
+  static Uint8List uint256Bytes(BigInt value) {
     final bytes = value.toRadixString(16).padLeft(64, '0');
     return hexToBytes('0x$bytes');
   }
@@ -138,8 +136,19 @@ class EIP712Utils {
   static Uint8List hexToBytes(String hexString) {
     final cleanHex =
         hexString.startsWith('0x') ? hexString.substring(2) : hexString;
-    // SAFETY CHECK: Ensure even length
-    final evenHex = cleanHex.length.isEven ? cleanHex : '0$cleanHex';
-    return Uint8List.fromList(List<int>.from(hex.decode(evenHex)));
+
+    if (cleanHex.isEmpty) throw ArgumentError('Hex string cannot be empty');
+
+    if (!RegExp(r'^[0-9a-fA-F]+$').hasMatch(cleanHex)) {
+      throw ArgumentError('Invalid hex string: contains non-hex characters');
+    }
+
+    if (cleanHex.length.isOdd) {
+      throw ArgumentError(
+          'Hex string must have even length. Got ${cleanHex.length} characters. '
+          'Did you mean to prefix with 0? (e.g., "0$cleanHex")');
+    }
+
+    return Uint8List.fromList(hex.decode(cleanHex));
   }
 }
