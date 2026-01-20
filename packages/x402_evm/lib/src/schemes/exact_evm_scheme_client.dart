@@ -1,15 +1,31 @@
+import 'dart:typed_data';
+
 import 'package:convert/convert.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:x402_core/x402_core.dart';
 import 'package:x402_evm/src/models/exact_evm_payload.dart';
 import 'package:x402_evm/src/utils/eip3009.dart';
 
+/// Time provider (seconds)
+typedef NowProvider = int Function();
+
+/// Signature provider
+typedef NonceProvider = Uint8List Function();
+
 /// Client-side implementation of the exact scheme for EVM chains
 class ExactEvmSchemeClient implements SchemeClient {
   final EthPrivateKey _privateKey;
+  final NowProvider _nowProvider;
+  final NonceProvider _nonceProvider;
 
-  const ExactEvmSchemeClient({required EthPrivateKey privateKey})
-      : _privateKey = privateKey;
+  ExactEvmSchemeClient(
+      {required EthPrivateKey privateKey,
+      NowProvider? nowProvider,
+      NonceProvider? nonceProvider})
+      : _privateKey = privateKey,
+        _nowProvider = nowProvider ??
+            (() => DateTime.now().millisecondsSinceEpoch ~/ 1000),
+        _nonceProvider = nonceProvider ?? EIP3009.generateNonce;
 
   @override
   String get scheme => 'exact';
@@ -46,8 +62,8 @@ class ExactEvmSchemeClient implements SchemeClient {
     }
 
     // Generate nonce and validity window
-    final nonce = EIP3009.generateNonce();
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final nonce = _nonceProvider();
+    final now = _nowProvider();
     // Using 0 for validAfter is standard for "valid immediately" and avoids clock skew
     final validAfter = BigInt.zero;
     final validBefore = BigInt.from(now + requirements.maxTimeoutSeconds);
