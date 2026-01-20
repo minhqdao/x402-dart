@@ -1,8 +1,8 @@
 import 'package:test/test.dart';
-import 'package:x402_evm/src/models/exact_payload.dart';
+import 'package:x402_evm/src/models/exact_evm_payload.dart';
 
 void main() {
-  group('ExactAuthorization', () {
+  group('ExactEvmPayload', () {
     const from = '0x1234567890123456789012345678901234567890';
     const to = '0x0987654321098765432109876543210987654321';
     const value = '1000000';
@@ -12,7 +12,7 @@ void main() {
         '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
 
     test('should serialize to JSON with all fields', () {
-      const auth = ExactAuthorization(
+      const auth = ExactEvmPayload(
         from: from,
         to: to,
         value: value,
@@ -41,7 +41,7 @@ void main() {
         'nonce': nonce,
       };
 
-      final auth = ExactAuthorization.fromJson(json);
+      final auth = ExactEvmPayload.fromJson(json);
 
       expect(auth.from, equals(from));
       expect(auth.to, equals(to));
@@ -52,7 +52,7 @@ void main() {
     });
 
     test('should handle round-trip serialization', () {
-      const auth = ExactAuthorization(
+      const auth = ExactEvmPayload(
         from: from,
         to: to,
         value: value,
@@ -62,7 +62,7 @@ void main() {
       );
 
       final json = auth.toJson();
-      final deserialized = ExactAuthorization.fromJson(json);
+      final deserialized = ExactEvmPayload.fromJson(json);
 
       expect(deserialized.from, equals(auth.from));
       expect(deserialized.to, equals(auth.to));

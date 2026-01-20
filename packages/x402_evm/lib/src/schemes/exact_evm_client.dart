@@ -1,7 +1,7 @@
 import 'package:convert/convert.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_evm/src/models/exact_payload.dart';
+import 'package:x402_evm/src/models/exact_evm_payload.dart';
 import 'package:x402_evm/src/utils/eip3009.dart';
 
 /// Client-side implementation of the exact scheme for EVM chains
@@ -67,7 +67,7 @@ class ExactEvmSchemeClient implements SchemeClient {
     );
 
     // Create authorization object
-    final authorization = ExactAuthorization(
+    final authorization = ExactEvmPayload(
       from: _privateKey.address.hex.toLowerCase(),
       to: requirements.payTo.toLowerCase(),
       value: amount.toString(),
