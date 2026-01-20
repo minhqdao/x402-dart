@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:web3dart/web3dart.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_evm/src/schemes/exact_evm_client.dart';
+import 'package:x402_evm/src/schemes/exact_evm_scheme_client.dart';
 
 /// Concrete implementation of [X402Signer] for EVM chains.
 ///
