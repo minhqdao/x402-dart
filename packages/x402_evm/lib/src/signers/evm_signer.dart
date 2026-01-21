@@ -29,8 +29,7 @@ class EvmSigner extends X402Signer {
       required int chainId,
       String networkNamespace = 'eip155'}) {
     final cleanedHex =
-        (privateKeyHex.startsWith('0x') ? privateKeyHex : '0x$privateKeyHex')
-            .toLowerCase();
+        privateKeyHex.startsWith('0x') ? privateKeyHex : '0x$privateKeyHex';
     final privateKey = EthPrivateKey.fromHex(cleanedHex);
     return EvmSigner(
         chainId: chainId,
