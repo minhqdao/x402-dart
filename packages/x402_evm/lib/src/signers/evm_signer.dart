@@ -10,7 +10,6 @@ class EvmSigner extends X402Signer {
   @override
   final String network;
   final ExactEvmSchemeClient _client;
-  final EthPrivateKey _privateKey;
 
   /// Creates an [EvmSigner] for a specific [chainId].
   ///
@@ -20,7 +19,6 @@ class EvmSigner extends X402Signer {
       required EthPrivateKey privateKey,
       String networkNamespace = 'eip155'})
       : network = '$networkNamespace:$chainId',
-        _privateKey = privateKey,
         _client = ExactEvmSchemeClient(privateKey: privateKey);
 
   /// Creates an EvmSigner from a hexadecimal private key string.
@@ -41,7 +39,7 @@ class EvmSigner extends X402Signer {
   }
 
   @override
-  String get address => _privateKey.address.hex;
+  String get address => _client.address;
 
   @override
   String get scheme => _client.scheme;

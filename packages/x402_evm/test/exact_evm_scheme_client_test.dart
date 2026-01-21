@@ -36,6 +36,10 @@ void main() {
       );
     });
 
+    test('address getter should return correct hex address', () {
+      expect(client.address, equals(privateKey.address.hex));
+    });
+
     test('should create valid payment payload', () async {
       final payload = await client.createPaymentPayload(requirements, resource);
 

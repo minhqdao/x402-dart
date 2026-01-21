@@ -104,4 +104,7 @@ class ExactEvmSchemeClient implements SchemeClient {
       extensions: extensions,
     );
   }
+
+  /// Returns the address of the private key
+  String get address => _privateKey.address.hex;
 }
