@@ -43,6 +43,24 @@ class EvmSigner extends X402Signer {
   @override
   String get scheme => _client.scheme;
 
+  /// Signs a payment request and returns a serialized payment payload.
+  ///
+  /// This method creates a scheme-specific payment payload for the given
+  /// [requirement] and [resource], signs it using the underlying EVM signer,
+  /// and serializes the result into a Base64-encoded string.
+  ///
+  /// The returned string is:
+  /// 1. A JSON representation of the payment payload
+  /// 2. UTF-8 encoded
+  /// 3. Base64 encoded for safe transport over text-based protocols
+  ///
+  /// Optional [extensions] can be provided to include additional
+  /// scheme- or application-specific metadata in the payload.
+  ///
+  /// Returns a Base64-encoded string containing the signed payment payload.
+  ///
+  /// Throws an [UnsupportedSchemeException] or [InvalidPayloadException]
+  /// if the payment requirement is incompatible with this signer.
   @override
   Future<String> sign(PaymentRequirement requirement, ResourceInfo resource,
       {Map<String, dynamic>? extensions}) async {
