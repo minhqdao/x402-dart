@@ -68,9 +68,44 @@ class EvmSigner extends X402Signer {
   Future<SignedPayment> sign(
       PaymentRequirement requirement, ResourceInfo resource,
       {Map<String, dynamic>? extensions}) async {
+    _validateRequirement(requirement);
     final payload = await _client.createPaymentPayload(requirement, resource,
         extensions: extensions);
     return SignedPayment(
         base64Encode(utf8.encode(jsonEncode(payload.toJson()))));
+  }
+
+  void _validateRequirement(PaymentRequirement requirement) {
+    final amount = BigInt.tryParse(requirement.amount);
+    if (amount == null) {
+      throw ArgumentError.value(
+        requirement.amount,
+        'amount',
+        'Amount must be a valid integer string',
+      );
+    }
+
+    if (amount <= BigInt.zero) {
+      throw ArgumentError.value(
+        requirement.amount,
+        'amount',
+        'Amount must be greater than zero',
+      );
+    }
+
+    if (requirement.maxTimeoutSeconds < 0) {
+      throw ArgumentError.value(
+        requirement.maxTimeoutSeconds,
+        'maxTimeoutSeconds',
+        'Must be non-negative',
+      );
+    }
+
+    if (requirement.network != network) {
+      throw ArgumentError(
+        'Requirement network (${requirement.network}) '
+        'does not match signer network ($network)',
+      );
+    }
   }
 }

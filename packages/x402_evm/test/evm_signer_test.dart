@@ -178,15 +178,7 @@ void main() {
     });
 
     test('throws on unsupported scheme', () {
-      final badReq = PaymentRequirement(
-        scheme: 'stream', // unsupported
-        network: requirements.network,
-        amount: requirements.amount,
-        payTo: requirements.payTo,
-        maxTimeoutSeconds: requirements.maxTimeoutSeconds,
-        asset: requirements.asset,
-        extra: requirements.extra,
-      );
+      final badReq = requirements.copyWith(scheme: 'stream');
 
       expect(
         () => signer.sign(badReq, resource),
@@ -200,20 +192,59 @@ void main() {
       );
     });
 
-    test('throws on invalid network format', () {
-      final badReq = PaymentRequirement(
-        scheme: requirements.scheme,
-        network: 'eip155', // missing chainId
-        amount: requirements.amount,
-        payTo: requirements.payTo,
-        maxTimeoutSeconds: requirements.maxTimeoutSeconds,
-        asset: requirements.asset,
-        extra: requirements.extra,
-      );
+    test('throws if amount is zero', () {
+      final badReq = requirements.copyWith(amount: '0');
 
       expect(
         () => signer.sign(badReq, resource),
-        throwsA(isA<InvalidPayloadException>()),
+        throwsArgumentError,
+      );
+    });
+
+    test('throws on zero amount', () {
+      final req = requirements.copyWith(amount: '0');
+      expect(() => signer.sign(req, resource), throwsArgumentError);
+    });
+
+    test('throws on negative amount', () {
+      final req = requirements.copyWith(amount: '-1');
+      expect(() => signer.sign(req, resource), throwsArgumentError);
+    });
+
+    test('throws on non-numeric amount', () {
+      final req = requirements.copyWith(amount: 'abc');
+      expect(() => signer.sign(req, resource), throwsArgumentError);
+    });
+
+    test('throws on neagative timeout', () {
+      final req = requirements.copyWith(maxTimeoutSeconds: -1);
+      expect(() => signer.sign(req, resource), throwsArgumentError);
+    });
+
+    test('throws if chainId mismatches', () {
+      final bad = requirements.copyWith(network: 'eip155:1');
+
+      expect(
+        () => signer.sign(bad, resource),
+        throwsArgumentError,
+      );
+    });
+
+    test('throws on missing chainId', () {
+      final badReq = requirements.copyWith(network: 'eip155');
+
+      expect(
+        () => signer.sign(badReq, resource),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test('throws on wrong namespace', () {
+      final badReq = requirements.copyWith(network: 'ip155:8453');
+
+      expect(
+        () => signer.sign(badReq, resource),
+        throwsA(isA<ArgumentError>()),
       );
     });
   });
