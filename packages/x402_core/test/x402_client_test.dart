@@ -69,7 +69,7 @@ void main() {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() =>
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_A');
+          .thenAnswer((_) async => const SignedPayment('signature_A'));
 
       final response402 = http.StreamedResponse(Stream.value([]), 402,
           headers: {kPaymentRequiredHeader: headerValue});
@@ -95,7 +95,7 @@ void main() {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() =>
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_A');
+          .thenAnswer((_) async => const SignedPayment('signature_A'));
 
       final response402 = http.StreamedResponse(Stream.value([]), 402,
           headers: {kPaymentRequiredHeader: headerValue});
@@ -124,7 +124,7 @@ void main() {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() =>
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_A');
+          .thenAnswer((_) async => const SignedPayment('signature_A'));
 
       final response402 = http.StreamedResponse(Stream.value([]), 402,
           headers: {kPaymentRequiredHeader: headerValue});
@@ -279,7 +279,7 @@ void main() {
 
       when(() =>
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_A');
+          .thenAnswer((_) async => const SignedPayment('signature_A'));
 
       final response402 = http.StreamedResponse(Stream.value([]), 402,
           headers: {kPaymentRequiredHeader: headerValue});
@@ -308,7 +308,7 @@ void main() {
 
       when(() =>
               signerB.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_B');
+          .thenAnswer((_) async => const SignedPayment('signature_B'));
 
       final response402 = http.StreamedResponse(Stream.value([]), 402,
           headers: {kPaymentRequiredHeader: headerValue});
@@ -358,7 +358,7 @@ void main() {
 
       when(() =>
               signerB.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_B');
+          .thenAnswer((_) async => const SignedPayment('signature_B'));
 
       final response402 = http.StreamedResponse(Stream.value([]), 402,
           headers: {kPaymentRequiredHeader: multiHeader});

@@ -70,7 +70,7 @@ void main() {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() =>
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_A');
+          .thenAnswer((_) async => const SignedPayment('signature_A'));
 
       var callCount = 0;
       when(() => mockAdapter.fetch(any(), any(), any()))
@@ -88,7 +88,8 @@ void main() {
           );
         }
 
-        if (options.headers[kPaymentSignatureHeader] == 'signature_A') {
+        if (options.headers[kPaymentSignatureHeader].toString() ==
+            'signature_A') {
           return ResponseBody.fromBytes(utf8.encode('Success'), 200);
         }
 
@@ -110,7 +111,7 @@ void main() {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() =>
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_A');
+          .thenAnswer((_) async => const SignedPayment('signature_A'));
 
       var callCount = 0;
       when(() => mockAdapter.fetch(any(), any(), any()))
@@ -128,7 +129,8 @@ void main() {
           );
         }
 
-        if (options.headers[kPaymentSignatureHeader] == 'signature_A') {
+        if (options.headers[kPaymentSignatureHeader].toString() ==
+            'signature_A') {
           return ResponseBody.fromBytes(utf8.encode('Success'), 200);
         }
 
@@ -184,7 +186,7 @@ void main() {
 
       when(() =>
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_A');
+          .thenAnswer((_) async => const SignedPayment('signature_A'));
 
       var callCount = 0;
       when(() => mockAdapter.fetch(any(), any(), any()))
@@ -242,7 +244,7 @@ void main() {
 
       when(() =>
               signerB.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_B');
+          .thenAnswer((_) async => const SignedPayment('signature_B'));
 
       var callCount = 0;
       when(() => mockAdapter.fetch(any(), any(), any()))
@@ -462,7 +464,7 @@ void main() {
       when(() => signerA.supports(any())).thenReturn(true);
       when(() =>
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
-          .thenAnswer((_) async => 'signature_A');
+          .thenAnswer((_) async => const SignedPayment('signature_A'));
 
       var callCount = 0;
       when(() => mockAdapter.fetch(any(), any(), any()))
@@ -480,7 +482,8 @@ void main() {
           );
         }
 
-        if (options.headers[kPaymentSignatureHeader] == 'signature_A') {
+        if (options.headers[kPaymentSignatureHeader].toString() ==
+            'signature_A') {
           return ResponseBody.fromBytes(utf8.encode('Success'), 200);
         }
 

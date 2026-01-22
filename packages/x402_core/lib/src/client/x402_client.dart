@@ -15,6 +15,33 @@ typedef PaymentApprovalCallback = Future<bool> Function(
   X402Signer signer,
 );
 
+/// A [SignedPayment] represents the final result of the signing process.
+///
+/// The [encoded] field contains a Base64-encoded, UTF-8 JSON document
+/// that includes the payment data, associated metadata, and the
+/// cryptographic signature.
+///
+/// This object provides a convenience method to decode the payload back
+/// into its JSON representation. It does **not** perform any validation
+/// or signature verification.
+class SignedPayment {
+  /// Base64-encoded UTF-8 JSON payload.
+  final String encoded;
+
+  /// Creates a [SignedPayment] from a base64-encoded string.
+  const SignedPayment(this.encoded);
+
+  /// Decodes the base64 payload into a JSON map.
+  ///
+  /// Throws a [FormatException] if the payload is not valid base64
+  /// or does not contain valid UTF-8 JSON.
+  Map<String, dynamic> decode() =>
+      jsonDecode(utf8.decode(base64Decode(encoded))) as Map<String, dynamic>;
+
+  @override
+  String toString() => encoded;
+}
+
 /// The interface every blockchain-specific package must implement to support
 /// signing x402 payment requirements.
 abstract class X402Signer {
@@ -32,12 +59,13 @@ abstract class X402Signer {
   bool supports(PaymentRequirement requirement) =>
       requirement.network == network && requirement.scheme == scheme;
 
-  /// Signs the [requirement] and returns a Base64-encoded JSON string
-  /// representing the [PaymentPayload].
+  /// Signs the [requirement] and returns a [SignedPayment] containing a
+  /// Base64-encoded JSON string that represents the [PaymentPayload].
   ///
   /// [resource] provides context about what is being paid for.
   /// [extensions] allow for arbitrary extra data to be included in the signature.
-  Future<String> sign(PaymentRequirement requirement, ResourceInfo resource,
+  Future<SignedPayment> sign(
+      PaymentRequirement requirement, ResourceInfo resource,
       {Map<String, dynamic>? extensions});
 }
 
@@ -160,8 +188,8 @@ class X402Client extends http.BaseClient {
             final retryRequest = _recreate(request, bytes);
 
             // Attach the proof using both v2 standard and legacy headers
-            retryRequest.headers[kPaymentSignatureHeader] = signature;
-            retryRequest.headers[kPaymentHeader] = signature;
+            retryRequest.headers[kPaymentSignatureHeader] = signature.encoded;
+            retryRequest.headers[kPaymentHeader] = signature.encoded;
 
             // Consume the original 402 response stream before retrying
             await response.stream.drain();

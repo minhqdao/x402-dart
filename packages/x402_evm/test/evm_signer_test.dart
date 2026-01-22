@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:test/test.dart';
 import 'package:web3dart/crypto.dart';
@@ -57,13 +56,12 @@ void main() {
     test('should sign and return base64 encoded payload', () async {
       final signature = await signer.sign(requirements, resource);
 
-      expect(signature, isA<String>());
+      expect(signature, isA<SignedPayment>());
       expect(
-          signature,
+          signature.encoded,
           equals(
               'eyJ4NDAyVmVyc2lvbiI6MiwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9hcGkuZXhhbXBsZS5jb20vZGF0YSIsImRlc2NyaXB0aW9uIjoiUHJlbWl1bSBkYXRhIGFjY2VzcyIsIm1pbWVUeXBlIjoiYXBwbGljYXRpb24vanNvbiJ9LCJhY2NlcHRlZCI6eyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsImFzc2V0IjoiMHgwMzZDYkQ1Mzg0MmM1NDI2NjM0ZTc5Mjk1NDFlQzIzMThmM2RDRjdlIiwiYW1vdW50IjoiMTAwMDAiLCJwYXlUbyI6IjB4MjA5NjkzQmM2YWZjMEM1MzI4YkEzNkZhRjAzQzUxNEVGMzEyMjg3QyIsIm1heFRpbWVvdXRTZWNvbmRzIjo2MCwiZXh0cmEiOnsibmFtZSI6IlVTRCBDb2luIiwidmVyc2lvbiI6IjIifX0sInBheWxvYWQiOnsic2lnbmF0dXJlIjoiMHgzYTg0ZjIxMWYwMTY2MDAzYjk2NWUzNTdlZGVhNGZmNzUzOTA3NTUxZjQ3MjY3MTcwNTQ0YTBiMmZjYjUxYTRmMTMwYmVkOGE1OTA4MzlkZDg3NGNiNDJkODA1ZWI2MjJiMGNmMmY0NmM4NDBiYzVkMjIyZjdhNzMwMDllYjBhMDFjIiwiYXV0aG9yaXphdGlvbiI6eyJmcm9tIjoiMHgzNGQ1ZmJkMDI2M2Y3ODUwMDYxMGE0N2FhMDZmNjlmMGFlZDVhNjQwIiwidG8iOiIweDIwOTY5M2JjNmFmYzBjNTMyOGJhMzZmYWYwM2M1MTRlZjMxMjI4N2MiLCJ2YWx1ZSI6IjEwMDAwIiwidmFsaWRBZnRlciI6IjAiLCJ2YWxpZEJlZm9yZSI6IjIwMDAiLCJub25jZSI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCJ9fX0='));
-      final decodedJson = jsonDecode(utf8.decode(base64Decode(signature)))
-          as Map<String, dynamic>;
+      final decodedJson = signature.decode();
       final payload = PaymentPayload.fromJson(decodedJson);
 
       expect(payload.x402Version, equals(kX402Version));
@@ -86,8 +84,7 @@ void main() {
 
     test('authorization payload should contain required fields', () async {
       final encoded = await signer.sign(requirements, resource);
-      final decodedJson = jsonDecode(utf8.decode(base64Decode(encoded)))
-          as Map<String, dynamic>;
+      final decodedJson = encoded.decode();
 
       final payload = PaymentPayload.fromJson(decodedJson);
       final auth = payload.payload['authorization'] as Map<String, dynamic>;
@@ -115,8 +112,7 @@ void main() {
 
     test('signature should recover the correct signer address', () async {
       final encoded = await signer.sign(requirements, resource);
-      final decoded = jsonDecode(utf8.decode(base64Decode(encoded)))
-          as Map<String, dynamic>;
+      final decoded = encoded.decode();
 
       final payload = PaymentPayload.fromJson(decoded);
       final auth = payload.payload['authorization'] as Map<String, dynamic>;
@@ -155,8 +151,7 @@ void main() {
       final signature =
           await signer.sign(requirements, resource, extensions: extensions);
 
-      final decodedJson = jsonDecode(utf8.decode(base64Decode(signature)))
-          as Map<String, dynamic>;
+      final decodedJson = signature.decode();
       final payload = PaymentPayload.fromJson(decodedJson);
 
       expect(payload.extensions, equals(extensions));

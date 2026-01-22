@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:mocktail/mocktail.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/solana.dart';
@@ -145,9 +144,8 @@ void main() {
     test('should sign and return base64 encoded payload', () async {
       final signature = await signer.sign(requirements, resource);
 
-      expect(signature, isA<String>());
-      final decodedJson = jsonDecode(utf8.decode(base64Decode(signature)))
-          as Map<String, dynamic>;
+      expect(signature, isA<SignedPayment>());
+      final decodedJson = signature.decode();
       final payload = PaymentPayload.fromJson(decodedJson);
 
       expect(payload.x402Version, equals(kX402Version));
@@ -160,8 +158,7 @@ void main() {
       final signature =
           await signer.sign(requirements, resource, extensions: extensions);
 
-      final decodedJson = jsonDecode(utf8.decode(base64Decode(signature)))
-          as Map<String, dynamic>;
+      final decodedJson = signature.decode();
       final payload = PaymentPayload.fromJson(decodedJson);
 
       expect(payload.extensions, equals(extensions));

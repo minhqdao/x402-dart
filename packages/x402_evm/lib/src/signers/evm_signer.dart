@@ -65,10 +65,12 @@ class EvmSigner extends X402Signer {
   /// Throws an [UnsupportedSchemeException] or [InvalidPayloadException]
   /// if the payment requirement is incompatible with this signer.
   @override
-  Future<String> sign(PaymentRequirement requirement, ResourceInfo resource,
+  Future<SignedPayment> sign(
+      PaymentRequirement requirement, ResourceInfo resource,
       {Map<String, dynamic>? extensions}) async {
     final payload = await _client.createPaymentPayload(requirement, resource,
         extensions: extensions);
-    return base64Encode(utf8.encode(jsonEncode(payload.toJson())));
+    return SignedPayment(
+        base64Encode(utf8.encode(jsonEncode(payload.toJson()))));
   }
 }

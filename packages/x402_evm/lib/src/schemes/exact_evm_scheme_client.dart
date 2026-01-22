@@ -13,6 +13,9 @@ typedef NowProvider = int Function();
 typedef NonceProvider = Uint8List Function();
 
 /// Client-side implementation of the exact scheme for EVM chains
+/// If [nowProvider] and [nonceProvider] are provided,
+/// signing becomes fully deterministic.
+/// This is intended for testing and reproducible payloads.
 class ExactEvmSchemeClient implements SchemeClient {
   final EthPrivateKey _privateKey;
   final NowProvider _nowProvider;

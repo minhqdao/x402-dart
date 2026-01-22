@@ -73,7 +73,7 @@ void main(List<String> args) async {
     // 3. Negotiate Requirements and Sign
     X402Signer? chosenSigner;
     PaymentRequirement? chosenRequirement;
-    String? signature;
+    SignedPayment? signature;
 
     // Initialize EVM signer
     final evmSigner =
@@ -126,7 +126,7 @@ void main(List<String> args) async {
     stdout.writeln('Retrying request with signature...');
     final retryResponse = await client.get(
       Uri.parse('$host$endpointPath'),
-      headers: {kPaymentSignatureHeader: signature},
+      headers: {kPaymentSignatureHeader: signature.encoded},
     );
 
     if (retryResponse.statusCode == 200) {
