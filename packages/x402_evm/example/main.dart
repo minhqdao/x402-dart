@@ -1,13 +1,11 @@
 import 'dart:io';
 
-import 'package:web3dart/web3dart.dart';
 import 'package:x402_evm/x402_evm.dart';
 
 void main() {
-  final privateKey = EthPrivateKey.fromHex('YOUR_PRIVATE_KEY');
-  final signer = EvmSigner(
+  final signer = EvmSigner.fromHex(
     chainId: 1, // Ethereum Mainnet
-    privateKey: privateKey,
+    privateKeyHex: 'YOUR_PRIVATE_KEY',
   );
 
   stdout.writeln('EVM Signer Address: ${signer.address}');

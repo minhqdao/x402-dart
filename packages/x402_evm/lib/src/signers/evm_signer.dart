@@ -11,30 +11,33 @@ class EvmSigner extends X402Signer {
   final String network;
   final ExactEvmSchemeClient _client;
 
-  /// Creates an [EvmSigner] for a specific [chainId].
+  /// Creates an [EvmSigner] from an [ExactEvmSchemeClient] and a [chainId].
   ///
   /// [networkNamespace] defaults to "eip155" (standard for EVM).
-  EvmSigner(
-      {required int chainId,
-      required EthPrivateKey privateKey,
-      String networkNamespace = 'eip155'})
-      : network = '$networkNamespace:$chainId',
-        _client = ExactEvmSchemeClient(privateKey: privateKey);
+  ///
+  /// Usually use [EvmSigner.fromHex] for convenience.
+  EvmSigner.fromClient({
+    required ExactEvmSchemeClient client,
+    required int chainId,
+    String networkNamespace = 'eip155',
+  })  : network = '$networkNamespace:$chainId',
+        _client = client;
 
   /// Creates an EvmSigner from a hexadecimal private key string.
   /// The `privateKeyHex` string can optionally be prefixed with "0x".
-  /// `networkNamespace` defaults to "eip155".
-  factory EvmSigner.fromHex(
-      {required String privateKeyHex,
-      required int chainId,
-      String networkNamespace = 'eip155'}) {
+  factory EvmSigner.fromHex({
+    required String privateKeyHex,
+    required int chainId,
+    String networkNamespace = 'eip155',
+  }) {
     final cleanedHex =
         privateKeyHex.startsWith('0x') ? privateKeyHex : '0x$privateKeyHex';
-    final privateKey = EthPrivateKey.fromHex(cleanedHex);
-    return EvmSigner(
-        chainId: chainId,
-        privateKey: privateKey,
-        networkNamespace: networkNamespace);
+    return EvmSigner.fromClient(
+      client:
+          ExactEvmSchemeClient(privateKey: EthPrivateKey.fromHex(cleanedHex)),
+      chainId: chainId,
+      networkNamespace: networkNamespace,
+    );
   }
 
   @override
