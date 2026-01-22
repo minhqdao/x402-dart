@@ -1,6 +1,6 @@
 import 'package:solana/solana.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_svm/src/utils/transaction_builder.dart';
+import 'package:x402_svm/src/utils/svm_transaction_builder.dart';
 
 /// Client-side implementation of the exact scheme for SVM
 class ExactSvmSchemeClient implements SchemeClient {

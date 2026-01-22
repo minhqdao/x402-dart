@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:solana/solana.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_svm/src/schemes/exact_svm_client.dart';
+import 'package:x402_svm/src/schemes/exact_svm_scheme_client.dart';
 
 /// Supported Solana networks for the [SvmSigner].
 enum SolanaNetwork {

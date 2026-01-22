@@ -2,7 +2,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/solana.dart';
 import 'package:test/test.dart';
-import 'package:x402_svm/src/utils/transaction_builder.dart';
+import 'package:x402_svm/src/utils/svm_transaction_builder.dart';
 
 class _MockSolanaClient extends Mock implements SolanaClient {}
 
