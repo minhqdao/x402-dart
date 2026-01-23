@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:mocktail/mocktail.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/solana.dart';
@@ -164,6 +166,9 @@ void main() {
       expect(payload.x402Version, equals(kX402Version));
       expect(payload.accepted.network, equals(requirements.network));
       expect(payload.payload['transaction'], isNotNull);
+      final tx = payload.payload['transaction'] as String;
+      expect(tx, isNotEmpty);
+      expect(() => base64.decode(tx), returnsNormally);
     });
 
     test('should include extensions if provided', () async {
