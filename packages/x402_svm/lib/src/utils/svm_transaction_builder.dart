@@ -3,13 +3,43 @@ import 'dart:convert';
 import 'package:solana/dto.dart' show BinaryAccountData, Encoding;
 import 'package:solana/encoder.dart';
 import 'package:solana/solana.dart';
+import 'package:x402_svm/src/exceptions/svm_exceptions.dart';
+import 'package:x402_svm/src/models/exact_svm_payload.dart';
 
-/// Utilities for building SVM transactions for x402
+/// Utilities for building SVM (Solana) transactions specifically for the x402 protocol.
+///
+/// This builder provides methods to construct and sign transactions that perform
+/// SPL Token transfers in a way that matches the protocol requirements.
 class SvmTransactionBuilder {
   const SvmTransactionBuilder._();
 
-  /// Create a payment payload for the Exact scheme (matching TS reference)
-  static Future<String> createTransferTransaction({
+  static const _defaultComputeUnitLimit = 200_000;
+  static const _defaultComputeUnitPriceMicrolamports = 1;
+  static final _maxU64 = (BigInt.one << 64) - BigInt.one;
+
+  /// Creates a signed Solana transaction for an SPL Token transfer.
+  ///
+  /// This method constructs a transaction containing:
+  /// 1. A compute unit limit instruction (fixed at 200,000).
+  /// 2. A compute unit price instruction (fixed at 1 microlamport).
+  /// 3. A `transferChecked` instruction for the SPL Token transfer.
+  ///
+  /// The transaction is partially signed by the [signer] (the authority).
+  /// If the [feePayer] is different from the [signer], a placeholder signature
+  /// is added for the fee payer.
+  ///
+  /// Parameters:
+  /// - [signer]: The account authorizing the token transfer.
+  /// - [recipient]: The public address (Base58) of the recipient.
+  /// - [amount]: The amount to transfer in the smallest unit of the token.
+  /// - [tokenMint]: The public address (Base58) of the SPL Token mint.
+  /// - [feePayer]: The public address (Base58) of the account paying for transaction fees.
+  /// - [solanaClient]: The Solana client used to fetch account info and blockhashes.
+  ///
+  /// Returns an [ExactSvmPayload] containing the base64-encoded wire transaction.
+  ///
+  /// Throws an [Exception] if the token mint account is not found.
+  static Future<ExactSvmPayload> createTransferTransaction({
     required Ed25519HDKeyPair signer,
     required String recipient,
     required BigInt amount,
@@ -26,7 +56,9 @@ class SvmTransactionBuilder {
     // Get token mint info to determine decimals and validate program
     final mintInfo = await solanaClient.rpcClient
         .getAccountInfo(tokenMint, encoding: Encoding.base64);
-    if (mintInfo.value == null) throw Exception('Token mint account not found');
+    if (mintInfo.value == null) {
+      throw const MintAccountNotFoundException('Token mint account not found');
+    }
 
     // BinaryAccountData has a 'data' property that contains the bytes
     final mintData = mintInfo.value!.data;
@@ -52,10 +84,19 @@ class SvmTransactionBuilder {
     final instructions = <Instruction>[];
 
     // 1. Set compute unit limit
-    instructions.add(_setComputeUnitLimit(200000));
+    instructions.add(_setComputeUnitLimit(_defaultComputeUnitLimit));
 
     // 2. Set compute unit price
-    instructions.add(_setComputeUnitPrice(1));
+    instructions
+        .add(_setComputeUnitPrice(_defaultComputeUnitPriceMicrolamports));
+
+    if (amount < BigInt.zero || amount > _maxU64) {
+      throw ArgumentError.value(
+        amount,
+        'amount',
+        'Amount must fit into u64 for SPL Token transfers',
+      );
+    }
 
     // 3. Transfer checked instruction
     instructions.add(_transferChecked(
@@ -87,10 +128,10 @@ class SvmTransactionBuilder {
         SignedTx(compiledMessage: compiledMessage, signatures: signatures);
 
     final base64EncodedWireTransaction = transaction.encode();
-    return base64EncodedWireTransaction;
+    return ExactSvmPayload(base64EncodedWireTransaction);
   }
 
-  /// Set compute unit limit instruction
+  /// Creates an instruction to set the compute unit limit.
   static Instruction _setComputeUnitLimit(int units) {
     return Instruction(
       programId: ComputeBudgetProgram.id,
@@ -102,7 +143,7 @@ class SvmTransactionBuilder {
     );
   }
 
-  /// Set compute unit price instruction
+  /// Creates an instruction to set the compute unit price (prioritization fee).
   static Instruction _setComputeUnitPrice(int microLamports) {
     return Instruction(
       programId: ComputeBudgetProgram.id,
@@ -114,7 +155,7 @@ class SvmTransactionBuilder {
     );
   }
 
-  /// Transfer checked instruction
+  /// Creates a `transferChecked` instruction for SPL Token transfers.
   static Instruction _transferChecked({
     required Ed25519HDPublicKey source,
     required Ed25519HDPublicKey destination,
@@ -139,7 +180,7 @@ class SvmTransactionBuilder {
     );
   }
 
-  /// Get associated token address
+  /// Derives the Associated Token Account (ATA) address for a given [mint] and [owner].
   static Future<Ed25519HDPublicKey> getAssociatedTokenAddress({
     required Ed25519HDPublicKey mint,
     required Ed25519HDPublicKey owner,
@@ -151,7 +192,7 @@ class SvmTransactionBuilder {
     );
   }
 
-  /// Decode and verify a transaction
+  /// Decodes a base64-encoded wire transaction into its constituent parts.
   static DecodedTransaction decodeTransaction(String encodedTx) {
     final txBytes = base64Decode(encodedTx);
     final tx = SignedTx.fromBytes(txBytes);
@@ -166,7 +207,14 @@ class SvmTransactionBuilder {
     );
   }
 
-  /// Verify transaction structure for exact scheme
+  /// Verifies that a decoded transaction matches the expected structure for the "exact" scheme.
+  ///
+  /// Validation checks:
+  /// 1. Transaction must have exactly 3 instructions.
+  /// 2. The last instruction must be a Token Program transfer.
+  /// 3. The transfer amount must match [expectedAmount].
+  /// 4. The token mint must match [tokenMint].
+  /// 5. The destination ATA must be derived correctly from [expectedRecipient] and [tokenMint].
   static Future<bool> verifyTransactionStructure({
     required DecodedTransaction decoded,
     required String expectedRecipient,
@@ -213,6 +261,7 @@ class SvmTransactionBuilder {
     return true;
   }
 
+  /// Reads a 64-bit unsigned integer from [bytes] at [offset] in Little-Endian format.
   static int _readU64LE(List<int> bytes, int offset) {
     var value = 0;
     for (var i = 0; i < 8; i++) {
@@ -222,12 +271,21 @@ class SvmTransactionBuilder {
   }
 }
 
-/// Decoded SVM transaction
+/// A decoded representation of a Solana transaction for internal verification.
 class DecodedTransaction {
+  /// The list of compiled instructions in the transaction.
   final List<CompiledInstruction> instructions;
+
+  /// All account public keys referenced by the transaction.
   final List<Ed25519HDPublicKey> accountKeys;
+
+  /// The account designated as the fee payer.
   final Ed25519HDPublicKey feePayer;
+
+  /// The recent blockhash used in the transaction.
   final String blockhash;
+
+  /// The list of signatures attached to the transaction.
   final List<Signature> signatures;
 
   const DecodedTransaction({

@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:x402/x402.dart';
 
 void main() async {
-  final evmSigner = EvmSigner.fromHex(
+  final evmSigner = EvmSigner.fromPrivateKeyHex(
     chainId: 84532, // Base Sepolia
     privateKeyHex: 'YOUR_EVM_PRIVATE_KEY',
   );
 
-  final svmSigner = await SvmSigner.fromHex(
+  final svmSigner = await SvmSigner.fromPrivateKeyHex(
     privateKeyHex: 'YOUR_SVM_PRIVATE_KEY',
     network: SolanaNetwork.devnet,
   );

@@ -1,19 +1,54 @@
+import 'dart:typed_data';
+
 import 'package:convert/convert.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_evm/src/models/exact_payload.dart';
+import 'package:x402_evm/src/models/exact_evm_payload.dart';
 import 'package:x402_evm/src/utils/eip3009.dart';
 
-/// Client-side implementation of the exact scheme for EVM chains
-class ExactEvmSchemeClient implements SchemeClient {
-  final EthPrivateKey _privateKey;
+/// Function type that provides the current Unix timestamp in seconds.
+typedef NowProvider = int Function();
 
-  const ExactEvmSchemeClient({required EthPrivateKey privateKey})
-      : _privateKey = privateKey;
+/// Function type that provides a unique nonce for signing.
+typedef NonceProvider = Uint8List Function();
+
+/// Client-side implementation of the "exact" payment scheme for EVM-based chains.
+///
+/// This client uses EIP-3009 (transferWithAuthorization) to authorize payments.
+/// By default, it uses the current system time and a random nonce, but these can
+/// be overridden via [nowProvider] and [nonceProvider] for deterministic behavior
+/// in testing or specific application flows.
+class ExactEvmSchemeClient implements SchemeClient {
+  static const _schemeId = 'exact';
+
+  final EthPrivateKey _privateKey;
+  final NowProvider _nowProvider;
+  final NonceProvider _nonceProvider;
+
+  /// Creates an [ExactEvmSchemeClient] with the given [privateKey].
+  ///
+  /// Optional [nowProvider] and [nonceProvider] can be supplied to control
+  /// time and nonce generation.
+  ExactEvmSchemeClient(
+      {required EthPrivateKey privateKey,
+      NowProvider? nowProvider,
+      NonceProvider? nonceProvider})
+      : _privateKey = privateKey,
+        _nowProvider = nowProvider ??
+            (() => DateTime.now().millisecondsSinceEpoch ~/ 1000),
+        _nonceProvider = nonceProvider ?? EIP3009.generateNonce;
 
   @override
-  String get scheme => 'exact';
+  String get scheme => _schemeId;
 
+  /// Creates a signed [PaymentPayload] for an EVM transaction using EIP-3009.
+  ///
+  /// The [requirements] must include 'name' and 'version' in the `extra` field,
+  /// representing the token metadata.
+  ///
+  /// Throws [UnsupportedSchemeException] if the scheme is not "exact".
+  /// Throws [InvalidPayloadException] if the network format is invalid or
+  /// required metadata is missing.
   @override
   Future<PaymentPayload> createPaymentPayload(
     PaymentRequirement requirements,
@@ -46,8 +81,9 @@ class ExactEvmSchemeClient implements SchemeClient {
     }
 
     // Generate nonce and validity window
-    final nonce = EIP3009.generateNonce();
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final nonce = _nonceProvider();
+    final now = _nowProvider();
+
     // Using 0 for validAfter is standard for "valid immediately" and avoids clock skew
     final validAfter = BigInt.zero;
     final validBefore = BigInt.from(now + requirements.maxTimeoutSeconds);
@@ -67,7 +103,7 @@ class ExactEvmSchemeClient implements SchemeClient {
     );
 
     // Create authorization object
-    final authorization = ExactAuthorization(
+    final authorization = ExactEvmPayload(
       from: _privateKey.address.hex.toLowerCase(),
       to: requirements.payTo.toLowerCase(),
       value: amount.toString(),
@@ -88,4 +124,7 @@ class ExactEvmSchemeClient implements SchemeClient {
       extensions: extensions,
     );
   }
+
+  /// Returns the Ethereum address associated with the private key.
+  String get address => _privateKey.address.hex;
 }
