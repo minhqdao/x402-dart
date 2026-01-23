@@ -2,11 +2,15 @@ import 'package:solana/solana.dart';
 import 'package:x402_core/x402_core.dart';
 import 'package:x402_svm/src/utils/svm_transaction_builder.dart';
 
-/// Client-side implementation of the exact scheme for SVM
+/// Client-side implementation of the "exact" payment scheme for SVM (Solana).
+///
+/// This client handles the creation of a Solana transaction that performs
+/// an SPL Token transfer satisfying the provided [PaymentRequirement].
 class ExactSvmSchemeClient implements SchemeClient {
   final Ed25519HDKeyPair _signer;
   final SolanaClient _solanaClient;
 
+  /// Creates an [ExactSvmSchemeClient] with the given [signer] and [solanaClient].
   const ExactSvmSchemeClient(
       {required Ed25519HDKeyPair signer, required SolanaClient solanaClient})
       : _signer = signer,
@@ -15,6 +19,14 @@ class ExactSvmSchemeClient implements SchemeClient {
   @override
   String get scheme => 'v2:solana:exact';
 
+  /// Creates a [PaymentPayload] for an SVM transaction.
+  ///
+  /// The [requirements] must specify a 'feePayer' in the `extra` field.
+  /// This method constructs a transfer transaction, signs it, and
+  /// returns it within a [PaymentPayload].
+  ///
+  /// Throws [UnsupportedSchemeException] if the scheme is not supported.
+  /// Throws [InvalidPayloadException] if required data (like feePayer) is missing.
   @override
   Future<PaymentPayload> createPaymentPayload(
     PaymentRequirement requirements,
@@ -65,4 +77,7 @@ class ExactSvmSchemeClient implements SchemeClient {
       extensions: extensions,
     );
   }
+
+  /// Returns the public address (Base58) of the signer.
+  String get address => _signer.publicKey.toBase58();
 }

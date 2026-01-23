@@ -3,6 +3,7 @@ import 'package:solana/dto.dart';
 import 'package:solana/solana.dart';
 import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
+import 'package:x402_svm/src/schemes/exact_svm_scheme_client.dart';
 import 'package:x402_svm/x402_svm.dart';
 
 class _MockSolanaClient extends Mock implements SolanaClient {}
@@ -31,10 +32,12 @@ void main() {
 
       when(() => mockSolanaClient.rpcClient).thenReturn(mockRpcClient);
 
-      signer = SvmSigner(
-        signer: keyPair,
-        client: mockSolanaClient,
-        genesisHash: 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+      signer = SvmSigner.fromClient(
+        solanaNetwork: SolanaNetwork.devnet,
+        client: ExactSvmSchemeClient(
+          signer: keyPair,
+          solanaClient: mockSolanaClient,
+        ),
       );
 
       resource = const ResourceInfo(

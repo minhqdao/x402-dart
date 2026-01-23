@@ -6,14 +6,17 @@ import 'package:x402_evm/src/schemes/exact_evm_scheme_client.dart';
 /// Concrete implementation of [X402Signer] for EVM chains.
 ///
 /// This signer uses an [EthPrivateKey] to sign EIP-3009 authorizations.
+/// It delegates the scheme-specific payload creation to [ExactEvmSchemeClient].
 class EvmSigner extends X402Signer {
+  /// The CAIP-2 network identifier (e.g., 'eip155:8453').
   @override
   final String network;
+
   final ExactEvmSchemeClient _client;
 
   /// Creates an [EvmSigner] from an [ExactEvmSchemeClient] and a [chainId].
   ///
-  /// [networkNamespace] defaults to "eip155" (standard for EVM).
+  /// [networkNamespace] defaults to "eip155" (standard for EVM-based chains).
   ///
   /// Usually use [EvmSigner.fromHex] for convenience.
   EvmSigner.fromClient({
@@ -23,8 +26,11 @@ class EvmSigner extends X402Signer {
   })  : network = '$networkNamespace:$chainId',
         _client = client;
 
-  /// Creates an EvmSigner from a hexadecimal private key string.
-  /// The `privateKeyHex` string can optionally be prefixed with "0x".
+  /// Creates an [EvmSigner] from a hexadecimal private key string.
+  ///
+  /// The [privateKeyHex] string can optionally be prefixed with "0x".
+  /// [chainId] specifies the target network.
+  /// [networkNamespace] defaults to "eip155".
   factory EvmSigner.fromHex({
     required String privateKeyHex,
     required int chainId,
@@ -46,24 +52,17 @@ class EvmSigner extends X402Signer {
   @override
   String get scheme => _client.scheme;
 
-  /// Signs a payment request and returns a serialized payment payload.
+  /// Signs a payment request and returns a [SignedPayment].
   ///
-  /// This method creates a scheme-specific payment payload for the given
-  /// [requirement] and [resource], signs it using the underlying EVM signer,
-  /// and serializes the result into a Base64-encoded string.
+  /// This method:
+  /// 1. Validates the [requirement] against the signer's supported network and asset.
+  /// 2. Delegates payload creation to the underlying scheme client.
+  /// 3. Returns a [SignedPayment] containing the base64-encoded result.
   ///
-  /// The returned string is:
-  /// 1. A JSON representation of the payment payload
-  /// 2. UTF-8 encoded
-  /// 3. Base64 encoded for safe transport over text-based protocols
+  /// Optional [extensions] can be provided to include additional metadata in the payload.
   ///
-  /// Optional [extensions] can be provided to include additional
-  /// scheme- or application-specific metadata in the payload.
-  ///
-  /// Returns a Base64-encoded string containing the signed payment payload.
-  ///
-  /// Throws an [UnsupportedSchemeException] or [InvalidPayloadException]
-  /// if the payment requirement is incompatible with this signer.
+  /// Throws an [ArgumentError] if the requirement is invalid.
+  /// Throws [UnsupportedSchemeException] or [InvalidPayloadException] if signing fails.
   @override
   Future<SignedPayment> sign(
       PaymentRequirement requirement, ResourceInfo resource,
@@ -75,6 +74,7 @@ class EvmSigner extends X402Signer {
         base64Encode(utf8.encode(jsonEncode(payload.toJson()))));
   }
 
+  /// Internal validation of the payment requirement.
   void _validateRequirement(PaymentRequirement requirement) {
     final amount = BigInt.tryParse(requirement.amount);
     if (amount == null) {

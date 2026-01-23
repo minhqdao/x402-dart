@@ -5,38 +5,55 @@ import 'package:x402_core/x402_core.dart';
 import 'package:x402_svm/src/schemes/exact_svm_scheme_client.dart';
 
 /// Supported Solana networks for the [SvmSigner].
+///
+/// Each network defines its genesis hash and a default public RPC URL.
 enum SolanaNetwork {
+  /// The Solana mainnet-beta network.
   mainnet('5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d',
       'https://api.mainnet-beta.solana.com'),
+
+  /// The Solana devnet network (for development and testing).
   devnet('EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG',
       'https://api.devnet.solana.com'),
+
+  /// The Solana testnet network.
   testnet('4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY',
       'https://api.testnet.solana.com');
 
+  /// The genesis hash of the network, used for CAIP-2 identification.
   final String genesisHash;
+
+  /// The default public RPC URL for this network.
   final String rpcUrl;
+
   const SolanaNetwork(this.genesisHash, this.rpcUrl);
 }
 
 /// Concrete implementation of [X402Signer] for SVM (Solana) chains.
 ///
-/// This signer uses an [Ed25519HDKeyPair] to sign SPL Token transfer transactions.
+/// This signer handles the creation and signing of Solana-based payment
+/// payloads, typically using an [Ed25519HDKeyPair] to sign transactions.
+/// It uses an underlying [ExactSvmSchemeClient] to perform scheme-specific
+/// operations.
 class SvmSigner extends X402Signer {
-  final Ed25519HDKeyPair _signer;
-  final SolanaClient _client;
-  final String _genesisHash;
+  final SolanaNetwork _solanaNetwork;
+  final ExactSvmSchemeClient _client;
 
-  SvmSigner({
-    required Ed25519HDKeyPair signer,
-    required SolanaClient client,
-    required String genesisHash,
-  })  : _signer = signer,
-        _client = client,
-        _genesisHash = genesisHash;
+  /// Creates an [SvmSigner] from an [ExactSvmSchemeClient] and the chosen
+  /// [SolanaNetwork].
+  ///
+  /// Use other constructors like [SvmSigner.fromHex] for convenience.
+  SvmSigner.fromClient({
+    required SolanaNetwork solanaNetwork,
+    required ExactSvmSchemeClient client,
+  })  : _solanaNetwork = solanaNetwork,
+        _client = client;
 
   /// Creates an [SvmSigner] from a hexadecimal private key string.
   ///
-  /// [customRpcUrl] can be used to provide a private RPC endpoint (e.g., Helius, QuickNode).
+  /// [privateKeyHex] must be a valid hex-encoded Ed25519 seed (32 bytes).
+  /// [network] specifies the target Solana network.
+  /// [customRpcUrl] can be used to provide a private RPC endpoint.
   static Future<SvmSigner> fromHex({
     required String privateKeyHex,
     required SolanaNetwork network,
@@ -46,20 +63,28 @@ class SvmSigner extends X402Signer {
         privateKey: hex.decode(privateKeyHex));
     final rpcUrl = customRpcUrl ?? network.rpcUrl;
 
-    return SvmSigner(
-      signer: keypair,
-      client: SolanaClient(
-          rpcUrl: Uri.parse(rpcUrl),
-          websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
-      genesisHash: network.genesisHash,
+    return SvmSigner.fromClient(
+      solanaNetwork: network,
+      client: ExactSvmSchemeClient(
+        signer: keypair,
+        solanaClient: SolanaClient(
+            rpcUrl: Uri.parse(rpcUrl),
+            websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
+      ),
     );
   }
 
-  /// 🚀 The "Production" way: Load an existing key from bytes
+  /// Creates an [SvmSigner] from raw private key bytes.
+  ///
+  /// [privateKeyBytes] can be 32 bytes (seed) or 64 bytes (secret key).
+  /// [network] specifies the target Solana network.
+  /// [customRpcUrl] can be used to provide a private RPC endpoint.
+  ///
+  /// Throws [ArgumentError] if the byte length is invalid.
   static Future<SvmSigner> fromPrivateKeyBytes({
     required List<int> privateKeyBytes,
     required SolanaNetwork network,
-    String? customRpcUrl, // Optional override for Helius/QuickNode
+    String? customRpcUrl,
   }) async {
     final List<int> seed;
 
@@ -80,30 +105,35 @@ class SvmSigner extends X402Signer {
         await Ed25519HDKeyPair.fromPrivateKeyBytes(privateKey: seed);
     final rpcUrl = customRpcUrl ?? network.rpcUrl;
 
-    return SvmSigner(
-      signer: keypair,
-      client: SolanaClient(
-          rpcUrl: Uri.parse(rpcUrl),
-          websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
-      genesisHash: network.genesisHash,
+    return SvmSigner.fromClient(
+      client: ExactSvmSchemeClient(
+        signer: keypair,
+        solanaClient: SolanaClient(
+            rpcUrl: Uri.parse(rpcUrl),
+            websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
+      ),
+      solanaNetwork: network,
     );
   }
 
-  /// 🧪 The "Quick Start" way: Random key for testing
+  /// Creates an [SvmSigner] with a randomly generated keypair.
+  /// Useful for testing or temporary wallets.
   static Future<SvmSigner> createRandom(
       {required SolanaNetwork network}) async {
     final keypair = await Ed25519HDKeyPair.random();
-    return SvmSigner(
-      signer: keypair,
-      client: SolanaClient(
-        rpcUrl: Uri.parse(network.rpcUrl),
-        websocketUrl: Uri.parse(network.rpcUrl.replaceFirst('https', 'wss')),
+    return SvmSigner.fromClient(
+      client: ExactSvmSchemeClient(
+        signer: keypair,
+        solanaClient: SolanaClient(
+          rpcUrl: Uri.parse(network.rpcUrl),
+          websocketUrl: Uri.parse(network.rpcUrl.replaceFirst('https', 'wss')),
+        ),
       ),
-      genesisHash: network.genesisHash,
+      solanaNetwork: network,
     );
   }
 
-  /// 🔑 Restore from Mnemonic
+  /// Restores an [SvmSigner] from a BIP-39 mnemonic phrase.
   static Future<SvmSigner> fromMnemonic({
     required String mnemonic,
     required SolanaNetwork network,
@@ -112,23 +142,26 @@ class SvmSigner extends X402Signer {
     final keypair = await Ed25519HDKeyPair.fromMnemonic(mnemonic);
     final rpcUrl = customRpcUrl ?? network.rpcUrl;
 
-    return SvmSigner(
-      signer: keypair,
-      client: SolanaClient(
+    return SvmSigner.fromClient(
+      client: ExactSvmSchemeClient(
+        signer: keypair,
+        solanaClient: SolanaClient(
           rpcUrl: Uri.parse(rpcUrl),
-          websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
-      genesisHash: network.genesisHash,
+          websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss')),
+        ),
+      ),
+      solanaNetwork: network,
     );
   }
 
   @override
-  String get network => 'solana:${_genesisHash.substring(0, 32)}';
+  String get network => 'solana:${_solanaNetwork.genesisHash.substring(0, 32)}';
 
   @override
-  String get scheme => 'v2:solana:exact';
+  String get scheme => _client.scheme;
 
   @override
-  String get address => _signer.publicKey.toBase58();
+  String get address => _client.address;
 
   @override
   bool supports(PaymentRequirement requirement) {
@@ -143,10 +176,8 @@ class SvmSigner extends X402Signer {
     ResourceInfo resource, {
     Map<String, dynamic>? extensions,
   }) async {
-    final schemeClient =
-        ExactSvmSchemeClient(signer: _signer, solanaClient: _client);
-    final payload = await schemeClient
-        .createPaymentPayload(requirement, resource, extensions: extensions);
+    final payload = await _client.createPaymentPayload(requirement, resource,
+        extensions: extensions);
     return SignedPayment(
         base64Encode(utf8.encode(jsonEncode(payload.toJson()))));
   }
