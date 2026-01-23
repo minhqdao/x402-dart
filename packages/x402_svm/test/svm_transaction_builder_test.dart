@@ -2,6 +2,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/solana.dart';
 import 'package:test/test.dart';
+import 'package:x402_svm/src/exceptions/svm_exceptions.dart';
 import 'package:x402_svm/src/utils/svm_transaction_builder.dart';
 
 class _MockSolanaClient extends Mock implements SolanaClient {}
@@ -191,6 +192,77 @@ void main() {
 
         expect(price, equals(1),
             reason: 'Compute unit price should be exactly 1 microlamport');
+      });
+    });
+
+    group('Error Handling', () {
+      test('should throw MintAccountNotFoundException if mint not found', () {
+        const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+        const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
+        const testFeePayer = '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC';
+        final amount = BigInt.from(1000000);
+
+        when(() => mockRpcClient.getAccountInfo(
+              testMintAddress,
+              encoding: any(named: 'encoding'),
+            )).thenAnswer((_) async => AccountResult(
+              context: Context(slot: BigInt.from(1)),
+              value: null, // Simulate not found
+            ));
+
+        expect(
+          () => SvmTransactionBuilder.createTransferTransaction(
+            signer: testSigner,
+            recipient: testRecipient,
+            amount: amount,
+            tokenMint: testMintAddress,
+            feePayer: testFeePayer,
+            solanaClient: mockClient,
+          ),
+          throwsA(isA<MintAccountNotFoundException>()),
+        );
+      });
+
+      test('should throw ArgumentError if amount is negative', () {
+        const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+        const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
+        const testFeePayer = '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC';
+        final amount = BigInt.from(-100);
+
+        _setupMocks(mockRpcClient, testMintAddress);
+
+        expect(
+          () => SvmTransactionBuilder.createTransferTransaction(
+            signer: testSigner,
+            recipient: testRecipient,
+            amount: amount,
+            tokenMint: testMintAddress,
+            feePayer: testFeePayer,
+            solanaClient: mockClient,
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('should throw ArgumentError if amount overflows u64', () {
+        const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+        const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
+        const testFeePayer = '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC';
+        final amount = BigInt.parse('18446744073709551616'); // 2^64 (overflow)
+
+        _setupMocks(mockRpcClient, testMintAddress);
+
+        expect(
+          () => SvmTransactionBuilder.createTransferTransaction(
+            signer: testSigner,
+            recipient: testRecipient,
+            amount: amount,
+            tokenMint: testMintAddress,
+            feePayer: testFeePayer,
+            solanaClient: mockClient,
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
       });
     });
 
