@@ -13,8 +13,9 @@ import 'package:x402_svm/src/models/exact_svm_payload.dart';
 class SvmTransactionBuilder {
   const SvmTransactionBuilder._();
 
-  static const int _defaultComputeUnitLimit = 200_000;
-  static const int _defaultComputeUnitPriceMicrolamports = 1;
+  static const _defaultComputeUnitLimit = 200_000;
+  static const _defaultComputeUnitPriceMicrolamports = 1;
+  static final _maxU64 = (BigInt.one << 64) - BigInt.one;
 
   /// Creates a signed Solana transaction for an SPL Token transfer.
   ///
@@ -89,7 +90,7 @@ class SvmTransactionBuilder {
     instructions
         .add(_setComputeUnitPrice(_defaultComputeUnitPriceMicrolamports));
 
-    if (amount < BigInt.zero || amount > BigInt.parse('18446744073709551615')) {
+    if (amount < BigInt.zero || amount > _maxU64) {
       throw ArgumentError.value(
         amount,
         'amount',
