@@ -1,5 +1,5 @@
-/// EIP-3009 authorization data for exact scheme
-class ExactAuthorization {
+/// EIP-3009 payload data for exact scheme
+class ExactEvmPayload {
   final String from;
   final String to;
   final String value;
@@ -7,7 +7,7 @@ class ExactAuthorization {
   final String validBefore;
   final String nonce;
 
-  const ExactAuthorization({
+  const ExactEvmPayload({
     required this.from,
     required this.to,
     required this.value,
@@ -16,8 +16,8 @@ class ExactAuthorization {
     required this.nonce,
   });
 
-  factory ExactAuthorization.fromJson(Map<String, dynamic> json) {
-    return ExactAuthorization(
+  factory ExactEvmPayload.fromJson(Map<String, dynamic> json) {
+    return ExactEvmPayload(
       from: json['from'] as String,
       to: json['to'] as String,
       value: json['value'] as String,

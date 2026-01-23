@@ -73,11 +73,11 @@ void main(List<String> args) async {
     // 3. Negotiate Requirements and Sign
     X402Signer? chosenSigner;
     PaymentRequirement? chosenRequirement;
-    String? signature;
+    SignedPayment? signature;
 
     // Initialize EVM signer
-    final evmSigner =
-        EvmSigner.fromHex(chainId: 84532, privateKeyHex: evmPrivateKey);
+    final evmSigner = EvmSigner.fromPrivateKeyHex(
+        chainId: 84532, privateKeyHex: evmPrivateKey);
     stdout.writeln('EVM Address: ${evmSigner.address}');
 
     // Try EVM first
@@ -95,7 +95,7 @@ void main(List<String> args) async {
         return;
       }
 
-      final svmSigner = await SvmSigner.fromHex(
+      final svmSigner = await SvmSigner.fromPrivateKeyHex(
           privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
       stdout.writeln('SVM Address: ${svmSigner.address}');
 
@@ -126,7 +126,7 @@ void main(List<String> args) async {
     stdout.writeln('Retrying request with signature...');
     final retryResponse = await client.get(
       Uri.parse('$host$endpointPath'),
-      headers: {kPaymentSignatureHeader: signature},
+      headers: {kPaymentSignatureHeader: signature.encoded},
     );
 
     if (retryResponse.statusCode == 200) {

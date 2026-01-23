@@ -84,7 +84,7 @@ class EIP3009 {
     return recoveredAddress.hex.toLowerCase() == from.toLowerCase();
   }
 
-  static Uint8List _toFixedLengthBytes(BigInt value, {int length = 32}) {
+  static Uint8List toFixedLengthBytes(BigInt value, {int length = 32}) {
     final bytes = unsignedIntToBytes(value);
 
     if (bytes.length > length) {
@@ -100,8 +100,8 @@ class EIP3009 {
 
   /// Encode signature as hex string
   static String encodeSignature(MsgSignature signature) {
-    final r = hex.encode(_toFixedLengthBytes(signature.r));
-    final s = hex.encode(_toFixedLengthBytes(signature.s));
+    final r = hex.encode(toFixedLengthBytes(signature.r));
+    final s = hex.encode(toFixedLengthBytes(signature.s));
     final v = signature.v.toRadixString(16).padLeft(2, '0');
     return '0x$r$s$v';
   }

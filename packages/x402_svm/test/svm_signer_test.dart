@@ -1,17 +1,22 @@
 import 'dart:convert';
+
 import 'package:mocktail/mocktail.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/solana.dart';
 import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
+import 'package:x402_svm/src/schemes/exact_svm_scheme_client.dart';
 import 'package:x402_svm/x402_svm.dart';
 
+/// Mock class for SolanaClient to intercept network calls.
 class _MockSolanaClient extends Mock implements SolanaClient {}
 
+/// Mock class for RpcClient to intercept RPC method calls.
 class _MockRpcClient extends Mock implements RpcClient {}
 
 void main() {
   setUpAll(() {
+    // Register fallback values for mocktail to handle custom types in any() matchers.
     registerFallbackValue(Commitment.confirmed);
     registerFallbackValue(Encoding.base64);
     registerFallbackValue(const DataSlice(offset: 0, length: 0));
@@ -26,18 +31,25 @@ void main() {
     late ResourceInfo resource;
 
     setUp(() async {
+      // 1. Generate a random keypair for the signer.
       keyPair = await Ed25519HDKeyPair.random();
+
+      // 2. Initialize mocks.
       mockSolanaClient = _MockSolanaClient();
       mockRpcClient = _MockRpcClient();
 
       when(() => mockSolanaClient.rpcClient).thenReturn(mockRpcClient);
 
-      signer = SvmSigner(
-        signer: keyPair,
-        client: mockSolanaClient,
-        genesisHash: 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+      // 3. Create the signer instance using the mocked client.
+      signer = SvmSigner.fromClient(
+        solanaNetwork: SolanaNetwork.devnet,
+        client: ExactSvmSchemeClient(
+          signer: keyPair,
+          solanaClient: mockSolanaClient,
+        ),
       );
 
+      // 4. Setup test data.
       resource = const ResourceInfo(
         url: 'https://api.example.com/data',
         description: 'Premium data access',
@@ -54,7 +66,9 @@ void main() {
         extra: {'feePayer': '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC'},
       );
 
-      // Mock blockhash
+      // 5. Mock essential RPC responses.
+
+      // Mock blockhash retrieval.
       when(() => mockRpcClient.getLatestBlockhash(
             commitment: any(named: 'commitment'),
             minContextSlot: any(named: 'minContextSlot'),
@@ -68,7 +82,7 @@ void main() {
         ),
       );
 
-      // Mock account info (destination token account exists)
+      // Mock account info retrieval (simulating that the token mint exists).
       when(() => mockRpcClient.getAccountInfo(
             any(),
             commitment: any(named: 'commitment'),
@@ -145,14 +159,16 @@ void main() {
     test('should sign and return base64 encoded payload', () async {
       final signature = await signer.sign(requirements, resource);
 
-      expect(signature, isA<String>());
-      final decodedJson = jsonDecode(utf8.decode(base64Decode(signature)))
-          as Map<String, dynamic>;
+      expect(signature, isA<SignedPayment>());
+      final decodedJson = signature.decode();
       final payload = PaymentPayload.fromJson(decodedJson);
 
       expect(payload.x402Version, equals(kX402Version));
       expect(payload.accepted.network, equals(requirements.network));
       expect(payload.payload['transaction'], isNotNull);
+      final tx = payload.payload['transaction'] as String;
+      expect(tx, isNotEmpty);
+      expect(() => base64.decode(tx), returnsNormally);
     });
 
     test('should include extensions if provided', () async {
@@ -160,11 +176,89 @@ void main() {
       final signature =
           await signer.sign(requirements, resource, extensions: extensions);
 
-      final decodedJson = jsonDecode(utf8.decode(base64Decode(signature)))
-          as Map<String, dynamic>;
+      final decodedJson = signature.decode();
       final payload = PaymentPayload.fromJson(decodedJson);
 
       expect(payload.extensions, equals(extensions));
+    });
+
+    group('constructors and networks', () {
+      const customRpc = 'https://custom.rpc.com';
+      const hexKey =
+          '0000000000000000000000000000000000000000000000000000000000000001';
+      final byteKey = List.filled(32, 0);
+      const mnemonic =
+          'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+      test('fromPrivateKeyHex with customRpcUrl', () async {
+        final s = await SvmSigner.fromPrivateKeyHex(
+          privateKeyHex: hexKey,
+          network: SolanaNetwork.devnet,
+          customRpcUrl: customRpc,
+        );
+        expect(s.network, startsWith('solana:'));
+      });
+
+      test('fromPrivateKeyBytes with customRpcUrl', () async {
+        final s = await SvmSigner.fromPrivateKeyBytes(
+          privateKeyBytes: byteKey,
+          network: SolanaNetwork.devnet,
+          customRpcUrl: customRpc,
+        );
+        expect(s.network, startsWith('solana:'));
+      });
+
+      test('fromMnemonic with customRpcUrl', () async {
+        final s = await SvmSigner.fromMnemonic(
+          mnemonic: mnemonic,
+          network: SolanaNetwork.devnet,
+          customRpcUrl: customRpc,
+        );
+        expect(s.network, startsWith('solana:'));
+      });
+
+      test('mainnet support', () async {
+        final s = await SvmSigner.createRandom(network: SolanaNetwork.mainnet);
+        expect(
+            s.network,
+            equals(
+                'solana:${SolanaNetwork.mainnet.genesisHash.substring(0, 32)}'));
+      });
+
+      test('testnet support', () async {
+        final s = await SvmSigner.createRandom(network: SolanaNetwork.testnet);
+        expect(
+            s.network,
+            equals(
+                'solana:${SolanaNetwork.testnet.genesisHash.substring(0, 32)}'));
+      });
+    });
+
+    group('validation', () {
+      test('throws on zero amount', () {
+        final req = requirements.copyWith(amount: '0');
+        expect(() => signer.sign(req, resource), throwsArgumentError);
+      });
+
+      test('throws on negative amount', () {
+        final req = requirements.copyWith(amount: '-100');
+        expect(() => signer.sign(req, resource), throwsArgumentError);
+      });
+
+      test('throws on non-numeric amount', () {
+        final req = requirements.copyWith(amount: 'abc');
+        expect(() => signer.sign(req, resource), throwsArgumentError);
+      });
+
+      test('throws on negative timeout', () {
+        final req = requirements.copyWith(maxTimeoutSeconds: -1);
+        expect(() => signer.sign(req, resource), throwsArgumentError);
+      });
+
+      test('throws if network mismatches', () {
+        final req = requirements.copyWith(network: 'solana:wrong-hash');
+        expect(() => signer.sign(req, resource), throwsArgumentError);
+      });
     });
   });
 }

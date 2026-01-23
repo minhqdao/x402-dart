@@ -60,6 +60,26 @@ class PaymentRequirement {
     };
   }
 
+  PaymentRequirement copyWith({
+    String? scheme,
+    String? network,
+    String? asset,
+    String? amount,
+    String? payTo,
+    int? maxTimeoutSeconds,
+    Map<String, dynamic>? extra,
+  }) {
+    return PaymentRequirement(
+      scheme: scheme ?? this.scheme,
+      network: network ?? this.network,
+      asset: asset ?? this.asset,
+      amount: amount ?? this.amount,
+      payTo: payTo ?? this.payTo,
+      maxTimeoutSeconds: maxTimeoutSeconds ?? this.maxTimeoutSeconds,
+      extra: extra ?? this.extra,
+    );
+  }
+
   /// Factory to decode the Base64 JSON from the payment-required header
   factory PaymentRequirement.fromHeader(String base64Json) {
     final decoded = jsonDecode(utf8.decode(base64Decode(base64Json)));
