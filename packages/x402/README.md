@@ -16,7 +16,7 @@ Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  x402: ^0.1.0
+  x402: ^0.2.0
 ```
 
 ## Usage
@@ -27,8 +27,8 @@ There are two primary ways to interact with the protocol:
 The `X402Client` is a high-level wrapper around the standard `http.Client`. It automatically detects 402 responses, finds a compatible signer, and retries the request with the required payment proof.
 
 ```dart
-final evmSigner = EvmSigner.fromHex(chainId: 123, privateKeyHex: 'EVM_PRIVATE_KEY');
-final svmSigner = await SvmSigner.fromHex(privateKeyHex: 'SVM_PRIVATE_KEY', network: SolanaNetwork.devnet);
+final evmSigner = EvmSigner.fromPrivateKeyHex(chainId: 123, privateKeyHex: 'EVM_PRIVATE_KEY');
+final svmSigner = await SvmSigner.fromPrivateKeyHex(privateKeyHex: 'SVM_PRIVATE_KEY', network: SolanaNetwork.devnet);
 
 final client = X402Client(
   signers: [
