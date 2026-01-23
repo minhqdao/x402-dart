@@ -92,6 +92,14 @@ void main() {
       expect(client.scheme, equals('v2:solana:exact'));
     });
 
+    test('should accept "exact" as a valid scheme', () async {
+      final req = requirements.copyWith(scheme: 'exact');
+      await expectLater(
+        client.createPaymentPayload(req, resource),
+        completes,
+      );
+    });
+
     test('address getter should return correct value', () {
       expect(client.address, equals(keyPair.publicKey.toBase58()));
     });
