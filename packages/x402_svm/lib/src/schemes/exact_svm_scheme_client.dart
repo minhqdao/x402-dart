@@ -7,6 +7,8 @@ import 'package:x402_svm/src/utils/svm_transaction_builder.dart';
 /// This client handles the creation of a Solana transaction that performs
 /// an SPL Token transfer satisfying the provided [PaymentRequirement].
 class ExactSvmSchemeClient implements SchemeClient {
+  static const _schemeId = 'v2:solana:exact';
+
   final Ed25519HDKeyPair _signer;
   final SolanaClient _solanaClient;
 
@@ -17,7 +19,7 @@ class ExactSvmSchemeClient implements SchemeClient {
         _solanaClient = solanaClient;
 
   @override
-  String get scheme => 'v2:solana:exact';
+  String get scheme => _schemeId;
 
   /// Creates a [PaymentPayload] for an SVM transaction.
   ///
