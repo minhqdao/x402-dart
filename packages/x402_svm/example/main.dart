@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:x402_svm/x402_svm.dart';
 
 void main() async {
-  final signer = await SvmSigner.fromHex(
+  final signer = await SvmSigner.fromPrivateKeyHex(
     privateKeyHex: 'YOUR_SOLANA_PRIVATE_KEY_HEX',
     network: SolanaNetwork.devnet,
   );

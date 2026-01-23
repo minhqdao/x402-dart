@@ -18,7 +18,7 @@ class EvmSigner extends X402Signer {
   ///
   /// [networkNamespace] defaults to "eip155" (standard for EVM-based chains).
   ///
-  /// Usually use [EvmSigner.fromHex] for convenience.
+  /// Usually use [EvmSigner.fromPrivateKeyHex] for convenience.
   EvmSigner.fromClient({
     required ExactEvmSchemeClient client,
     required int chainId,
@@ -31,7 +31,7 @@ class EvmSigner extends X402Signer {
   /// The [privateKeyHex] string can optionally be prefixed with "0x".
   /// [chainId] specifies the target network.
   /// [networkNamespace] defaults to "eip155".
-  factory EvmSigner.fromHex({
+  factory EvmSigner.fromPrivateKeyHex({
     required String privateKeyHex,
     required int chainId,
     String networkNamespace = 'eip155',

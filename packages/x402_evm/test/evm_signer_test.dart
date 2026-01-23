@@ -158,7 +158,7 @@ void main() {
     });
 
     test('fromHex factory should create valid signer', () {
-      final hexSigner = EvmSigner.fromHex(
+      final hexSigner = EvmSigner.fromPrivateKeyHex(
         privateKeyHex:
             '4efa000000000000000000000000000000000000000000000000000000000001',
         chainId: 1,
@@ -168,7 +168,7 @@ void main() {
     });
 
     test('same address with upper-case private key', () {
-      final hexSigner = EvmSigner.fromHex(
+      final hexSigner = EvmSigner.fromPrivateKeyHex(
         privateKeyHex:
             '4EFA000000000000000000000000000000000000000000000000000000000001',
         chainId: 1,

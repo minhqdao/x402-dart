@@ -54,7 +54,7 @@ class SvmSigner extends X402Signer {
   /// [privateKeyHex] must be a valid hex-encoded Ed25519 seed (32 bytes).
   /// [network] specifies the target Solana network.
   /// [customRpcUrl] can be used to provide a private RPC endpoint.
-  static Future<SvmSigner> fromHex({
+  static Future<SvmSigner> fromPrivateKeyHex({
     required String privateKeyHex,
     required SolanaNetwork network,
     String? customRpcUrl,
