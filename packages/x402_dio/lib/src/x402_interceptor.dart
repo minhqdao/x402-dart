@@ -159,8 +159,8 @@ class X402Interceptor extends Interceptor {
             method: err.requestOptions.method,
             headers: Map.of(err.requestOptions.headers)
               ..addAll({
-                kPaymentSignatureHeader: signature,
-                kPaymentHeader: signature,
+                kPaymentSignatureHeader: signature.encoded,
+                kPaymentHeader: signature.encoded,
               }),
             responseType: err.requestOptions.responseType,
             contentType: err.requestOptions.contentType,
