@@ -8,7 +8,7 @@
 - `X402Client` no longer drains the response stream when returning the original response, fixing issues with non-streaming requests.
 - Updated `X402Exception.toString` to include error code if present.
 
-# 0.1.0
+## 0.1.0
 
 - Initial release of the x402 core protocol definitions and shared logic.
 - Defined base interfaces for `X402Signer` and `SchemeClient`.

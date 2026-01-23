@@ -42,7 +42,7 @@ class SvmSigner extends X402Signer {
   /// Creates an [SvmSigner] from an [ExactSvmSchemeClient] and the chosen
   /// [SolanaNetwork].
   ///
-  /// Use other constructors like [SvmSigner.fromHex] for convenience.
+  /// Use other constructors like [SvmSigner.fromPrivateKeyHex] for convenience.
   SvmSigner.fromClient({
     required SolanaNetwork solanaNetwork,
     required ExactSvmSchemeClient client,

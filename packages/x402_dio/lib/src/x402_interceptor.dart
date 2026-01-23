@@ -17,7 +17,7 @@ import 'package:x402_core/x402_core.dart';
 /// import 'package:x402_dio/x402_dio.dart';
 ///
 /// // Create signers for your supported networks
-/// final evmSigner = EvmSigner.fromHex(
+/// final evmSigner = EvmSigner.fromPrivateKeyHex(
 ///   chainId: 8453,  // Base
 ///   privateKeyHex: 'your_private_key_hex',
 /// );

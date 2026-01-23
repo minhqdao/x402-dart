@@ -157,7 +157,7 @@ void main() {
       expect(payload.extensions, equals(extensions));
     });
 
-    test('fromHex factory should create valid signer', () {
+    test('fromPrivateKeyHex factory should create valid signer', () {
       final hexSigner = EvmSigner.fromPrivateKeyHex(
         privateKeyHex:
             '4efa000000000000000000000000000000000000000000000000000000000001',

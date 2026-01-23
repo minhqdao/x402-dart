@@ -34,15 +34,15 @@ For most use cases, you only need to add the main `x402` package to your project
 
 ```yaml
 dependencies:
-  x402: ^0.1.0
+  x402: ^0.2.0
 ```
 
 If you prefer using **Dio**, you can use the `x402_dio` package:
 
 ```yaml
 dependencies:
-  x402: ^0.1.0     # For signers (EvmSigner, SvmSigner)
-  x402_dio: ^0.1.0 # For X402Interceptor
+  x402: ^0.2.0     # For signers (EvmSigner, SvmSigner)
+  x402_dio: ^0.2.0 # For X402Interceptor
 ```
 
 ### Quick Example
@@ -51,8 +51,8 @@ dependencies:
 import 'package:x402/x402.dart';
 
 void main() async {
-  final evmSigner = EvmSigner.fromHex(chainId: 123, privateKeyHex: 'EVM_PRIVATE_KEY');
-  final svmSigner = await SvmSigner.fromHex(privateKeyHex: 'SVM_PRIVATE_KEY', network: SolanaNetwork.devnet);
+  final evmSigner = EvmSigner.fromPrivateKeyHex(chainId: 123, privateKeyHex: 'EVM_PRIVATE_KEY');
+  final svmSigner = await SvmSigner.fromPrivateKeyHex(privateKeyHex: 'SVM_PRIVATE_KEY', network: SolanaNetwork.devnet);
 
   final client = X402Client(
     signers: [

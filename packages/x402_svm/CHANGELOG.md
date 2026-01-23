@@ -8,7 +8,7 @@
 - Made `DecodedTransaction` public for better testability and verification.
 - Added extensive validation tests for signers and transaction building.
 
-# 0.1.0
+## 0.1.0
 
 - Initial release of the SVM implementation for x402.
 - Implemented `SvmSigner` for Solana and SVM-compatible chains.
