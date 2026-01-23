@@ -17,6 +17,8 @@ typedef NonceProvider = Uint8List Function();
 /// signing becomes fully deterministic.
 /// This is intended for testing and reproducible payloads.
 class ExactEvmSchemeClient implements SchemeClient {
+  static const _schemeId = 'exact';
+
   final EthPrivateKey _privateKey;
   final NowProvider _nowProvider;
   final NonceProvider _nonceProvider;
@@ -31,7 +33,7 @@ class ExactEvmSchemeClient implements SchemeClient {
         _nonceProvider = nonceProvider ?? EIP3009.generateNonce;
 
   @override
-  String get scheme => 'exact';
+  String get scheme => _schemeId;
 
   @override
   Future<PaymentPayload> createPaymentPayload(
