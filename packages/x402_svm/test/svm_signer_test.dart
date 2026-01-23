@@ -177,6 +177,58 @@ void main() {
       expect(payload.extensions, equals(extensions));
     });
 
+    group('constructors and networks', () {
+      const customRpc = 'https://custom.rpc.com';
+      const hexKey =
+          '0000000000000000000000000000000000000000000000000000000000000001';
+      final byteKey = List.filled(32, 0);
+      const mnemonic =
+          'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+      test('fromPrivateKeyHex with customRpcUrl', () async {
+        final s = await SvmSigner.fromPrivateKeyHex(
+          privateKeyHex: hexKey,
+          network: SolanaNetwork.devnet,
+          customRpcUrl: customRpc,
+        );
+        expect(s.network, startsWith('solana:'));
+      });
+
+      test('fromPrivateKeyBytes with customRpcUrl', () async {
+        final s = await SvmSigner.fromPrivateKeyBytes(
+          privateKeyBytes: byteKey,
+          network: SolanaNetwork.devnet,
+          customRpcUrl: customRpc,
+        );
+        expect(s.network, startsWith('solana:'));
+      });
+
+      test('fromMnemonic with customRpcUrl', () async {
+        final s = await SvmSigner.fromMnemonic(
+          mnemonic: mnemonic,
+          network: SolanaNetwork.devnet,
+          customRpcUrl: customRpc,
+        );
+        expect(s.network, startsWith('solana:'));
+      });
+
+      test('mainnet support', () async {
+        final s = await SvmSigner.createRandom(network: SolanaNetwork.mainnet);
+        expect(
+            s.network,
+            equals(
+                'solana:${SolanaNetwork.mainnet.genesisHash.substring(0, 32)}'));
+      });
+
+      test('testnet support', () async {
+        final s = await SvmSigner.createRandom(network: SolanaNetwork.testnet);
+        expect(
+            s.network,
+            equals(
+                'solana:${SolanaNetwork.testnet.genesisHash.substring(0, 32)}'));
+      });
+    });
+
     group('validation', () {
       test('throws on zero amount', () {
         final req = requirements.copyWith(amount: '0');
