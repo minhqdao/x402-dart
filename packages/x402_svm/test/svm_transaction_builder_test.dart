@@ -1,5 +1,6 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:solana/dto.dart';
+import 'package:solana/encoder.dart';
 import 'package:solana/solana.dart';
 import 'package:test/test.dart';
 import 'package:x402_svm/src/exceptions/svm_exceptions.dart';
@@ -475,6 +476,182 @@ void main() {
         // Assert
         expect(isValid, isFalse,
             reason: 'Transaction with wrong amount should fail verification');
+      });
+
+      test(
+          'verifyTransactionStructure should fail if extra instruction appended',
+          () async {
+        // Arrange
+        const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+        const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
+        const testFeePayer = '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC';
+        final amount = BigInt.from(1000000);
+
+        _setupMocks(mockRpcClient, testMintAddress);
+
+        final encodedTx = await SvmTransactionBuilder.createTransferTransaction(
+          signer: testSigner,
+          recipient: testRecipient,
+          amount: amount,
+          tokenMint: testMintAddress,
+          feePayer: testFeePayer,
+          solanaClient: mockClient,
+        );
+
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
+
+        // Manually create a new list with an extra instruction
+        final modifiedInstructions =
+            List<CompiledInstruction>.from(decoded.instructions)
+              ..add(decoded.instructions.first); // Duplicate first instruction
+
+        final modifiedDecoded = DecodedTransaction(
+          instructions: modifiedInstructions,
+          accountKeys: decoded.accountKeys,
+          feePayer: decoded.feePayer,
+          blockhash: decoded.blockhash,
+          signatures: decoded.signatures,
+        );
+
+        // Act
+        final isValid = await SvmTransactionBuilder.verifyTransactionStructure(
+          decoded: modifiedDecoded,
+          expectedRecipient: testRecipient,
+          expectedAmount: amount,
+          tokenMint: testMintAddress,
+        );
+
+        // Assert
+        expect(isValid, isFalse,
+            reason:
+                'Transaction with extra instruction should fail verification');
+      });
+
+      test(
+          'verifyTransactionStructure should fail if instruction order is incorrect',
+          () async {
+        // Arrange
+        const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+        const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
+        const testFeePayer = '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC';
+        final amount = BigInt.from(1000000);
+
+        _setupMocks(mockRpcClient, testMintAddress);
+
+        final encodedTx = await SvmTransactionBuilder.createTransferTransaction(
+          signer: testSigner,
+          recipient: testRecipient,
+          amount: amount,
+          tokenMint: testMintAddress,
+          feePayer: testFeePayer,
+          solanaClient: mockClient,
+        );
+
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
+
+        // Swap last two instructions
+        final instructions =
+            List<CompiledInstruction>.from(decoded.instructions);
+        final last = instructions.removeLast();
+        instructions.insert(0, last); // Move Transfer to first position
+
+        final modifiedDecoded = DecodedTransaction(
+          instructions: instructions,
+          accountKeys: decoded.accountKeys,
+          feePayer: decoded.feePayer,
+          blockhash: decoded.blockhash,
+          signatures: decoded.signatures,
+        );
+
+        // Act
+        final isValid = await SvmTransactionBuilder.verifyTransactionStructure(
+          decoded: modifiedDecoded,
+          expectedRecipient: testRecipient,
+          expectedAmount: amount,
+          tokenMint: testMintAddress,
+        );
+
+        // Assert
+        expect(isValid, isFalse,
+            reason: 'Incorrect instruction order should fail verification');
+      });
+
+      test(
+          'verifyTransactionStructure should fail if destination ATA is incorrect',
+          () async {
+        // Arrange
+        const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+        const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
+        const wrongRecipient =
+            '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC'; // Fee payer address
+        const testFeePayer = '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC';
+        final amount = BigInt.from(1000000);
+
+        _setupMocks(mockRpcClient, testMintAddress);
+
+        final encodedTx = await SvmTransactionBuilder.createTransferTransaction(
+          signer: testSigner,
+          recipient: testRecipient,
+          amount: amount,
+          tokenMint: testMintAddress,
+          feePayer: testFeePayer,
+          solanaClient: mockClient,
+        );
+
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
+
+        // Act
+        // Verify with a DIFFERENT recipient (which implies different ATA)
+        final isValid = await SvmTransactionBuilder.verifyTransactionStructure(
+          decoded: decoded,
+          expectedRecipient: wrongRecipient,
+          expectedAmount: amount,
+          tokenMint: testMintAddress,
+        );
+
+        // Assert
+        expect(isValid, isFalse,
+            reason: 'Wrong destination ATA/recipient should fail verification');
+      });
+
+      test('verifyTransactionStructure should fail if transfer uses wrong mint',
+          () async {
+        // Arrange
+        const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+        const wrongMintAddress =
+            'So11111111111111111111111111111111111111112'; // WSOL
+        const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
+        const testFeePayer = '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC';
+        final amount = BigInt.from(1000000);
+
+        _setupMocks(mockRpcClient, testMintAddress);
+
+        final encodedTx = await SvmTransactionBuilder.createTransferTransaction(
+          signer: testSigner,
+          recipient: testRecipient,
+          amount: amount,
+          tokenMint: testMintAddress,
+          feePayer: testFeePayer,
+          solanaClient: mockClient,
+        );
+
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
+
+        // Act
+        final isValid = await SvmTransactionBuilder.verifyTransactionStructure(
+          decoded: decoded,
+          expectedRecipient: testRecipient,
+          expectedAmount: amount,
+          tokenMint: wrongMintAddress,
+        );
+
+        // Assert
+        expect(isValid, isFalse,
+            reason: 'Wrong token mint should fail verification');
       });
     });
   });
