@@ -153,12 +153,12 @@ class SvmTransactionBuilder {
   }
 
   /// Decode and verify a transaction
-  static DecodedTransaction decodeTransaction(String encodedTx) {
+  static _DecodedTransaction decodeTransaction(String encodedTx) {
     final txBytes = base64Decode(encodedTx);
     final tx = SignedTx.fromBytes(txBytes);
     final msg = tx.compiledMessage;
 
-    return DecodedTransaction(
+    return _DecodedTransaction(
       instructions: msg.instructions,
       accountKeys: msg.accountKeys,
       feePayer: msg.accountKeys.first,
@@ -169,7 +169,7 @@ class SvmTransactionBuilder {
 
   /// Verify transaction structure for exact scheme
   static Future<bool> verifyTransactionStructure({
-    required DecodedTransaction decoded,
+    required _DecodedTransaction decoded,
     required String expectedRecipient,
     required BigInt expectedAmount,
     required String tokenMint,
@@ -224,14 +224,14 @@ class SvmTransactionBuilder {
 }
 
 /// Decoded SVM transaction
-class DecodedTransaction {
+class _DecodedTransaction {
   final List<CompiledInstruction> instructions;
   final List<Ed25519HDPublicKey> accountKeys;
   final Ed25519HDPublicKey feePayer;
   final String blockhash;
   final List<Signature> signatures;
 
-  const DecodedTransaction({
+  const _DecodedTransaction({
     required this.instructions,
     required this.accountKeys,
     required this.feePayer,
