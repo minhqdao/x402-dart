@@ -170,15 +170,51 @@ class SvmSigner extends X402Signer {
         supportedSchemes.contains(requirement.scheme);
   }
 
+  /// Signs a payment requirement and returns a [SignedPayment].
+  ///
+  /// This method:
+  /// 1. Validates the [requirement] (positive amount, non-negative timeout, matching network).
+  /// 2. Delegates payload creation to the underlying scheme client.
+  /// 3. Returns a [SignedPayment] containing the base64-encoded payload.
+  ///
+  /// Throws an [ArgumentError] if the requirement fails validation.
+  /// Throws [UnsupportedSchemeException] or [InvalidPayloadException] if signing fails.
   @override
   Future<SignedPayment> sign(
     PaymentRequirement requirement,
     ResourceInfo resource, {
     Map<String, dynamic>? extensions,
   }) async {
+    _validateRequirement(requirement);
     final payload = await _client.createPaymentPayload(requirement, resource,
         extensions: extensions);
     return SignedPayment(
         base64Encode(utf8.encode(jsonEncode(payload.toJson()))));
+  }
+
+  void _validateRequirement(PaymentRequirement requirement) {
+    final amount = BigInt.tryParse(requirement.amount);
+    if (amount == null || amount <= BigInt.zero) {
+      throw ArgumentError.value(
+        requirement.amount,
+        'amount',
+        'Amount must be a positive integer string',
+      );
+    }
+
+    if (requirement.maxTimeoutSeconds < 0) {
+      throw ArgumentError.value(
+        requirement.maxTimeoutSeconds,
+        'maxTimeoutSeconds',
+        'Must be non-negative',
+      );
+    }
+
+    if (requirement.network != network) {
+      throw ArgumentError(
+        'Requirement network (${requirement.network}) '
+        'does not match signer network ($network)',
+      );
+    }
   }
 }

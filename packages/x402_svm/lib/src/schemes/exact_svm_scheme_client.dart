@@ -2,7 +2,7 @@ import 'package:solana/solana.dart';
 import 'package:x402_core/x402_core.dart';
 import 'package:x402_svm/src/utils/svm_transaction_builder.dart';
 
-/// Client-side implementation of the "exact" payment scheme for SVM (Solana).
+/// Scheme implementation for the "exact" SVM (Solana) payment flow.
 ///
 /// This client handles the creation of a Solana transaction that performs
 /// an SPL Token transfer satisfying the provided [PaymentRequirement].
@@ -23,37 +23,30 @@ class ExactSvmSchemeClient implements SchemeClient {
 
   /// Creates a [PaymentPayload] for an SVM transaction.
   ///
-  /// The [requirements] must specify a 'feePayer' in the `extra` field.
+  /// The [requirement] must:
+  /// 1. Use a supported scheme ("v2:solana:exact" or "exact").
+  /// 2. Use a valid Solana network format ("solana:genesisHash").
+  /// 3. Specify a 'feePayer' in the `extra` field.
+  ///
   /// This method constructs a transfer transaction, signs it, and
   /// returns it within a [PaymentPayload].
   ///
   /// Throws [UnsupportedSchemeException] if the scheme is not supported.
-  /// Throws [InvalidPayloadException] if required data (like feePayer) is missing.
+  /// Throws [InvalidPayloadException] if the network format is invalid or
+  /// required data (like feePayer) is missing.
   @override
   Future<PaymentPayload> createPaymentPayload(
-    PaymentRequirement requirements,
+    PaymentRequirement requirement,
     ResourceInfo resource, {
     Map<String, dynamic>? extensions,
   }) async {
-    // Validate scheme
-    if (requirements.scheme != scheme && requirements.scheme != 'exact') {
-      throw UnsupportedSchemeException(
-          'Expected scheme "$scheme" or "exact", got "${requirements.scheme}"');
-    }
-
-    // Parse network (format: solana:genesisHash)
-    final networkParts = requirements.network.split(':');
-    if (networkParts.length != 2 || networkParts[0] != 'solana') {
-      throw InvalidPayloadException(
-        'Invalid network format. Expected "solana:genesisHash", got "${requirements.network}"',
-      );
-    }
+    _validateRequirement(requirement);
 
     // Parse amount
-    final amount = BigInt.parse(requirements.amount);
+    final amount = BigInt.parse(requirement.amount);
 
     // Extract feePayer from requirements.extra
-    final feePayer = requirements.extra['feePayer'] as String?;
+    final feePayer = requirement.extra['feePayer'] as String?;
     if (feePayer == null) {
       throw const InvalidPayloadException(
           'feePayer is required in paymentRequirements.extra for SVM transactions');
@@ -63,9 +56,9 @@ class ExactSvmSchemeClient implements SchemeClient {
     final encodedTransaction =
         await SvmTransactionBuilder.createTransferTransaction(
       signer: _signer,
-      recipient: requirements.payTo,
+      recipient: requirement.payTo,
       amount: amount,
-      tokenMint: requirements.asset,
+      tokenMint: requirement.asset,
       feePayer: feePayer,
       solanaClient: _solanaClient,
     );
@@ -74,7 +67,7 @@ class ExactSvmSchemeClient implements SchemeClient {
     return PaymentPayload(
       x402Version: kX402Version,
       resource: resource,
-      accepted: requirements,
+      accepted: requirement,
       payload: {'transaction': encodedTransaction.transaction},
       extensions: extensions,
     );
@@ -82,4 +75,24 @@ class ExactSvmSchemeClient implements SchemeClient {
 
   /// Returns the public address (Base58) of the signer.
   String get address => _signer.publicKey.toBase58();
+
+  void _validateRequirement(PaymentRequirement r) {
+    if (r.scheme != scheme && r.scheme != 'exact') {
+      throw UnsupportedSchemeException(
+        'Expected scheme "$scheme" or "exact", got "${r.scheme}"',
+      );
+    }
+
+    if (!r.network.startsWith('solana:')) {
+      throw InvalidPayloadException(
+        'Invalid network. Expected Solana network, got "${r.network}"',
+      );
+    }
+
+    if (!r.extra.containsKey('feePayer')) {
+      throw const InvalidPayloadException(
+        'feePayer is required in paymentRequirements.extra for SVM transactions',
+      );
+    }
+  }
 }
