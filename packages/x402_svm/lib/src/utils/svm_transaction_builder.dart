@@ -3,13 +3,14 @@ import 'dart:convert';
 import 'package:solana/dto.dart' show BinaryAccountData, Encoding;
 import 'package:solana/encoder.dart';
 import 'package:solana/solana.dart';
+import 'package:x402_svm/src/models/exact_svm_payload.dart';
 
 /// Utilities for building SVM transactions for x402
 class SvmTransactionBuilder {
   const SvmTransactionBuilder._();
 
   /// Create a payment payload for the Exact scheme (matching TS reference)
-  static Future<String> createTransferTransaction({
+  static Future<ExactSvmPayload> createTransferTransaction({
     required Ed25519HDKeyPair signer,
     required String recipient,
     required BigInt amount,
@@ -87,7 +88,7 @@ class SvmTransactionBuilder {
         SignedTx(compiledMessage: compiledMessage, signatures: signatures);
 
     final base64EncodedWireTransaction = transaction.encode();
-    return base64EncodedWireTransaction;
+    return ExactSvmPayload(base64EncodedWireTransaction);
   }
 
   /// Set compute unit limit instruction

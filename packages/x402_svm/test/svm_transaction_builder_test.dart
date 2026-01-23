@@ -78,7 +78,8 @@ void main() {
         );
 
         // Decode the transaction
-        final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
 
         // Assert
         expect(decoded.instructions.length, equals(3),
@@ -149,7 +150,8 @@ void main() {
           solanaClient: mockClient,
         );
 
-        final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
         final limitIx = decoded.instructions[0];
 
         // Assert - Extract u32 value from bytes 1-4 (little-endian)
@@ -179,7 +181,8 @@ void main() {
           solanaClient: mockClient,
         );
 
-        final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
         final priceIx = decoded.instructions[1];
 
         // Assert - Extract u64 value from bytes 1-8 (little-endian)
@@ -211,7 +214,8 @@ void main() {
           solanaClient: mockClient,
         );
 
-        final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
         final transferIx = decoded.instructions[2];
 
         // Assert
@@ -243,7 +247,8 @@ void main() {
           solanaClient: mockClient,
         );
 
-        final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
         final transferIx = decoded.instructions[2];
 
         // Assert
@@ -282,7 +287,8 @@ void main() {
           solanaClient: mockClient,
         );
 
-        final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
 
         // Assert
         expect(decoded.signatures.length, equals(2),
@@ -320,7 +326,8 @@ void main() {
           solanaClient: mockClient,
         );
 
-        final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
 
         // Assert
         expect(decoded.signatures.length, equals(1),
@@ -348,7 +355,8 @@ void main() {
           solanaClient: mockClient,
         );
 
-        final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
 
         // Act
         final isValid = await SvmTransactionBuilder.verifyTransactionStructure(
@@ -381,7 +389,8 @@ void main() {
           solanaClient: mockClient,
         );
 
-        final decoded = SvmTransactionBuilder.decodeTransaction(encodedTx);
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
 
         // Act - verify with wrong amount
         final isValid = await SvmTransactionBuilder.verifyTransactionStructure(

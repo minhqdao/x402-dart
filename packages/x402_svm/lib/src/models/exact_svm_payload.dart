@@ -1,23 +1,11 @@
-/// SVM transaction data for exact scheme
+/// x402 Exact-scheme payload for SVM (Solana).
+///
+/// Contains a **fully signed Solana transaction** encoded as base64.
+/// The transaction bytes are the single source of truth for all fields
+/// (instructions, blockhash, fee payer, signatures).
 class ExactSvmPayload {
-  /// Base64-encoded serialized transaction
+  /// Base64-encoded serialized Solana transaction.
   final String transaction;
 
-  /// Optional: Recent blockhash used
-  final String? blockhash;
-
-  const ExactSvmPayload({required this.transaction, this.blockhash});
-
-  factory ExactSvmPayload.fromJson(Map<String, dynamic> json) {
-    return ExactSvmPayload(
-        transaction: json['transaction'] as String,
-        blockhash: json['blockhash'] as String?);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'transaction': transaction,
-      if (blockhash != null) 'blockhash': blockhash
-    };
-  }
+  const ExactSvmPayload(this.transaction);
 }

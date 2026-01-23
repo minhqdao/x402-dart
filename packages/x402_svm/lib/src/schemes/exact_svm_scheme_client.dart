@@ -61,7 +61,7 @@ class ExactSvmSchemeClient implements SchemeClient {
       x402Version: kX402Version,
       resource: resource,
       accepted: requirements,
-      payload: {'transaction': encodedTransaction},
+      payload: {'transaction': encodedTransaction.transaction},
       extensions: extensions,
     );
   }
