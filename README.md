@@ -1,6 +1,8 @@
 # x402-dart
 
-This repository contains the **Dart implementation** of the [x402 protocol](https://x402.org), a machine-native payment standard designed for the modern web. 
+This repository contains the **Dart implementation** of the [x402 protocol](https://x402.org), a machine-native payment standard designed for the modern web.
+
+> This library currently only supports **V2** of the protocol. V1 was marked legacy and is **unsupported**.
 
 x402 enables instant, automatic stablecoin payments directly over HTTP by reviving the HTTP 402 "Payment Required" status code. This implementation provides a suite of client-side libraries to integrate x402 payments into your Dart and Flutter applications.
 
