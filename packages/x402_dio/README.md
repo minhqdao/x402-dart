@@ -2,9 +2,9 @@
 
 A Dio-based client library for the x402 payment protocol. It provides a `Dio` interceptor that automatically handles "402 Payment Required" flows across multiple blockchain ecosystems, currently supporting EVM (Ethereum) and SVM (Solana).
 
-This package is an alternative to the main [x402](https://pub.dev/packages/x402) package (which uses `http`). It leverages the power of Dio interceptors for seamless integration into existing Dio-based applications.
+> This library currently only supports **V2** of the protocol. V1 was marked legacy and is **unsupported**.
 
-> This library currently only supports **V2** of the x402 protocol. V1 was marked legacy and is **unsupported**.
+This package is an alternative to the main [x402](https://pub.dev/packages/x402) package (which uses `http`). It leverages the power of Dio interceptors for seamless integration into existing Dio-based applications.
 
 ## Features
 

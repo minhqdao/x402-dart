@@ -2,9 +2,9 @@
 
 A client-side library for the x402 payment protocol in Dart. It provides a unified interface to handle "402 Payment Required" flows across multiple blockchain ecosystems, currently supporting EVM (Ethereum) and SVM (Solana).
 
-This is the primary package intended for general use. You typically do not need to import `x402_core`, `x402_evm`, or `x402_svm` separately, as this package exports all necessary components.
+> This library currently only supports **V2** of the protocol. V1 was marked legacy and is **unsupported**.
 
-> This library currently only supports **V2** of the x402 protocol. V1 was marked legacy and is **unsupported**.
+This is the primary package intended for general use. You typically do not need to import `x402_core`, `x402_evm`, or `x402_svm` separately, as this package exports all necessary components.
 
 ## Features
 
