@@ -4,6 +4,8 @@ A Dio-based client library for the x402 payment protocol. It provides a `Dio` in
 
 This package is an alternative to the main [x402](https://pub.dev/packages/x402) package (which uses `http`). It leverages the power of Dio interceptors for seamless integration into existing Dio-based applications.
 
+> This library currently only supports **V2** of the x402 protocol.
+
 ## Features
 
 - **Dio Integration**: Adds automatic x402 handling via the `X402Interceptor`.
