@@ -4,7 +4,8 @@ A client-side library for the x402 payment protocol in Dart. It provides a unifi
 
 This is the primary package intended for general use. You typically do not need to import `x402_core`, `x402_evm`, or `x402_svm` separately, as this package exports all necessary components.
 
-> This library currently only supports **V2** of the x402 protocol.
+> [!IMPORTANT]
+> This library currently only supports **V2** of the x402 protocol. V1 was marked legacy and is **unsupported**.
 
 ## Features
 
