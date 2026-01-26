@@ -1,0 +1,17 @@
+name: client_manual_evm_e2e_test
+description: x402 Client Manual EVM e2e test
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+resolution: workspace
+
+dependencies:
+  collection: ^1.18.0
+  dotenv: ^4.2.0
+  http: ^1.6.0
+  x402:
+
+dev_dependencies:
+  test: ^1.29.0
