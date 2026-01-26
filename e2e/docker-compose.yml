@@ -1,0 +1,70 @@
+services:
+  facilitator:
+    build: .
+    container_name: x402-facilitator
+    working_dir: /app/examples/typescript/facilitator
+    command: pnpm dev
+    ports:
+      - "4022:4022"
+    environment:
+      - PORT=4022
+      - EVM_PRIVATE_KEY
+      - SVM_PRIVATE_KEY
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:4022/supported",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  server:
+    build: .
+    container_name: x402-server
+    working_dir: /app/examples/typescript/servers/express
+    depends_on:
+      facilitator:
+        condition: service_healthy
+    command: pnpm dev
+    ports:
+      - "4021:4021"
+    environment:
+      - FACILITATOR_URL=http://facilitator:4022
+      - EVM_ADDRESS
+      - SVM_ADDRESS
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --spider --server-response http://127.0.0.1:4021/weather 2>&1 | grep 'HTTP/1.1 402'",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  dart-tests:
+    image: dart:stable
+    container_name: x402-e2e-test
+    volumes:
+      - ..:/app
+    working_dir: /app/e2e
+    depends_on:
+      server:
+        condition: service_healthy
+    environment:
+      - EVM_PRIVATE_KEY_PAYER
+      - SVM_PRIVATE_KEY_PAYER
+    command: >
+      sh -c "
+        dart pub get &&
+        cd ../ &&
+        dart test e2e
+      "

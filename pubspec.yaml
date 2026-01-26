@@ -15,6 +15,7 @@ workspace:
   - examples/client_wrapper
   - examples/client_manual
   - examples/client_dio
+  - e2e/client_wrapper_evm
 
 dev_dependencies:
   lint: ^2.8.0
