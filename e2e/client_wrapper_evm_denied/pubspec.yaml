@@ -1,5 +1,5 @@
-name: client_wrapper_denied_e2e_test
-description: x402 Client Wrapper Denied e2e test
+name: client_wrapper_evm_denied_e2e_test
+description: x402 Client Wrapper EVM Denied e2e test
 publish_to: none
 
 environment:
