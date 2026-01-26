@@ -17,11 +17,13 @@ workspace:
   - examples/client_dio
   - e2e/clients/wrapper_evm
   - e2e/clients/wrapper_svm
-  - e2e/clients/manual_evm
   - e2e/clients/dio_evm
   - e2e/clients/dio_svm
   - e2e/clients/wrapper_evm_denied
+  - e2e/clients/wrapper_svm_denied
+  - e2e/clients/dio_evm_denied
   - e2e/clients/dio_svm_denied
+  - e2e/clients/manual_evm
 
 dev_dependencies:
   lint: ^2.8.0

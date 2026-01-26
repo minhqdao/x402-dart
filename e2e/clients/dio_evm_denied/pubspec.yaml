@@ -1,0 +1,17 @@
+name: dio_evm_denied_e2e_test
+description: x402 Client Dio EVM Denied e2e test
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+resolution: workspace
+
+dependencies:
+  dio: ^5.9.0
+  dotenv: ^4.2.0
+  x402:
+  x402_dio:
+
+dev_dependencies:
+  test: ^1.29.0

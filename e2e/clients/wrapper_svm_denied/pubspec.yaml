@@ -1,0 +1,16 @@
+name: wrapper_svm_denied_e2e_test
+description: x402 Client Wrapper SVM Denied e2e test
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+resolution: workspace
+
+dependencies:
+  dotenv: ^4.2.0
+  http: ^1.6.0
+  x402:
+
+dev_dependencies:
+  test: ^1.29.0
