@@ -60,6 +60,10 @@ services:
       server:
         condition: service_healthy
     environment:
+      - EVM_ADDRESS
+      - SVM_ADDRESS
+      - EVM_PRIVATE_KEY
+      - SVM_PRIVATE_KEY
       - EVM_PRIVATE_KEY_PAYER
       - SVM_PRIVATE_KEY_PAYER
     command: >
