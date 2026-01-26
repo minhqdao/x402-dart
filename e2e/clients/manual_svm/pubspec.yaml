@@ -1,5 +1,5 @@
-name: client_manual_evm_e2e_test
-description: x402 Client Manual EVM e2e test
+name: client_manual_svm_e2e_test
+description: x402 Client Manual SVM e2e test
 publish_to: none
 
 environment:

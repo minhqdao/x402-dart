@@ -24,6 +24,7 @@ workspace:
   - e2e/clients/dio_evm_denied
   - e2e/clients/dio_svm_denied
   - e2e/clients/manual_evm
+  - e2e/clients/manual_svm
 
 dev_dependencies:
   lint: ^2.8.0
