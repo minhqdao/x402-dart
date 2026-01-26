@@ -17,9 +17,10 @@ workspace:
   - examples/client_dio
   - e2e/client/wrapper_evm
   - e2e/client/wrapper_svm
-  - e2e/client/wrapper_evm_denied
+  - e2e/client/manual_evm
   - e2e/client/dio_evm
   - e2e/client/dio_svm
+  - e2e/client/wrapper_evm_denied
   - e2e/client/dio_svm_denied
 
 dev_dependencies:
