@@ -52,7 +52,7 @@ services:
 
   dart-tests:
     image: dart:stable
-    container_name: x402-e2e-test
+    container_name: x402-e2e-tests
     volumes:
       - ..:/app
     working_dir: /app/e2e
@@ -66,5 +66,5 @@ services:
       sh -c "
         dart pub get &&
         cd ../ &&
-        dart test e2e
+        dart test --concurrency=1 e2e
       "
