@@ -78,7 +78,7 @@ void main() async {
 }
 ```
 
-Detailed examples for both automated and manual flows can be found in the [examples](./examples) folder.
+Detailed examples for both automated and manual flows can be found in the [examples](./examples) folder. End-to-end tests can be found in the [e2e](./e2e) folder.
 
 ## Development
 

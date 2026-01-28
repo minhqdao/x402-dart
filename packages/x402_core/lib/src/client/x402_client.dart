@@ -172,10 +172,7 @@ class X402Client extends http.BaseClient {
             if (onPaymentRequired != null) {
               final approved = await onPaymentRequired!(
                   match, paymentRequired.resource, signer);
-              if (!approved) {
-                await response.stream.drain();
-                return response;
-              }
+              if (!approved) return response;
             }
 
             // 7. Sign & Automatically Retry
@@ -202,9 +199,6 @@ class X402Client extends http.BaseClient {
         // Silently fail and return original response
         // Users can add their own error handling in onPaymentRequired
       }
-
-      // Consume stream before returning
-      await response.stream.drain();
     }
 
     return response;

@@ -1,5 +1,5 @@
-name: client_dio_example
-description: x402 Dio Client Example
+name: client_dio_svm_denied_e2e_test
+description: x402 Client Dio SVM Denied e2e test
 publish_to: none
 
 environment:
@@ -14,4 +14,4 @@ dependencies:
   x402_dio:
 
 dev_dependencies:
-  lint: ^2.8.0
+  test: ^1.29.0

@@ -1,5 +1,5 @@
-name: client_wrapper_example
-description: x402 Client Wrapper Example
+name: client_wrapper_evm_denied_e2e_test
+description: x402 Client Wrapper EVM Denied e2e test
 publish_to: none
 
 environment:
@@ -10,8 +10,7 @@ resolution: workspace
 dependencies:
   dotenv: ^4.2.0
   http: ^1.6.0
-  web3dart: ^2.7.3
   x402:
 
 dev_dependencies:
-  lint: ^2.8.0
+  test: ^1.29.0
