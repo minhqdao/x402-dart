@@ -73,6 +73,9 @@ class X402Interceptor extends Interceptor {
   /// invoked before each payment to allow user approval. If omitted, payments
   /// are automatically approved.
   ///
+  /// The [retryDelay] parameter specifies the duration to wait before retrying the request
+  /// after a successful payment. Defaults to [Duration.zero].
+  ///
   /// Throws [ArgumentError] if [signers] is empty.
   ///
   /// Example:
@@ -93,12 +96,16 @@ class X402Interceptor extends Interceptor {
     required Dio dio,
     required List<X402Signer> signers,
     this.onPaymentRequired,
+    this.retryDelay = Duration.zero,
   })  : _dio = dio,
         _signers = signers {
     if (signers.isEmpty) {
       throw ArgumentError('At least one signer must be provided');
     }
   }
+
+  /// The duration to wait before retrying the request after a successful payment.
+  final Duration retryDelay;
 
   @override
   Future<void> onError(
@@ -153,6 +160,8 @@ class X402Interceptor extends Interceptor {
             paymentRequired.resource,
             extensions: paymentRequired.extensions,
           );
+
+          if (retryDelay > Duration.zero) await Future.delayed(retryDelay);
 
           // Retry Request
           final opts = Options(

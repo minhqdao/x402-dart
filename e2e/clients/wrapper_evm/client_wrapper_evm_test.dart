@@ -18,7 +18,10 @@ void main() {
       chainId: 84532,
     );
 
-    final client = X402Client(signers: [evmSigner]);
+    final client = X402Client(
+      signers: [evmSigner],
+      retryDelay: const Duration(seconds: 1),
+    );
 
     addTearDown(() => client.close());
 

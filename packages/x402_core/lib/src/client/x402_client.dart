@@ -115,11 +115,15 @@ class X402Client extends http.BaseClient {
   /// You can use it to show a confirmation UI to the user. If omitted (or set to `null`),
   /// the client will proceed with payments automatically without user intervention.
   ///
+  /// The [retryDelay] parameter specifies the duration to wait before retrying the request
+  /// after a successful payment. Defaults to [Duration.zero].
+  ///
   /// The [inner] parameter allows providing a custom [http.Client]. If omitted,
   /// a default [http.Client] is used.
   X402Client({
     required List<X402Signer> signers,
     this.onPaymentRequired,
+    this.retryDelay = Duration.zero,
     http.Client? inner,
   })  : _signers = signers,
         _inner = inner ?? http.Client() {
@@ -127,6 +131,9 @@ class X402Client extends http.BaseClient {
       throw ArgumentError('At least one signer must be provided');
     }
   }
+
+  /// The duration to wait before retrying the request after a successful payment.
+  final Duration retryDelay;
 
   /// Sends an HTTP request and automatically handles any 402 Payment Required
   /// responses by attempting to negotiate a payment and retrying the request.
@@ -190,6 +197,8 @@ class X402Client extends http.BaseClient {
 
             // Consume the original 402 response stream before retrying
             await response.stream.drain();
+
+            if (retryDelay > Duration.zero) await Future.delayed(retryDelay);
 
             // Make the payment request
             return await _inner.send(retryRequest);

@@ -19,7 +19,11 @@ void main() {
     );
 
     final dio = Dio();
-    dio.interceptors.add(X402Interceptor(dio: dio, signers: [evmSigner]));
+    dio.interceptors.add(X402Interceptor(
+      dio: dio,
+      signers: [evmSigner],
+      retryDelay: const Duration(seconds: 1),
+    ));
 
     final serverUrl = env['RESOURCE_SERVER_URL'] ?? 'http://server:4021';
     final endpointPath = env['ENDPOINT_PATH'] ?? '/weather';

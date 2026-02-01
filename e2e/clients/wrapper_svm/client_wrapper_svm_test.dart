@@ -18,7 +18,10 @@ void main() {
       network: SolanaNetwork.devnet,
     );
 
-    final client = X402Client(signers: [svmSigner]);
+    final client = X402Client(
+      signers: [svmSigner],
+      retryDelay: const Duration(seconds: 1),
+    );
 
     addTearDown(() => client.close());
 
