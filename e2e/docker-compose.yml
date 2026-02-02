@@ -1,6 +1,11 @@
 services:
   facilitator:
-    build: .
+    build:
+      context: .
+      cache_from:
+        - type=local,src=/tmp/.buildx-cache
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache-new
     container_name: x402-facilitator
     working_dir: /app/examples/typescript/facilitator
     command: pnpm dev
