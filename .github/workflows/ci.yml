@@ -30,11 +30,11 @@ jobs:
             - uses: docker/setup-buildx-action@v3
             - name: Run e2e tests
               working-directory: e2e
-              run: |
-                  export EVM_PRIVATE_KEY="${{ secrets.EVM_PRIVATE_KEY }}"
-                  export SVM_PRIVATE_KEY="${{ secrets.SVM_PRIVATE_KEY }}"
-                  export EVM_ADDRESS="${{ secrets.EVM_ADDRESS }}"
-                  export SVM_ADDRESS="${{ secrets.SVM_ADDRESS }}"
-                  export EVM_PRIVATE_KEY_PAYER="${{ secrets.EVM_PRIVATE_KEY_PAYER }}"
-                  export SVM_PRIVATE_KEY_PAYER="${{ secrets.SVM_PRIVATE_KEY_PAYER }}"
-                  docker compose up --build --abort-on-container-exit --exit-code-from dart-tests
+              env:
+                  EVM_PRIVATE_KEY: ${{ secrets.EVM_PRIVATE_KEY }}
+                  SVM_PRIVATE_KEY: ${{ secrets.SVM_PRIVATE_KEY }}
+                  EVM_ADDRESS: ${{ secrets.EVM_ADDRESS }}
+                  SVM_ADDRESS: ${{ secrets.SVM_ADDRESS }}
+                  EVM_PRIVATE_KEY_PAYER: ${{ secrets.EVM_PRIVATE_KEY_PAYER }}
+                  SVM_PRIVATE_KEY_PAYER: ${{ secrets.SVM_PRIVATE_KEY_PAYER }}
+              run: docker compose up --build --abort-on-container-exit --exit-code-from dart-tests
