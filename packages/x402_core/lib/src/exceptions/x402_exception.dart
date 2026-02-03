@@ -5,7 +5,12 @@ class X402Exception implements Exception {
   const X402Exception(this.message, {this.originalError});
 
   @override
-  String toString() => 'X402Exception: $message';
+  String toString() {
+    if (originalError != null) {
+      return 'X402Exception: $message, originalError: $originalError';
+    }
+    return 'X402Exception: $message';
+  }
 }
 
 /// Invalid payment payload

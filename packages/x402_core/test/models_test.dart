@@ -254,29 +254,50 @@ void main() {
 
       expect(exception.message, equals(msg));
       expect(exception.originalError, equals(innerError));
-      expect(exception.toString(), equals('X402Exception: $msg'));
+      expect(
+        exception.toString(),
+        equals(
+          'X402Exception: $msg, originalError: Exception: Inner cause',
+        ),
+      );
     });
 
-    test('InvalidPayloadException inherits originalError', () {
+    test('InvalidPayloadException inherits originalError and prints it', () {
       const innerError = FormatException('Invalid JSON');
       const exception = InvalidPayloadException(
         'Payload invalid',
         originalError: innerError,
       );
+
       expect(exception, isA<X402Exception>());
       expect(exception.message, equals('Payload invalid'));
       expect(exception.originalError, equals(innerError));
+      expect(
+        exception.toString(),
+        equals(
+          'X402Exception: Payload invalid, '
+          'originalError: FormatException: Invalid JSON',
+        ),
+      );
     });
 
-    test('UnsupportedSchemeException inherits originalError', () {
+    test('UnsupportedSchemeException inherits originalError and prints it', () {
       final innerError = StateError('Scheme not found');
       final exception = UnsupportedSchemeException(
         'Unknown scheme',
         originalError: innerError,
       );
+
       expect(exception, isA<X402Exception>());
       expect(exception.message, equals('Unknown scheme'));
       expect(exception.originalError, equals(innerError));
+      expect(
+        exception.toString(),
+        equals(
+          'X402Exception: Unknown scheme, '
+          'originalError: Bad state: Scheme not found',
+        ),
+      );
     });
   });
 }
