@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:x402_core/src/exceptions/x402_exception.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
 
@@ -29,6 +32,26 @@ class PaymentRequiredResponse {
     this.extensions,
   });
 
+  /// Parses the PaymentRequiredResponse from a base64-encoded header string.
+  ///
+  /// Throws an [InvalidPayloadException] if the header is not a valid base64 or
+  /// cannot be decoded into a valid [PaymentRequiredResponse].
+  factory PaymentRequiredResponse.fromHeader(String header) {
+    try {
+      return PaymentRequiredResponse.fromJson(
+        jsonDecode(utf8.decode(base64Decode(header))) as Map<String, dynamic>,
+      );
+    } catch (e) {
+      throw InvalidPayloadException(
+        'Invalid payment-required header payload',
+        originalError: e,
+      );
+    }
+  }
+
+  /// Creates a response from a decoded JSON map.
+  ///
+  /// Most users should prefer [PaymentRequiredResponse.fromHeader].
   factory PaymentRequiredResponse.fromJson(Map<String, dynamic> json) {
     return PaymentRequiredResponse(
       x402Version: json['x402Version'] as int,

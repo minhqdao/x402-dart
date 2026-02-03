@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
@@ -65,9 +64,7 @@ void main(List<String> args) async {
       return;
     }
 
-    final paymentResponse = PaymentRequiredResponse.fromJson(
-      jsonDecode(utf8.decode(base64Decode(header))) as Map<String, dynamic>,
-    );
+    final paymentResponse = PaymentRequiredResponse.fromHeader(header);
     stdout.writeln('Payment data mapped from header.');
 
     // 3. Negotiate Requirements and Sign

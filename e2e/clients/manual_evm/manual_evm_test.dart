@@ -34,9 +34,7 @@ void main() {
     final header = initialResponse.headers[kPaymentRequiredHeader];
     expect(header, isNotNull, reason: 'Missing $kPaymentRequiredHeader header');
 
-    final paymentResponse = PaymentRequiredResponse.fromJson(
-      jsonDecode(utf8.decode(base64Decode(header!))) as Map<String, dynamic>,
-    );
+    final paymentResponse = PaymentRequiredResponse.fromHeader(header!);
 
     // 3. Setup Signer and Sign
     final evmSigner = EvmSigner.fromPrivateKeyHex(
