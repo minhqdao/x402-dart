@@ -21,10 +21,10 @@ services:
           "--spider",
           "http://localhost:4022/supported",
         ]
-      interval: 5s
-      timeout: 3s
+      start_period: 3s
+      interval: 2s
       retries: 10
-      start_period: 10s
+      timeout: 3s
 
   server:
     container_name: x402-server
@@ -47,10 +47,10 @@ services:
           "CMD-SHELL",
           "wget --spider --server-response http://127.0.0.1:4021/weather 2>&1 | grep 'HTTP/1.1 402'",
         ]
-      interval: 5s
-      timeout: 3s
+      start_period: 3s
+      interval: 2s
       retries: 10
-      start_period: 10s
+      timeout: 3s
 
   dart-tests:
     image: dart:stable
