@@ -1,0 +1,6 @@
+services:
+  facilitator:
+    image: ghcr.io/${IMAGE_OWNER}/x402:latest
+
+  server:
+    image: ghcr.io/${IMAGE_OWNER}/x402:latest

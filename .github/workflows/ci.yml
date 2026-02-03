@@ -45,4 +45,7 @@ jobs:
                   SVM_ADDRESS: ${{ secrets.SVM_ADDRESS }}
                   EVM_PRIVATE_KEY_PAYER: ${{ secrets.EVM_PRIVATE_KEY_PAYER }}
                   SVM_PRIVATE_KEY_PAYER: ${{ secrets.SVM_PRIVATE_KEY_PAYER }}
-              run: docker compose up --abort-on-container-exit --exit-code-from dart-tests
+              run: docker compose \
+                  -f docker-compose.yml \
+                  -f docker-compose.ci.yml \
+                  up --abort-on-container-exit --exit-code-from dart-tests
