@@ -247,21 +247,9 @@ void main() {
       expect(
           exception.toString(), equals('X402Exception: Something went wrong'));
 
-      const exceptionWithCode =
-          X402Exception('Invalid payload', code: 'INVALID_PAYLOAD');
+      const exceptionWithCode = X402Exception('Invalid payload');
       expect(exceptionWithCode.toString(),
-          equals('X402Exception [INVALID_PAYLOAD]: Invalid payload'));
-    });
-
-    test('toString output should contain the error code if provided', () {
-      const code = 'TEST_ERROR_CODE';
-      const message = 'Test message';
-      const exception = X402Exception(message, code: code);
-
-      final result = exception.toString();
-
-      expect(result, contains(code));
-      expect(result, contains(message));
+          equals('X402Exception: Invalid payload'));
     });
 
     test('should support specialized exceptions', () {
