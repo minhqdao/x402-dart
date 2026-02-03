@@ -38,6 +38,7 @@ jobs:
             - name: Run e2e tests
               working-directory: e2e
               env:
+                  IMAGE_OWNER: ${{ github.repository_owner }}
                   EVM_PRIVATE_KEY: ${{ secrets.EVM_PRIVATE_KEY }}
                   SVM_PRIVATE_KEY: ${{ secrets.SVM_PRIVATE_KEY }}
                   EVM_ADDRESS: ${{ secrets.EVM_ADDRESS }}

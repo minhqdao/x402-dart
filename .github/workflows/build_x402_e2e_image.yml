@@ -6,6 +6,10 @@ on:
         paths:
             - e2e/Dockerfile
 
+permissions:
+    contents: read
+    packages: write
+
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -31,8 +35,8 @@ jobs:
                   docker buildx build \
                     --cache-from=type=local,src=/tmp/.buildx-cache \
                     --cache-to=type=local,dest=/tmp/.buildx-cache-new \
-                    -t ghcr.io/minhqdao/x402:${{ github.sha }} \
-                    -t ghcr.io/minhqdao/x402:latest \
+                    -t ghcr.io/${{ github.repository_owner }}/x402:${{ github.sha }} \
+                    -t ghcr.io/${{ github.repository_owner }}/x402:latest \
                     --push \
                     e2e
 
