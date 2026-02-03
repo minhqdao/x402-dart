@@ -50,3 +50,4 @@ jobs:
                     -f docker-compose.yml \
                     -f docker-compose.ci.yml \
                     up --abort-on-container-exit --exit-code-from dart-tests
+                  docker compose down -v
