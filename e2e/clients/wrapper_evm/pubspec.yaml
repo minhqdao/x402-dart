@@ -1,4 +1,4 @@
-name: client_wrapper_evm_e2e_test
+name: wrapper_evm_e2e_test
 description: x402 Client Wrapper EVM e2e test
 publish_to: none
 
