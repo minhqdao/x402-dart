@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:x402/x402.dart';
@@ -78,7 +77,7 @@ void main(List<String> args) async {
     stdout.writeln('EVM Address: ${evmSigner.address}');
 
     // Try EVM first
-    final evmReq = paymentResponse.accepts.firstWhereOrNull(evmSigner.supports);
+    final evmReq = paymentResponse.findFirstSupportedBy(evmSigner);
     if (evmReq != null) {
       stdout.writeln(
           'Negotiated EVM payment via ${evmReq.network} (amount: ${evmReq.amount})');
@@ -97,8 +96,7 @@ void main(List<String> args) async {
       stdout.writeln('SVM Address: ${svmSigner.address}');
 
       // Try SVM
-      final svmReq =
-          paymentResponse.accepts.firstWhereOrNull(svmSigner.supports);
+      final svmReq = paymentResponse.findFirstSupportedBy(svmSigner);
       if (svmReq != null) {
         stdout.writeln(
             'Negotiated SVM payment via ${svmReq.network} (amount: ${svmReq.amount})');

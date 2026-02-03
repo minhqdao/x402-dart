@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
@@ -42,8 +41,7 @@ void main() {
       privateKeyHex: evmPrivateKey,
     );
 
-    final requirement =
-        paymentResponse.accepts.firstWhereOrNull(evmSigner.supports);
+    final requirement = paymentResponse.findFirstSupportedBy(evmSigner);
     expect(requirement, isNotNull,
         reason: 'No compatible requirement found for EVM signer');
 
