@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:x402_core/src/client/x402_client.dart';
 import 'package:x402_core/src/exceptions/x402_exception.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
@@ -72,5 +73,14 @@ class PaymentRequiredResponse {
       'accepts': accepts.map((e) => e.toJson()).toList(),
       if (extensions != null) 'extensions': extensions,
     };
+  }
+
+  /// Finds the first [PaymentRequirement] that the given [signer] supports.
+  /// Returns `null` if none are supported.
+  PaymentRequirement? findFirstSupportedBy(X402Signer signer) {
+    for (final requirement in accepts) {
+      if (signer.supports(requirement)) return requirement;
+    }
+    return null;
   }
 }

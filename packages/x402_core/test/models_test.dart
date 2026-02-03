@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:test/test.dart';
+import 'package:x402_core/src/client/x402_client.dart';
 import 'package:x402_core/src/constants.dart';
 import 'package:x402_core/src/exceptions/x402_exception.dart';
 import 'package:x402_core/src/models/payment_payload.dart';
@@ -277,6 +278,135 @@ void main() {
         throwsA(isA<InvalidPayloadException>()),
       );
     });
+
+    group('findFirstSupportedBy', () {
+      PaymentRequirement req({
+        required String scheme,
+        required String network,
+      }) {
+        return PaymentRequirement(
+          scheme: scheme,
+          network: network,
+          asset: 'USDC',
+          amount: '100',
+          payTo: 'address',
+          maxTimeoutSeconds: 60,
+          extra: const {},
+        );
+      }
+
+      test('returns the first supported payment requirement', () {
+        final req1 = req(scheme: 'x402', network: 'eip155:1');
+        final req2 = req(scheme: 'x402', network: 'eip155:137');
+
+        final response = PaymentRequiredResponse(
+          x402Version: 1,
+          resource: resource,
+          accepts: [req1, req2],
+        );
+
+        final signer = _TestSigner((r) => r.network == 'eip155:137');
+
+        final result = response.findFirstSupportedBy(signer);
+
+        expect(result, equals(req2));
+      });
+
+      test(
+          'respects order and returns the first match even if later ones match',
+          () {
+        final req1 = req(scheme: 'x402', network: 'eip155:1');
+        final req2 = req(scheme: 'x402', network: 'eip155:1');
+
+        final response = PaymentRequiredResponse(
+          x402Version: 1,
+          resource: resource,
+          accepts: [req1, req2],
+        );
+
+        final signer = _TestSigner((_) => true);
+
+        final result = response.findFirstSupportedBy(signer);
+
+        expect(result, same(req1));
+      });
+
+      test('returns null when no payment requirements are supported', () {
+        final requirement = req(scheme: 'x402', network: 'eip155:1');
+
+        final response = PaymentRequiredResponse(
+          x402Version: 1,
+          resource: resource,
+          accepts: [requirement],
+        );
+
+        final signer = _TestSigner((_) => false);
+
+        final result = response.findFirstSupportedBy(signer);
+
+        expect(result, isNull);
+      });
+
+      test('returns null when accepts list is empty', () {
+        const response = PaymentRequiredResponse(
+          x402Version: 1,
+          resource: resource,
+          accepts: [],
+        );
+
+        final signer = _TestSigner((_) => true);
+
+        final result = response.findFirstSupportedBy(signer);
+
+        expect(result, isNull);
+      });
+
+      test('calls supports for each requirement until a match is found', () {
+        var callCount = 0;
+
+        final req1 = req(scheme: 'x402', network: 'eip155:1');
+        final req2 = req(scheme: 'x402', network: 'eip155:137');
+
+        final response = PaymentRequiredResponse(
+          x402Version: 1,
+          resource: resource,
+          accepts: [req1, req2],
+        );
+
+        final signer = _TestSigner((r) {
+          callCount++;
+          return r == req2;
+        });
+
+        final result = response.findFirstSupportedBy(signer);
+
+        expect(result, equals(req2));
+        expect(callCount, equals(2));
+      });
+
+      test('does not call supports after the first successful match', () {
+        var callCount = 0;
+
+        final req1 = req(scheme: 'x402', network: 'eip155:1');
+        final req2 = req(scheme: 'x402', network: 'eip155:137');
+
+        final response = PaymentRequiredResponse(
+          x402Version: 1,
+          resource: resource,
+          accepts: [req1, req2],
+        );
+
+        final signer = _TestSigner((_) {
+          callCount++;
+          return true;
+        });
+
+        final result = response.findFirstSupportedBy(signer);
+
+        expect(result, same(req1));
+        expect(callCount, equals(1));
+      });
+    });
   });
 
   group('Constants', () {
@@ -341,4 +471,33 @@ void main() {
       );
     });
   });
+}
+
+class _TestSigner implements X402Signer {
+  final bool Function(PaymentRequirement) _supports;
+
+  _TestSigner(this._supports);
+
+  @override
+  bool supports(PaymentRequirement requirement) => _supports(requirement);
+
+  @override
+  // TODO: implement address
+  String get address => throw UnimplementedError();
+
+  @override
+  // TODO: implement network
+  String get network => throw UnimplementedError();
+
+  @override
+  // TODO: implement scheme
+  String get scheme => throw UnimplementedError();
+
+  @override
+  Future<SignedPayment> sign(
+      PaymentRequirement requirement, ResourceInfo resource,
+      {Map<String, dynamic>? extensions}) {
+    // TODO: implement sign
+    throw UnimplementedError();
+  }
 }
