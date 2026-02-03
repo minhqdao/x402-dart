@@ -158,7 +158,7 @@ class X402Client extends http.BaseClient {
 
       try {
         // 4. Parse the requirements (The 'accepts' array from server)
-        final paymentRequired = _parseHeader(header);
+        final paymentRequired = PaymentRequiredResponse.fromHeader(header);
         final requirements = paymentRequired.accepts;
 
         if (requirements.isEmpty) return response;
@@ -219,13 +219,6 @@ class X402Client extends http.BaseClient {
       ..headers.addAll(orig.headers)
       ..bodyBytes = body;
     return req;
-  }
-
-  /// Parse the X-Payment-Required header
-  PaymentRequiredResponse _parseHeader(String headerBase64) {
-    final json = jsonDecode(utf8.decode(base64Decode(headerBase64)))
-        as Map<String, dynamic>;
-    return PaymentRequiredResponse.fromJson(json);
   }
 
   /// Closes the client and cleans up any resources used by the underlying

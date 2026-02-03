@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
 
@@ -28,6 +30,11 @@ class PaymentRequiredResponse {
     required this.accepts,
     this.extensions,
   });
+
+  factory PaymentRequiredResponse.fromHeader(String header) {
+    return PaymentRequiredResponse.fromJson(
+        jsonDecode(utf8.decode(base64Decode(header))) as Map<String, dynamic>);
+  }
 
   factory PaymentRequiredResponse.fromJson(Map<String, dynamic> json) {
     return PaymentRequiredResponse(

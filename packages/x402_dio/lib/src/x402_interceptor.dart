@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:x402_core/x402_core.dart';
 
@@ -132,7 +131,7 @@ class X402Interceptor extends Interceptor {
     if (header == null) return handler.next(err);
 
     try {
-      final paymentRequired = _parseHeader(header);
+      final paymentRequired = PaymentRequiredResponse.fromHeader(header);
       final requirements = paymentRequired.accepts;
 
       if (requirements.isEmpty) return handler.next(err);
@@ -203,12 +202,5 @@ class X402Interceptor extends Interceptor {
     }
 
     return handler.next(err);
-  }
-
-  /// Parses the X-Payment-Required header value.
-  PaymentRequiredResponse _parseHeader(String headerBase64) {
-    final json = jsonDecode(utf8.decode(base64Decode(headerBase64)))
-        as Map<String, dynamic>;
-    return PaymentRequiredResponse.fromJson(json);
   }
 }
