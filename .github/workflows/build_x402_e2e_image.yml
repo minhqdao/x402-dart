@@ -5,6 +5,7 @@ on:
     push:
         paths:
             - e2e/Dockerfile
+            - .github/workflows/build_x402_e2e_image.yml
 
 permissions:
     contents: read
