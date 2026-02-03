@@ -1,24 +1,24 @@
 class X402Exception implements Exception {
   final String message;
-  final String? code;
   final dynamic originalError;
 
-  const X402Exception(this.message, {this.code, this.originalError});
+  const X402Exception(this.message, {this.originalError});
 
   @override
-  String toString() => code == null
-      ? 'X402Exception: $message'
-      : 'X402Exception [$code]: $message';
+  String toString() {
+    if (originalError != null) {
+      return 'X402Exception: $message, originalError: $originalError';
+    }
+    return 'X402Exception: $message';
+  }
 }
 
 /// Invalid payment payload
 class InvalidPayloadException extends X402Exception {
-  const InvalidPayloadException(super.message,
-      {super.code, super.originalError});
+  const InvalidPayloadException(super.message, {super.originalError});
 }
 
 /// Unsupported scheme or network
 class UnsupportedSchemeException extends X402Exception {
-  const UnsupportedSchemeException(super.message,
-      {super.code, super.originalError});
+  const UnsupportedSchemeException(super.message, {super.originalError});
 }

@@ -1,6 +1,11 @@
 import 'dart:convert';
 import 'package:test/test.dart';
-import 'package:x402_core/x402_core.dart';
+import 'package:x402_core/src/constants.dart';
+import 'package:x402_core/src/exceptions/x402_exception.dart';
+import 'package:x402_core/src/models/payment_payload.dart';
+import 'package:x402_core/src/models/payment_required_response.dart';
+import 'package:x402_core/src/models/payment_requirement.dart';
+import 'package:x402_core/src/models/resource_info.dart';
 
 void main() {
   group('PaymentRequirement', () {
@@ -242,32 +247,57 @@ void main() {
   });
 
   group('Exceptions', () {
-    test('should format messages correctly', () {
-      const exception = X402Exception('Something went wrong');
+    test('X402Exception initializes with message and originalError', () {
+      const msg = 'Something went wrong';
+      final innerError = Exception('Inner cause');
+      final exception = X402Exception(msg, originalError: innerError);
+
+      expect(exception.message, equals(msg));
+      expect(exception.originalError, equals(innerError));
       expect(
-          exception.toString(), equals('X402Exception: Something went wrong'));
-
-      const exceptionWithCode =
-          X402Exception('Invalid payload', code: 'INVALID_PAYLOAD');
-      expect(exceptionWithCode.toString(),
-          equals('X402Exception [INVALID_PAYLOAD]: Invalid payload'));
+        exception.toString(),
+        equals(
+          'X402Exception: $msg, originalError: Exception: Inner cause',
+        ),
+      );
     });
 
-    test('toString output should contain the error code if provided', () {
-      const code = 'TEST_ERROR_CODE';
-      const message = 'Test message';
-      const exception = X402Exception(message, code: code);
+    test('InvalidPayloadException inherits originalError and prints it', () {
+      const innerError = FormatException('Invalid JSON');
+      const exception = InvalidPayloadException(
+        'Payload invalid',
+        originalError: innerError,
+      );
 
-      final result = exception.toString();
-
-      expect(result, contains(code));
-      expect(result, contains(message));
+      expect(exception, isA<X402Exception>());
+      expect(exception.message, equals('Payload invalid'));
+      expect(exception.originalError, equals(innerError));
+      expect(
+        exception.toString(),
+        equals(
+          'X402Exception: Payload invalid, '
+          'originalError: FormatException: Invalid JSON',
+        ),
+      );
     });
 
-    test('should support specialized exceptions', () {
-      expect(const InvalidPayloadException('Invalid'), isA<X402Exception>());
-      expect(const UnsupportedSchemeException('Unsupported'),
-          isA<X402Exception>());
+    test('UnsupportedSchemeException inherits originalError and prints it', () {
+      final innerError = StateError('Scheme not found');
+      final exception = UnsupportedSchemeException(
+        'Unknown scheme',
+        originalError: innerError,
+      );
+
+      expect(exception, isA<X402Exception>());
+      expect(exception.message, equals('Unknown scheme'));
+      expect(exception.originalError, equals(innerError));
+      expect(
+        exception.toString(),
+        equals(
+          'X402Exception: Unknown scheme, '
+          'originalError: Bad state: Scheme not found',
+        ),
+      );
     });
   });
 }
