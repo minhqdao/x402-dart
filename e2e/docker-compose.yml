@@ -1,12 +1,7 @@
 services:
   facilitator:
-    build:
-      context: .
-      cache_from:
-        - type=local,src=/tmp/.buildx-cache
-      cache_to:
-        - type=local,dest=/tmp/.buildx-cache-new
     container_name: x402-facilitator
+    image: ghcr.io/minhqdao/x402:latest
     working_dir: /app/examples/typescript/facilitator
     command: pnpm dev
     ports:
@@ -31,8 +26,8 @@ services:
       start_period: 10s
 
   server:
-    build: .
     container_name: x402-server
+    image: ghcr.io/minhqdao/x402:latest
     working_dir: /app/examples/typescript/servers/express
     depends_on:
       facilitator:
