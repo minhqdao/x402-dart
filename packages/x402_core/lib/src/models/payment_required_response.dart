@@ -31,11 +31,15 @@ class PaymentRequiredResponse {
     this.extensions,
   });
 
+  /// Parses the PaymentRequiredResponse from a base64-encoded header string.
   factory PaymentRequiredResponse.fromHeader(String header) {
     return PaymentRequiredResponse.fromJson(
         jsonDecode(utf8.decode(base64Decode(header))) as Map<String, dynamic>);
   }
 
+  /// Creates a response from a decoded JSON map.
+  ///
+  /// Most users should prefer [PaymentRequiredResponse.fromHeader].
   factory PaymentRequiredResponse.fromJson(Map<String, dynamic> json) {
     return PaymentRequiredResponse(
       x402Version: json['x402Version'] as int,
