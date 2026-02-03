@@ -1,4 +1,4 @@
-name: client_dio_svm_denied_e2e_test
+name: dio_svm_denied_e2e_test
 description: x402 Client Dio SVM Denied e2e test
 publish_to: none
 

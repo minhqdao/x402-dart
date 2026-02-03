@@ -1,4 +1,4 @@
-name: client_dio_evm_e2e_test
+name: dio_evm_e2e_test
 description: x402 Client Dio EVM e2e test
 publish_to: none
 
