@@ -231,6 +231,47 @@ void main() {
       expect(deserialized.error, equals('Invalid payment'));
       expect(deserialized.extensions, isNull);
     });
+
+    test('should decode from Base64 header using fromHeader', () {
+      const responseJson = {
+        'x402Version': 2,
+        'resource': {
+          'url': 'https://api.example.com/data',
+          'description': 'Access to data',
+          'mimeType': 'application/json',
+        },
+        'accepts': [
+          {
+            'scheme': 'exact',
+            'network': 'eip155:8453',
+            'amount': '10000',
+            'payTo': '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
+            'maxTimeoutSeconds': 60,
+            'asset': '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+            'extra': {},
+          }
+        ],
+        'error': 'Payment Required',
+        'extensions': {'foo': 'bar'}
+      };
+      final encodedHeader = base64Encode(utf8.encode(jsonEncode(responseJson)));
+
+      final response = PaymentRequiredResponse.fromHeader(encodedHeader);
+
+      expect(response.x402Version, equals(2));
+      expect(response.resource.url, equals('https://api.example.com/data'));
+      expect(response.accepts.length, equals(1));
+      expect(response.accepts.first.scheme, equals('exact'));
+      expect(response.error, equals('Payment Required'));
+      expect(response.extensions, equals({'foo': 'bar'}));
+    });
+
+    test('fromHeader throws on invalid base64', () {
+      expect(
+        () => PaymentRequiredResponse.fromHeader('not-base64'),
+        throwsA(isA<InvalidPayloadException>()),
+      );
+    });
   });
 
   group('Constants', () {
