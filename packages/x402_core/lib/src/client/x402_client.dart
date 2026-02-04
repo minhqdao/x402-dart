@@ -206,7 +206,6 @@ class X402Client extends http.BaseClient {
         }
       } catch (e) {
         // Silently fail and return original response
-        // Users can add their own error handling in onPaymentRequired
       }
     }
 
