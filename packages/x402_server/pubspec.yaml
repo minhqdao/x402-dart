@@ -1,0 +1,20 @@
+name: x402_server
+description: Framework-agnostic server-side primitives for enforcing x402 Payment Required endpoints.
+version: 0.1.0
+repository: https://github.com/minhqdao/x402-dart
+homepage: https://github.com/minhqdao/x402-dart
+issue_tracker: https://github.com/minhqdao/x402-dart/issues
+topics:
+  - backend
+  - payments
+  - microtransactions
+  - blockchain
+  - crypto
+
+environment:
+  sdk: ^3.6.0
+
+resolution: workspace
+
+dev_dependencies:
+  test: ^1.29.0
