@@ -1,5 +1,5 @@
 name: x402_server
-description: Framework-agnostic server-side primitives for enforcing x402 Payment Required endpoints.
+description: Framework-agnostic server-side primitives for supporting x402 paid routes.
 version: 0.1.0
 repository: https://github.com/minhqdao/x402-dart
 homepage: https://github.com/minhqdao/x402-dart
