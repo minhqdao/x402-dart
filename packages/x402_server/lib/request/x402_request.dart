@@ -1,12 +1,19 @@
-/// A framework-agnostic representation of an incoming HTTP request
-/// used for payment verification.
-abstract class X402Request {
-  /// HTTP method (e.g. GET, POST).
-  String get method;
+import 'package:x402_server/request/http_method.dart';
 
-  /// Full request URI.
+/// A framework-agnostic representation of an incoming HTTP request.
+///
+/// This interface is implemented by server adapters (e.g. Shelf)
+/// and consumed by x402 payment verification logic.
+///
+/// It intentionally exposes only the minimal information required
+/// for payment verification.
+abstract class X402Request {
+  /// The HTTP method of the request.
+  HttpMethod get method;
+
+  /// The full request URI.
   Uri get uri;
 
-  /// Request headers.
+  /// The request headers.
   Map<String, String> get headers;
 }

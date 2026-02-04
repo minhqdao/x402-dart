@@ -59,7 +59,7 @@ class _FakeRequest implements X402Request {
   Map<String, String> get headers => {};
 
   @override
-  String get method => 'GET';
+  HttpMethod get method => HttpMethod.get;
 
   @override
   Uri get uri => Uri.parse('http://example.com');

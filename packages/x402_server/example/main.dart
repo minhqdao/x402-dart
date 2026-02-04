@@ -24,7 +24,7 @@ void main() async {
 /// Minimal example request implementation.
 class ExampleRequest implements X402Request {
   @override
-  String get method => 'GET';
+  HttpMethod get method => HttpMethod.get;
 
   @override
   Uri get uri => Uri.parse('https://api.example.com/premium');
