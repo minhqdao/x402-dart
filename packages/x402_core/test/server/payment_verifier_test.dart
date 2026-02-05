@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:x402_server/x402_server.dart';
+import 'package:x402_core/x402_core.dart';
 
 void main() {
   group('PaymentVerifier', () {

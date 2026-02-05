@@ -1,5 +1,5 @@
-import 'package:x402_server/request/x402_request.dart';
-import 'package:x402_server/verifier/verification_result.dart';
+import 'package:x402_core/src/server_protocol/request/x402_request.dart';
+import 'package:x402_core/src/server_protocol/verifier/verification_result.dart';
 
 /// Interface for verifying payments for a specific x402 payment scheme.
 ///

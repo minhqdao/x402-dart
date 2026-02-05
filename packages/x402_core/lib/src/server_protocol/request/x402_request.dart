@@ -1,4 +1,4 @@
-import 'package:x402_server/request/http_method.dart';
+import 'package:x402_core/src/server_protocol/request/http_method.dart';
 
 /// A framework-agnostic representation of an incoming HTTP request.
 ///

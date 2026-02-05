@@ -1,11 +1,14 @@
 # x402_core
 
-This package contains the core protocol definitions, interfaces, and shared logic for the x402 payment protocol. It is blockchain-agnostic and provides the foundation for specific chain implementations.
+Core protocol definitions and shared logic for the x402 payment protocol.
 
-**Note:** Most users should use the [x402](https://pub.dev/packages/x402) package directly, which provides the main client-side entry point and multi-chain support.
+This package is blockchain-agnostic and defines the common vocabulary and behavior used by x402 clients and resource hosts.
+
+**Note:** Most users should use the [`x402`](https://pub.dev/packages/x402) package, which provides the main client entry point and multi-chain support.
 
 ## Contents
 
-- Base `X402Signer` and `SchemeClient` interfaces.
-- Standard protocol models (`PaymentPayload`, `PaymentRequirement`).
-- `X402Client` base logic.
+- Protocol models and constants (`PaymentRequirement`, `PaymentPayload`, etc.)
+- Core client logic (`X402Client`)
+- Framework-agnostic primitives for protecting paid resources
+- Interfaces for implementing payment schemes

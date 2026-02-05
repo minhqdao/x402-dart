@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:x402_core/src/constants.dart';
-import 'package:x402_core/src/models/payment_required_response.dart';
-import 'package:x402_core/src/models/payment_requirement.dart';
-import 'package:x402_core/src/models/resource_info.dart';
+import 'package:x402_core/src/protocol/constants.dart';
+import 'package:x402_core/src/protocol/models/payment_required_response.dart';
+import 'package:x402_core/src/protocol/models/payment_requirement.dart';
+import 'package:x402_core/src/protocol/models/resource_info.dart';
 
 /// Callback to let the user approve a payment before it's signed and sent.
 ///

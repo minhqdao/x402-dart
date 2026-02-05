@@ -1,6 +1,6 @@
-import 'package:x402_server/request/x402_request.dart';
-import 'package:x402_server/schemes/payment_scheme_verifier.dart';
-import 'package:x402_server/verifier/verification_result.dart';
+import 'package:x402_core/src/server_protocol/request/x402_request.dart';
+import 'package:x402_core/src/server_protocol/schemes/payment_scheme_verifier.dart';
+import 'package:x402_core/src/server_protocol/verifier/verification_result.dart';
 
 /// Orchestrates payment verification across multiple payment schemes.
 ///

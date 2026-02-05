@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:test/test.dart';
 import 'package:x402_core/src/client/x402_client.dart';
-import 'package:x402_core/src/constants.dart';
-import 'package:x402_core/src/exceptions/x402_exception.dart';
-import 'package:x402_core/src/models/payment_payload.dart';
-import 'package:x402_core/src/models/payment_required_response.dart';
-import 'package:x402_core/src/models/payment_requirement.dart';
-import 'package:x402_core/src/models/resource_info.dart';
+import 'package:x402_core/src/protocol/constants.dart';
+import 'package:x402_core/src/protocol/exceptions/x402_exception.dart';
+import 'package:x402_core/src/protocol/models/payment_payload.dart';
+import 'package:x402_core/src/protocol/models/payment_required_response.dart';
+import 'package:x402_core/src/protocol/models/payment_requirement.dart';
+import 'package:x402_core/src/protocol/models/resource_info.dart';
 
 void main() {
   group('PaymentRequirement', () {

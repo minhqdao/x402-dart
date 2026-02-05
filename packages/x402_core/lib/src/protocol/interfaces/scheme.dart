@@ -1,6 +1,6 @@
-import 'package:x402_core/src/models/payment_payload.dart';
-import 'package:x402_core/src/models/payment_requirement.dart';
-import 'package:x402_core/src/models/resource_info.dart';
+import 'package:x402_core/src/protocol/models/payment_payload.dart';
+import 'package:x402_core/src/protocol/models/payment_requirement.dart';
+import 'package:x402_core/src/protocol/models/resource_info.dart';
 
 /// Interface for payment scheme clients (e.g., "exact", "stream")
 abstract class SchemeClient {

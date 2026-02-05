@@ -1,3 +1,17 @@
+## 0.3.0
+
+- Add e2e tests
+- Add `PaymentRequiredResponse.fromHeader`
+- Add `PaymentRequiredResponse.findFirstSupportedby()`
+- Remove `code` from `X402Exception`, include `originalError` in `toString()`
+- Restructure directory, move folders into protocol
+- Introduced framework-agnostic server-side protocol primitives
+- Added `X402Request` abstraction for describing incoming requests
+- Added `PaymentSchemeVerifier` interface for scheme-specific verification
+- Added `PaymentVerifier` to orchestrate payment verification
+- Added `VerificationResult` model
+- Included core unit tests for server-side verification behavior
+
 ## 0.2.0
 
 - **Breaking Change**: `X402Signer.sign` now returns `Future<SignedPayment>` instead of `Future<String>`.
