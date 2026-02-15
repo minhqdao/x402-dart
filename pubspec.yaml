@@ -12,6 +12,7 @@ workspace:
   - packages/x402_evm
   - packages/x402_svm
   - packages/x402_dio
+  - packages/x402_shelf
   - examples/client_wrapper
   - examples/client_manual
   - examples/client_dio

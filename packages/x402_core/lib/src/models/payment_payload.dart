@@ -1,5 +1,5 @@
-import 'package:x402_core/src/protocol/models/payment_requirement.dart';
-import 'package:x402_core/src/protocol/models/resource_info.dart';
+import 'package:x402_core/src/models/payment_requirement.dart';
+import 'package:x402_core/src/models/resource_info.dart';
 
 /// The payload sent by the client in the `payment-signature` (or `X-PAYMENT`) header.
 ///
