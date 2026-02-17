@@ -1,3 +1,5 @@
+import 'package:x402_core/src/models/network.dart';
+
 /// A payment kind supported by a facilitator.
 class SupportedKind {
   /// Supported x402 protocol version.
@@ -7,7 +9,7 @@ class SupportedKind {
   final String scheme;
 
   /// Network identifier.
-  final String network;
+  final Network network;
 
   /// Optional scheme-specific metadata.
   final Map<String, dynamic>? extra;
@@ -23,7 +25,7 @@ class SupportedKind {
     return SupportedKind(
       x402Version: json['x402Version'] as int,
       scheme: json['scheme'] as String,
-      network: json['network'] as String,
+      network: Network.parse(json['network'] as String),
       extra: json['extra'] as Map<String, dynamic>?,
     );
   }
@@ -31,7 +33,7 @@ class SupportedKind {
   Map<String, dynamic> toJson() => {
         'x402Version': x402Version,
         'scheme': scheme,
-        'network': network,
+        'network': network.identifier,
         if (extra != null) 'extra': extra,
       };
 }

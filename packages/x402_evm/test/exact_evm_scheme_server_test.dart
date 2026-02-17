@@ -1,10 +1,11 @@
 import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
+import 'package:x402_evm/src/network/evm_network.dart';
 import 'package:x402_evm/src/schemes/exact_evm_scheme_server.dart';
 
 void main() {
   group('ExactEvmSchemeServer', () {
-    const network = 'eip155:8453'; // Base Mainnet (6 decimals)
+    final network = Network.parse('eip155:8453'); // Base Mainnet (6 decimals)
 
     group('Constructor & Basic Properties', () {
       test('exposes correct scheme identifier', () {
@@ -166,20 +167,11 @@ void main() {
       final server = ExactEvmSchemeServer();
 
       test('Money("0.1") produces exactly 100000', () async {
-        // This test demonstrates correctness for Money("0.1").
-        // If double was used, 0.1 cannot be represented exactly in binary,
-        // which often leads to precision issues (e.g. 0.1 * 10^6 might
-        // result in 99999.99999999999).
-        // String-based conversion ensures "0.1" is always "100000".
         final result = await server.parsePrice(const Money('0.1'), network);
         expect(result.amount, equals('100000'));
       });
 
       test('Money("0.30000000000000004") is treated as literal string', () {
-        // "0.30000000000000004" is a classic float precision error for 0.1 + 0.2.
-        // By treating it as a literal string, we ensure it isn't rounded or
-        // corrupted by floating-point behavior.
-        // For 6 decimals, this exceeds precision and must throw.
         expect(
           () => server.parsePrice(const Money('0.30000000000000004'), network),
           throwsArgumentError,
@@ -276,18 +268,20 @@ void main() {
 
       test('Unsupported network throws', () {
         expect(
-          () => server.parsePrice(const Money('1'), 'eip155:1'),
+          () =>
+              server.parsePrice(const Money('1'), const EvmNetwork(chainId: 1)),
           throwsArgumentError,
         );
       });
 
       test('Supported networks produce correct default asset', () async {
-        final base = await server.parsePrice(const Money('1'), 'eip155:8453');
+        final base = await server.parsePrice(
+            const Money('1'), Network.parse('eip155:8453'));
         expect(
             base.asset, equals('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'));
 
-        final baseSepolia =
-            await server.parsePrice(const Money('1'), 'eip155:84532');
+        final baseSepolia = await server.parsePrice(
+            const Money('1'), Network.parse('eip155:84532'));
         expect(baseSepolia.asset,
             equals('0x036CbD53842c5426634e7929541eC2318f3dCF7e'));
       });
@@ -398,19 +392,19 @@ void main() {
     group('enhancePaymentRequirement', () {
       test('returns payment requirement unchanged', () async {
         final server = ExactEvmSchemeServer();
-        const req = PaymentRequirement(
+        final req = PaymentRequirement(
           scheme: 'exact',
           network: network,
           asset: '0xAsset',
           amount: '100',
           payTo: '0xReceiver',
           maxTimeoutSeconds: 60,
-          extra: {'foo': 'bar'},
+          extra: const {'foo': 'bar'},
         );
 
         final enhanced = await server.enhancePaymentRequirement(
           req,
-          kind: const SupportedKind(
+          kind: SupportedKind(
             x402Version: 1,
             scheme: 'exact',
             network: network,

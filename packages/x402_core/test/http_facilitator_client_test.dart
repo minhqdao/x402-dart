@@ -8,7 +8,7 @@ import 'package:x402_core/x402_core.dart';
 void main() {
   PaymentRequirement mockPaymentRequirement({
     String scheme = 'exact',
-    String network = 'eip155:1',
+    Network network = const Network(namespace: 'eip155', reference: '1'),
     String asset = '0x123',
     String amount = '100',
     String payTo = '0xabc',
@@ -301,7 +301,7 @@ void main() {
           jsonEncode({
             'success': false,
             'transaction': '',
-            'network': '',
+            'network': 'eip155:1',
           }),
           500,
         );

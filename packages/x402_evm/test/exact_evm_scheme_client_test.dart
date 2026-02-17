@@ -25,9 +25,9 @@ void main() {
         mimeType: 'application/json',
       );
 
-      requirements = const PaymentRequirement(
+      requirements = PaymentRequirement(
         scheme: 'exact',
-        network: 'eip155:8453',
+        network: const Network(namespace: 'eip155', reference: '8453'),
         amount: '10000',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
@@ -45,7 +45,7 @@ void main() {
 
       expect(payload.x402Version, equals(kX402Version));
       expect(payload.accepted.scheme, equals('exact'));
-      expect(payload.accepted.network, equals('eip155:8453'));
+      expect(payload.accepted.network.identifier, equals('eip155:8453'));
       expect(payload.payload['signature'], isNotNull);
       expect(payload.payload['authorization'], isNotNull);
 
@@ -75,14 +75,14 @@ void main() {
     });
 
     test('should throw on unsupported scheme', () {
-      const badRequirements = PaymentRequirement(
+      final badRequirements = PaymentRequirement(
         scheme: 'deferred',
-        network: 'eip155:8453',
+        network: const Network(namespace: 'eip155', reference: '8453'),
         amount: '10000',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        extra: {},
+        extra: const {},
       );
 
       expect(
@@ -91,32 +91,15 @@ void main() {
       );
     });
 
-    test('should throw on invalid network format (missing colon)', () {
-      const badRequirements = PaymentRequirement(
+    test('should throw on invalid network format (not eip155)', () {
+      final badRequirements = PaymentRequirement(
         scheme: 'exact',
-        network: 'eip155', // Missing colon and chainId
+        network: const Network(namespace: 'solana', reference: 'devnet'),
         amount: '10000',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        extra: {'name': 'USDC', 'version': '2'},
-      );
-
-      expect(
-        () => client.createPaymentPayload(badRequirements, resource),
-        throwsA(isA<InvalidPayloadException>()),
-      );
-    });
-
-    test('should throw on invalid network format (too many parts)', () {
-      const badRequirements = PaymentRequirement(
-        scheme: 'exact',
-        network: 'eip155:8453:extra', // Too many parts
-        amount: '10000',
-        payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
-        maxTimeoutSeconds: 60,
-        asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        extra: {'name': 'USDC', 'version': '2'},
+        extra: const {'name': 'USDC', 'version': '2'},
       );
 
       expect(
@@ -126,14 +109,14 @@ void main() {
     });
 
     test('should throw on missing token metadata (missing name)', () {
-      const badRequirements = PaymentRequirement(
+      final badRequirements = PaymentRequirement(
         scheme: 'exact',
-        network: 'eip155:8453',
+        network: const Network(namespace: 'eip155', reference: '8453'),
         amount: '10000',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        extra: {'version': '2'}, // Missing name
+        extra: const {'version': '2'}, // Missing name
       );
 
       expect(
@@ -143,14 +126,14 @@ void main() {
     });
 
     test('should throw on missing token metadata (missing version)', () {
-      const badRequirements = PaymentRequirement(
+      final badRequirements = PaymentRequirement(
         scheme: 'exact',
-        network: 'eip155:8453',
+        network: const Network(namespace: 'eip155', reference: '8453'),
         amount: '10000',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
         asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-        extra: {'name': 'USDC'}, // Missing version
+        extra: const {'name': 'USDC'}, // Missing version
       );
 
       expect(

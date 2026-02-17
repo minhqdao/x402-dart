@@ -62,12 +62,11 @@ class ExactEvmSchemeClient implements SchemeClient {
     }
 
     // Parse network (format: eip155:chainId)
-    final networkParts = requirements.network.split(':');
-    if (networkParts.length != 2 || networkParts[0] != 'eip155') {
+    if (requirements.network.namespace != 'eip155') {
       throw InvalidPayloadException(
           'Invalid network format. Expected "eip155:chainId", got "${requirements.network}"');
     }
-    final chainId = int.parse(networkParts[1]);
+    final chainId = int.parse(requirements.network.reference);
 
     // Parse amount
     final amount = BigInt.parse(requirements.amount);

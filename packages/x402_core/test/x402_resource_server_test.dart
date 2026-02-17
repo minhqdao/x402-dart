@@ -33,7 +33,7 @@ class MockFacilitatorClient implements FacilitatorClient {
     return const SettleResponse(
       success: true,
       transaction: 'tx',
-      network: 'net',
+      network: Network(namespace: 'net', reference: 'test'),
     );
   }
 }
@@ -47,7 +47,7 @@ class MockSchemeServer implements SchemeServer {
   MockSchemeServer(this.scheme);
 
   @override
-  Future<AssetAmount> parsePrice(Price price, String network) async {
+  Future<AssetAmount> parsePrice(Price price, Network network) async {
     if (price is AssetAmount) return price;
     return parsePriceResult ?? const AssetAmount(asset: 'asset', amount: '100');
   }
@@ -66,7 +66,7 @@ class ThrowingParseSchemeServer extends MockSchemeServer {
   ThrowingParseSchemeServer() : super('exact');
 
   @override
-  Future<AssetAmount> parsePrice(Price price, String network) {
+  Future<AssetAmount> parsePrice(Price price, Network network) {
     throw Exception('parse failure');
   }
 }
@@ -85,6 +85,11 @@ class ThrowingEnhanceSchemeServer extends MockSchemeServer {
 }
 
 void main() {
+  const net1 = Network(namespace: 'eip155', reference: '1');
+  const net2 = Network(namespace: 'eip155', reference: '2');
+  const n1 = Network(namespace: 'n', reference: '1');
+  const n2 = Network(namespace: 'n', reference: '2');
+
   group('X402ResourceServer.create', () {
     test('initializes successfully with one facilitator and one scheme',
         () async {
@@ -94,7 +99,7 @@ void main() {
             SupportedKind(
               x402Version: kX402Version,
               scheme: 'exact',
-              network: 'eip155:1',
+              network: net1,
             ),
           ],
           extensions: [],
@@ -103,7 +108,7 @@ void main() {
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: {'eip155:1': MockSchemeServer('exact')},
+        schemes: {net1: MockSchemeServer('exact')},
       );
 
       expect(server, isNotNull);
@@ -113,8 +118,7 @@ void main() {
       final f1 = MockFacilitatorClient()
         ..supportedResponse = const SupportedResponse(
           kinds: [
-            SupportedKind(
-                x402Version: kX402Version, scheme: 's1', network: 'n1'),
+            SupportedKind(x402Version: kX402Version, scheme: 's1', network: n1),
           ],
           extensions: [],
           signers: {},
@@ -122,8 +126,7 @@ void main() {
       final f2 = MockFacilitatorClient()
         ..supportedResponse = const SupportedResponse(
           kinds: [
-            SupportedKind(
-                x402Version: kX402Version, scheme: 's2', network: 'n2'),
+            SupportedKind(x402Version: kX402Version, scheme: 's2', network: n2),
           ],
           extensions: [],
           signers: {},
@@ -132,8 +135,8 @@ void main() {
       final server = await X402ResourceServer.create(
         facilitators: [f1, f2],
         schemes: {
-          'n1': MockSchemeServer('s1'),
-          'n2': MockSchemeServer('s2'),
+          n1: MockSchemeServer('s1'),
+          n2: MockSchemeServer('s2'),
         },
       );
 
@@ -148,12 +151,12 @@ void main() {
             SupportedKind(
               x402Version: kX402Version,
               scheme: 's1',
-              network: 'n1',
+              network: n1,
             ),
             SupportedKind(
               x402Version: kX402Version,
               scheme: 's2',
-              network: 'n2',
+              network: n2,
             ),
           ],
           extensions: [],
@@ -163,8 +166,8 @@ void main() {
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
         schemes: {
-          'n1': MockSchemeServer('s1'),
-          'n2': MockSchemeServer('s2'),
+          n1: MockSchemeServer('s1'),
+          n2: MockSchemeServer('s2'),
         },
       );
 
@@ -178,12 +181,12 @@ void main() {
             SupportedKind(
               x402Version: kX402Version,
               scheme: 's1',
-              network: 'n1',
+              network: n1,
             ),
             SupportedKind(
               x402Version: kX402Version,
               scheme: 's2',
-              network: 'n1',
+              network: n1,
             ),
           ],
           extensions: [],
@@ -193,7 +196,7 @@ void main() {
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
         schemes: {
-          'n1': MockSchemeServer('s1'),
+          n1: MockSchemeServer('s1'),
         },
       );
 
@@ -221,7 +224,7 @@ void main() {
       expect(
         () => X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {'net': MockSchemeServer('exact')},
+          schemes: {net1: MockSchemeServer('exact')},
         ),
         throwsStateError,
       );
@@ -234,7 +237,7 @@ void main() {
       expect(
         () => X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {'net': MockSchemeServer('exact')},
+          schemes: {net1: MockSchemeServer('exact')},
         ),
         throwsException,
       );
@@ -247,7 +250,7 @@ void main() {
             SupportedKind(
               x402Version: 999, // wrong version
               scheme: 'exact',
-              network: 'eip155:1',
+              network: net1,
             ),
           ],
           extensions: [],
@@ -257,7 +260,7 @@ void main() {
       expect(
         () => X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {'eip155:1': MockSchemeServer('exact')},
+          schemes: {net1: MockSchemeServer('exact')},
         ),
         throwsStateError,
       );
@@ -270,12 +273,12 @@ void main() {
             SupportedKind(
               x402Version: 999,
               scheme: 'exact',
-              network: 'eip155:1',
+              network: net1,
             ),
             SupportedKind(
               x402Version: kX402Version,
               scheme: 'exact',
-              network: 'eip155:1',
+              network: net1,
             ),
           ],
           extensions: [],
@@ -284,21 +287,22 @@ void main() {
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: {'eip155:1': MockSchemeServer('exact')},
+        schemes: {net1: MockSchemeServer('exact')},
       );
 
       expect(server, isNotNull);
     });
 
-    test('last facilitator wins if multiple support same scheme/network',
-        () async {
+    test(
+        'throws StateError if multiple facilitators support same scheme/network',
+        () {
       final f1 = MockFacilitatorClient()
         ..supportedResponse = const SupportedResponse(
           kinds: [
             SupportedKind(
               x402Version: kX402Version,
               scheme: 'exact',
-              network: 'eip155:1',
+              network: net1,
             ),
           ],
           extensions: [],
@@ -311,35 +315,52 @@ void main() {
             SupportedKind(
               x402Version: kX402Version,
               scheme: 'exact',
-              network: 'eip155:1',
+              network: net1,
             ),
           ],
           extensions: [],
           signers: {},
         );
 
-      final server = await X402ResourceServer.create(
-        facilitators: [f1, f2],
-        schemes: {'eip155:1': MockSchemeServer('exact')},
+      expect(
+        () => X402ResourceServer.create(
+          facilitators: [f1, f2],
+          schemes: {net1: MockSchemeServer('exact')},
+        ),
+        throwsStateError,
       );
-
-      // Build requirement to ensure no crash and deterministic routing
-      const config = ResourceConfig(
-        scheme: 'exact',
-        payTo: 'receiver',
-        price: Money('1'),
-        network: 'eip155:1',
-      );
-
-      final requirements = await server.buildPaymentRequirements(config);
-      expect(requirements, hasLength(1));
     });
 
     test('throws if facilitators list is empty', () {
       expect(
         () => X402ResourceServer.create(
           facilitators: [],
-          schemes: {'net': MockSchemeServer('exact')},
+          schemes: {net1: MockSchemeServer('exact')},
+        ),
+        throwsStateError,
+      );
+    });
+
+    test(
+        'ignores SupportedKind if scheme string differs from registered server',
+        () {
+      final facilitator = MockFacilitatorClient()
+        ..supportedResponse = const SupportedResponse(
+          kinds: [
+            SupportedKind(
+              x402Version: kX402Version,
+              scheme: 'exact',
+              network: net1,
+            ),
+          ],
+          extensions: [],
+          signers: {},
+        );
+
+      expect(
+        () => X402ResourceServer.create(
+          facilitators: [facilitator],
+          schemes: {net1: MockSchemeServer('different')}, // mismatch
         ),
         throwsStateError,
       );
@@ -358,7 +379,7 @@ void main() {
             SupportedKind(
               x402Version: kX402Version,
               scheme: 'exact',
-              network: 'eip155:1',
+              network: net1,
             ),
           ],
           extensions: ['ext1'],
@@ -368,17 +389,17 @@ void main() {
 
       resourceServer = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: {'eip155:1': schemeServer},
+        schemes: {net1: schemeServer},
       );
     });
 
-    group('buildPaymentRequirements', () {
+    group('buildPaymentRequirement', () {
       test('correctly builds requirements', () async {
         const config = ResourceConfig(
           scheme: 'exact',
           payTo: 'receiver',
           price: Money('1.0'),
-          network: 'eip155:1',
+          network: net1,
           maxTimeoutSeconds: 60,
         );
 
@@ -388,13 +409,10 @@ void main() {
           extra: {'name': 'USDC'},
         );
 
-        final requirements =
-            await resourceServer.buildPaymentRequirements(config);
+        final req = await resourceServer.buildPaymentRequirement(config);
 
-        expect(requirements, hasLength(1));
-        final req = requirements.first;
         expect(req.scheme, equals('exact'));
-        expect(req.network, equals('eip155:1'));
+        expect(req.network, equals(net1));
         expect(req.amount, equals('1000000'));
         expect(req.asset, equals('0xUSDC'));
         expect(req.payTo, equals('receiver'));
@@ -407,12 +425,12 @@ void main() {
           scheme: 'exact',
           payTo: 'receiver',
           price: Money('1.0'),
-          network: 'eip155:1',
+          network: net1,
         );
 
-        schemeServer.enhancedRequirement = const PaymentRequirement(
+        schemeServer.enhancedRequirement = PaymentRequirement(
           scheme: 'exact',
-          network: 'eip155:1',
+          network: net1,
           asset: 'enhanced-asset',
           amount: '100',
           payTo: 'receiver',
@@ -420,11 +438,10 @@ void main() {
           extra: {'enhanced': true},
         );
 
-        final requirements =
-            await resourceServer.buildPaymentRequirements(config);
+        final req = await resourceServer.buildPaymentRequirement(config);
 
-        expect(requirements.first.asset, equals('enhanced-asset'));
-        expect(requirements.first.extra['enhanced'], isTrue);
+        expect(req.asset, equals('enhanced-asset'));
+        expect(req.extra['enhanced'], isTrue);
       });
 
       test('works with AssetAmount', () async {
@@ -432,14 +449,13 @@ void main() {
           scheme: 'exact',
           payTo: 'receiver',
           price: AssetAmount(asset: '0xAsset', amount: '500'),
-          network: 'eip155:1',
+          network: net1,
         );
 
-        final requirements =
-            await resourceServer.buildPaymentRequirements(config);
+        final req = await resourceServer.buildPaymentRequirement(config);
 
-        expect(requirements.first.amount, equals('500'));
-        expect(requirements.first.asset, equals('0xAsset'));
+        expect(req.amount, equals('500'));
+        expect(req.asset, equals('0xAsset'));
       });
 
       test('throws StateError if scheme not registered for network', () {
@@ -447,11 +463,11 @@ void main() {
           scheme: 'other',
           payTo: 'receiver',
           price: Money('1.0'),
-          network: 'eip155:1',
+          network: net1,
         );
 
         expect(
-          () => resourceServer.buildPaymentRequirements(config),
+          () => resourceServer.buildPaymentRequirement(config),
           throwsStateError,
         );
       });
@@ -462,53 +478,45 @@ void main() {
           scheme: 'exact',
           payTo: 'receiver',
           price: Money('1.0'),
-          network: 'other-net',
+          network: net2,
         );
 
-        // We need to register the scheme for 'other-net' too during setup if we want it to get past the first check
+        // We need to register the scheme for net2 too during setup if we want it to get past the first check
         final resourceServer2 = await X402ResourceServer.create(
           facilitators: [facilitator],
           schemes: {
-            'eip155:1': schemeServer,
-            'other-net': schemeServer,
+            net1: schemeServer,
+            net2: schemeServer,
           },
         );
 
         expect(
-          () => resourceServer2.buildPaymentRequirements(config),
+          () => resourceServer2.buildPaymentRequirement(config),
           throwsStateError,
         );
       });
 
-      test('throws if SupportedKind for scheme/network is missing', () async {
+      test('throws if SupportedKind for scheme/network is missing', () {
         final facilitator = MockFacilitatorClient()
           ..supportedResponse = const SupportedResponse(
             kinds: [
               SupportedKind(
                 x402Version: kX402Version,
                 scheme: 'exact',
-                network: 'different-network',
+                network: net2,
               ),
             ],
             extensions: [],
             signers: {},
           );
 
-        final server = await X402ResourceServer.create(
-          facilitators: [facilitator],
-          schemes: {'eip155:1': MockSchemeServer('exact')},
-        );
-
-        const config = ResourceConfig(
-          scheme: 'exact',
-          payTo: 'receiver',
-          price: Money('1.0'),
-          network: 'eip155:1',
-        );
-
+        // Should throw during creation because net1 scheme has no facilitator support
         expect(
-          () => server.buildPaymentRequirements(config),
-          throwsA(isA<StateError>()),
+          () => X402ResourceServer.create(
+            facilitators: [facilitator],
+            schemes: {net1: MockSchemeServer('exact')},
+          ),
+          throwsStateError,
         );
       });
 
@@ -521,7 +529,7 @@ void main() {
               SupportedKind(
                 x402Version: kX402Version,
                 scheme: 'exact',
-                network: 'eip155:1',
+                network: net1,
               ),
             ],
             extensions: [],
@@ -530,18 +538,18 @@ void main() {
 
         final server = await X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {'eip155:1': scheme},
+          schemes: {net1: scheme},
         );
 
         const config = ResourceConfig(
           scheme: 'exact',
           payTo: 'receiver',
           price: Money('1'),
-          network: 'eip155:1',
+          network: net1,
         );
 
         expect(
-          () => server.buildPaymentRequirements(config),
+          () => server.buildPaymentRequirement(config),
           throwsException,
         );
       });
@@ -555,7 +563,7 @@ void main() {
               SupportedKind(
                 x402Version: kX402Version,
                 scheme: 'exact',
-                network: 'eip155:1',
+                network: net1,
               ),
             ],
             extensions: [],
@@ -564,18 +572,18 @@ void main() {
 
         final server = await X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {'eip155:1': scheme},
+          schemes: {net1: scheme},
         );
 
         const config = ResourceConfig(
           scheme: 'exact',
           payTo: 'receiver',
           price: Money('1'),
-          network: 'eip155:1',
+          network: net1,
         );
 
         expect(
-          () => server.buildPaymentRequirements(config),
+          () => server.buildPaymentRequirement(config),
           throwsException,
         );
       });
@@ -586,15 +594,15 @@ void main() {
           scheme: 'exact',
           payTo: 'receiver',
           price: Money('1.0'),
-          network: 'eip155:1',
+          network: net1,
         );
 
         schemeServer.enhancedRequirement = null;
 
         schemeServer = MockSchemeServer('exact')
-          ..enhancedRequirement = const PaymentRequirement(
+          ..enhancedRequirement = PaymentRequirement(
             scheme: 'exact',
-            network: 'eip155:1',
+            network: net1,
             asset: 'asset',
             amount: '100',
             payTo: 'receiver',
@@ -604,55 +612,65 @@ void main() {
 
         resourceServer = await X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {'eip155:1': schemeServer},
+          schemes: {net1: schemeServer},
         );
 
-        await resourceServer.buildPaymentRequirements(config);
+        await resourceServer.buildPaymentRequirement(config);
 
         // If no crash, extension passing works.
         expect(true, isTrue);
       });
 
-      test('buildPaymentRequirements is stable across repeated calls',
-          () async {
+      test('buildPaymentRequirement is stable across repeated calls', () async {
         const config = ResourceConfig(
           scheme: 'exact',
           payTo: 'receiver',
           price: Money('1.0'),
-          network: 'eip155:1',
+          network: net1,
         );
 
         for (var i = 0; i < 50; i++) {
-          final requirements =
-              await resourceServer.buildPaymentRequirements(config);
+          final req = await resourceServer.buildPaymentRequirement(config);
 
-          expect(requirements, hasLength(1));
-          expect(requirements.first.scheme, equals('exact'));
+          expect(req.scheme, equals('exact'));
         }
+      });
+
+      test('maxTimeoutSeconds defaults correctly when null', () async {
+        const config = ResourceConfig(
+          scheme: 'exact',
+          payTo: 'receiver',
+          price: Money('1'),
+          network: net1,
+        );
+
+        final req = await resourceServer.buildPaymentRequirement(config);
+
+        expect(req.maxTimeoutSeconds, isNotNull);
       });
     });
 
     group('verifyPayment', () {
       test('calls facilitator verify', () async {
-        const requirement = PaymentRequirement(
+        final requirement = PaymentRequirement(
           scheme: 'exact',
-          network: 'eip155:1',
+          network: net1,
           asset: 'asset',
           amount: '100',
           payTo: 'receiver',
           maxTimeoutSeconds: 60,
-          extra: {},
+          extra: const {},
         );
 
-        const payload = PaymentPayload(
+        final payload = PaymentPayload(
           x402Version: kX402Version,
-          resource: ResourceInfo(
+          resource: const ResourceInfo(
             url: 'url',
             description: 'desc',
             mimeType: 'mime',
           ),
           accepted: requirement,
-          payload: {'sig': 'abc'},
+          payload: const {'sig': 'abc'},
         );
 
         facilitator.verifyResponse = const VerifyResponse(isValid: true);
@@ -663,25 +681,25 @@ void main() {
       });
 
       test('throws StateError if no facilitator available', () {
-        const requirement = PaymentRequirement(
+        final requirement = PaymentRequirement(
           scheme: 'exact',
-          network: 'other-net',
+          network: net2,
           asset: 'asset',
           amount: '100',
           payTo: 'receiver',
           maxTimeoutSeconds: 60,
-          extra: {},
+          extra: const {},
         );
 
-        const payload = PaymentPayload(
+        final payload = PaymentPayload(
           x402Version: 1,
-          resource: ResourceInfo(
+          resource: const ResourceInfo(
             url: 'url',
             description: 'desc',
             mimeType: 'mime',
           ),
           accepted: requirement,
-          payload: {},
+          payload: const {},
         );
 
         expect(
@@ -697,7 +715,7 @@ void main() {
               SupportedKind(
                 x402Version: kX402Version,
                 scheme: 's1',
-                network: 'n1',
+                network: n1,
               ),
             ],
             extensions: [],
@@ -710,7 +728,7 @@ void main() {
               SupportedKind(
                 x402Version: kX402Version,
                 scheme: 's2',
-                network: 'n2',
+                network: n2,
               ),
             ],
             extensions: [],
@@ -721,30 +739,30 @@ void main() {
         final server = await X402ResourceServer.create(
           facilitators: [f1, f2],
           schemes: {
-            'n1': MockSchemeServer('s1'),
-            'n2': MockSchemeServer('s2'),
+            n1: MockSchemeServer('s1'),
+            n2: MockSchemeServer('s2'),
           },
         );
 
-        const requirement = PaymentRequirement(
+        final requirement = PaymentRequirement(
           scheme: 's2',
-          network: 'n2',
+          network: n2,
           asset: 'asset',
           amount: '100',
           payTo: 'receiver',
           maxTimeoutSeconds: 60,
-          extra: {},
+          extra: const {},
         );
 
-        const payload = PaymentPayload(
+        final payload = PaymentPayload(
           x402Version: kX402Version,
-          resource: ResourceInfo(
+          resource: const ResourceInfo(
             url: 'url',
             description: 'desc',
             mimeType: 'mime',
           ),
           accepted: requirement,
-          payload: {},
+          payload: const {},
         );
 
         final result = await server.verifyPayment(payload, requirement);
@@ -752,25 +770,25 @@ void main() {
       });
 
       test('throws if payload version unsupported even if network matches', () {
-        const requirement = PaymentRequirement(
+        final requirement = PaymentRequirement(
           scheme: 'exact',
-          network: 'eip155:1',
+          network: net1,
           asset: 'asset',
           amount: '100',
           payTo: 'receiver',
           maxTimeoutSeconds: 60,
-          extra: {},
+          extra: const {},
         );
 
-        const payload = PaymentPayload(
+        final payload = PaymentPayload(
           x402Version: 999,
-          resource: ResourceInfo(
+          resource: const ResourceInfo(
             url: 'url',
             description: 'desc',
             mimeType: 'mime',
           ),
           accepted: requirement,
-          payload: {},
+          payload: const {},
         );
 
         expect(
@@ -780,25 +798,25 @@ void main() {
       });
 
       test('verifyPayment is stable across repeated calls', () async {
-        const requirement = PaymentRequirement(
+        final requirement = PaymentRequirement(
           scheme: 'exact',
-          network: 'eip155:1',
+          network: net1,
           asset: 'asset',
           amount: '100',
           payTo: 'receiver',
           maxTimeoutSeconds: 60,
-          extra: {},
+          extra: const {},
         );
 
-        const payload = PaymentPayload(
+        final payload = PaymentPayload(
           x402Version: kX402Version,
-          resource: ResourceInfo(
+          resource: const ResourceInfo(
             url: 'url',
             description: 'desc',
             mimeType: 'mime',
           ),
           accepted: requirement,
-          payload: {},
+          payload: const {},
         );
 
         for (var i = 0; i < 30; i++) {
@@ -807,22 +825,50 @@ void main() {
           expect(result.isValid, isTrue);
         }
       });
+
+      test(
+          'verifyPayment does not validate payload.accepted vs requirements mismatch',
+          () async {
+        final requirement = PaymentRequirement(
+          scheme: 'exact',
+          network: net1,
+          asset: 'asset',
+          amount: '100',
+          payTo: 'receiver',
+          maxTimeoutSeconds: 60,
+          extra: const {},
+        );
+
+        final mismatchedAccepted = requirement.copyWith(scheme: 'other');
+
+        final payload = PaymentPayload(
+          x402Version: kX402Version,
+          resource:
+              const ResourceInfo(url: 'u', description: 'd', mimeType: 'm'),
+          accepted: mismatchedAccepted,
+          payload: const {},
+        );
+
+        final result = await resourceServer.verifyPayment(payload, requirement);
+
+        expect(result.isValid, isTrue);
+      });
     });
 
     group('findMatchingRequirements', () {
       final available = [
-        const PaymentRequirement(
+        PaymentRequirement(
           scheme: 'exact',
-          network: 'eip155:1',
+          network: net1,
           asset: '0x1',
           amount: '100',
           payTo: 'receiver',
           maxTimeoutSeconds: 60,
           extra: {},
         ),
-        const PaymentRequirement(
+        PaymentRequirement(
           scheme: 'exact',
-          network: 'solana:mainnet',
+          network: const Network(namespace: 'solana', reference: 'mainnet'),
           asset: 'mint',
           amount: '100',
           payTo: 'receiver',
@@ -832,50 +878,50 @@ void main() {
       ];
 
       test('Version 1: matches by scheme and network', () {
-        const payload = PaymentPayload(
+        final payload = PaymentPayload(
           x402Version: 1,
-          resource: ResourceInfo(
+          resource: const ResourceInfo(
             url: 'u',
             description: 'd',
             mimeType: 'm',
           ),
           accepted: PaymentRequirement(
             scheme: 'exact',
-            network: 'eip155:1',
+            network: net1,
             asset: 'DIFFERENT', // Should not matter for v1
             amount: '999', // Should not matter for v1
             payTo: 'any',
             maxTimeoutSeconds: 0,
-            extra: {},
+            extra: const {},
           ),
-          payload: {},
+          payload: const {},
         );
 
         final match =
             resourceServer.findMatchingRequirements(available, payload);
 
         expect(match, isNotNull);
-        expect(match!.network, equals('eip155:1'));
+        expect(match!.network, equals(net1));
       });
 
       test('Version 1: does not match if scheme differs', () {
-        const payload = PaymentPayload(
+        final payload = PaymentPayload(
           x402Version: 1,
-          resource: ResourceInfo(
+          resource: const ResourceInfo(
             url: 'u',
             description: 'd',
             mimeType: 'm',
           ),
           accepted: PaymentRequirement(
             scheme: 'other',
-            network: 'eip155:1',
+            network: net1,
             asset: 'asset',
             amount: '100',
             payTo: 'any',
             maxTimeoutSeconds: 0,
-            extra: {},
+            extra: const {},
           ),
-          payload: {},
+          payload: const {},
         );
 
         final match =
@@ -900,6 +946,75 @@ void main() {
             resourceServer.findMatchingRequirements(available, payload);
 
         expect(match, equals(available[1]));
+      });
+
+      test('Version 2: handles deep map equality in extra', () {
+        final reqWithExtra = PaymentRequirement(
+          scheme: 'exact',
+          network: net1,
+          asset: '0x1',
+          amount: '100',
+          payTo: 'receiver',
+          maxTimeoutSeconds: 60,
+          extra: const {
+            'nested': {'a': 1}
+          },
+        );
+
+        final payload = PaymentPayload(
+          x402Version: 2,
+          resource: const ResourceInfo(
+            url: 'u',
+            description: 'd',
+            mimeType: 'm',
+          ),
+          accepted: PaymentRequirement(
+            scheme: 'exact',
+            network: net1,
+            asset: '0x1',
+            amount: '100',
+            payTo: 'receiver',
+            maxTimeoutSeconds: 60,
+            extra: const {
+              'nested': {'a': 1}
+            },
+          ),
+          payload: const {},
+        );
+
+        final match =
+            resourceServer.findMatchingRequirements([reqWithExtra], payload);
+
+        expect(match, isNotNull);
+        expect((match!.extra['nested'] as Map)['a'], equals(1));
+      });
+
+      test('Version 2: returns null if extra differs', () {
+        final reqWithExtra = PaymentRequirement(
+          scheme: 'exact',
+          network: net1,
+          asset: '0x1',
+          amount: '100',
+          payTo: 'receiver',
+          maxTimeoutSeconds: 60,
+          extra: const {'a': 1},
+        );
+
+        final payload = PaymentPayload(
+          x402Version: 2,
+          resource: const ResourceInfo(
+            url: 'u',
+            description: 'd',
+            mimeType: 'm',
+          ),
+          accepted: reqWithExtra.copyWith(extra: {'a': 2}),
+          payload: {},
+        );
+
+        final match =
+            resourceServer.findMatchingRequirements([reqWithExtra], payload);
+
+        expect(match, isNull);
       });
 
       test('Version 2: returns null if no exact match', () {
@@ -939,23 +1054,23 @@ void main() {
       });
 
       test('Version 1: does not match if network differs', () {
-        const payload = PaymentPayload(
+        final payload = PaymentPayload(
           x402Version: 1,
-          resource: ResourceInfo(
+          resource: const ResourceInfo(
             url: 'u',
             description: 'd',
             mimeType: 'm',
           ),
           accepted: PaymentRequirement(
             scheme: 'exact',
-            network: 'different',
+            network: const Network(namespace: 'other', reference: 'net'),
             asset: 'asset',
             amount: '100',
             payTo: 'any',
             maxTimeoutSeconds: 0,
-            extra: {},
+            extra: const {},
           ),
-          payload: {},
+          payload: const {},
         );
 
         final match =
@@ -965,29 +1080,60 @@ void main() {
       });
 
       test('returns null if available list is empty', () {
-        const payload = PaymentPayload(
+        final payload = PaymentPayload(
           x402Version: 1,
-          resource: ResourceInfo(
+          resource: const ResourceInfo(
             url: 'u',
             description: 'd',
             mimeType: 'm',
           ),
           accepted: PaymentRequirement(
             scheme: 'exact',
-            network: 'eip155:1',
+            network: net1,
             asset: 'asset',
             amount: '100',
             payTo: 'receiver',
             maxTimeoutSeconds: 0,
-            extra: {},
+            extra: const {},
           ),
-          payload: {},
+          payload: const {},
         );
 
         final match = resourceServer.findMatchingRequirements([], payload);
 
         expect(match, isNull);
       });
+    });
+
+    test('Version 2: equality does not depend on map instance identity', () {
+      final req1 = PaymentRequirement(
+        scheme: 'exact',
+        network: net1,
+        asset: 'a',
+        amount: '100',
+        payTo: 'receiver',
+        maxTimeoutSeconds: 60,
+        extra: const {'a': 1, 'b': 2},
+      );
+
+      final payload = PaymentPayload(
+        x402Version: 2,
+        resource: const ResourceInfo(url: 'u', description: 'd', mimeType: 'm'),
+        accepted: PaymentRequirement(
+          scheme: 'exact',
+          network: net1,
+          asset: 'a',
+          amount: '100',
+          payTo: 'receiver',
+          maxTimeoutSeconds: 60,
+          extra: const {'b': 2, 'a': 1}, // reversed order
+        ),
+        payload: const {},
+      );
+
+      final match = resourceServer.findMatchingRequirements([req1], payload);
+
+      expect(match, isNotNull);
     });
   });
 
@@ -999,14 +1145,14 @@ void main() {
             SupportedKind(
               x402Version: kX402Version,
               scheme: 'exact',
-              network: 'eip155:1',
+              network: net1,
             ),
           ],
           extensions: [],
           signers: {},
         );
 
-      final schemes = {'eip155:1': MockSchemeServer('exact')};
+      final schemes = {net1: MockSchemeServer('exact')};
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
@@ -1021,12 +1167,12 @@ void main() {
         scheme: 'exact',
         payTo: 'receiver',
         price: Money('1'),
-        network: 'eip155:1',
+        network: net1,
       );
 
-      final requirements = await server.buildPaymentRequirements(config);
+      final req = await server.buildPaymentRequirement(config);
 
-      expect(requirements, hasLength(1));
+      expect(req.scheme, equals('exact'));
     });
 
     test('multiple schemes remain functional after external mutation',
@@ -1037,12 +1183,12 @@ void main() {
             SupportedKind(
               x402Version: kX402Version,
               scheme: 's1',
-              network: 'n1',
+              network: n1,
             ),
             SupportedKind(
               x402Version: kX402Version,
               scheme: 's2',
-              network: 'n2',
+              network: n2,
             ),
           ],
           extensions: [],
@@ -1050,8 +1196,8 @@ void main() {
         );
 
       final schemes = {
-        'n1': MockSchemeServer('s1'),
-        'n2': MockSchemeServer('s2'),
+        n1: MockSchemeServer('s1'),
+        n2: MockSchemeServer('s2'),
       };
 
       final server = await X402ResourceServer.create(
@@ -1059,17 +1205,17 @@ void main() {
         schemes: schemes,
       );
 
-      schemes.remove('n1');
+      schemes.remove(n1);
 
       const config = ResourceConfig(
         scheme: 's1',
         payTo: 'receiver',
         price: Money('1'),
-        network: 'n1',
+        network: n1,
       );
 
-      final requirements = await server.buildPaymentRequirements(config);
-      expect(requirements, hasLength(1));
+      final req = await server.buildPaymentRequirement(config);
+      expect(req.scheme, equals('s1'));
     });
   });
 
@@ -1081,7 +1227,7 @@ void main() {
             SupportedKind(
               x402Version: kX402Version,
               scheme: 'exact',
-              network: 'eip155:1',
+              network: net1,
             ),
           ],
           extensions: [],
@@ -1091,19 +1237,17 @@ void main() {
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: {'eip155:1': MockSchemeServer('exact')},
+        schemes: {net1: MockSchemeServer('exact')},
       );
 
       const config = ResourceConfig(
         scheme: 'exact',
         payTo: 'receiver',
         price: Money('1.0'),
-        network: 'eip155:1',
+        network: net1,
       );
 
-      final requirements = await server.buildPaymentRequirements(config);
-
-      final selected = requirements.first;
+      final requirement = await server.buildPaymentRequirement(config);
 
       final payload = PaymentPayload(
         x402Version: kX402Version,
@@ -1112,11 +1256,11 @@ void main() {
           description: 'desc',
           mimeType: 'mime',
         ),
-        accepted: selected,
+        accepted: requirement,
         payload: {},
       );
 
-      final matched = server.findMatchingRequirements(requirements, payload);
+      final matched = server.findMatchingRequirements([requirement], payload);
 
       expect(matched, isNotNull);
 

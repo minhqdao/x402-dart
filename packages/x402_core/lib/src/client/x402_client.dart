@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:x402_core/src/constants.dart';
+import 'package:x402_core/src/models/network.dart';
 import 'package:x402_core/src/models/payment_required_response.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
@@ -45,8 +46,12 @@ class SignedPayment {
 /// The interface every blockchain-specific package must implement to support
 /// signing x402 payment requirements.
 abstract class X402Signer {
-  /// The CAIP-2 network identifier this signer supports (e.g., 'eip155:8453').
-  String get network;
+  /// The CAIP-2 [Network] this signer supports.
+  ///
+  /// Examples:
+  /// - `eip155:8453`
+  /// - `solana:<genesisHash>`
+  Network get network;
 
   /// The scheme this signer supports (e.g., 'exact').
   String get scheme;

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:web3dart/web3dart.dart';
 import 'package:x402_core/x402_core.dart';
+import 'package:x402_evm/src/network/evm_network.dart';
 import 'package:x402_evm/src/schemes/exact_evm_scheme_client.dart';
 
 /// Concrete implementation of [X402Signer] for EVM chains.
@@ -8,9 +9,15 @@ import 'package:x402_evm/src/schemes/exact_evm_scheme_client.dart';
 /// This signer uses an [EthPrivateKey] to sign EIP-3009 authorizations.
 /// It delegates the scheme-specific payload creation to [ExactEvmSchemeClient].
 class EvmSigner extends X402Signer {
-  /// The CAIP-2 network identifier (e.g., 'eip155:8453').
+  /// The CAIP-2 network this signer operates on.
+  ///
+  /// For EVM networks this is typically `eip155:<chainId>`.
+  ///
+  /// Example:
+  /// - `eip155:1` (Ethereum mainnet)
+  /// - `eip155:8453` (Base mainnet)
   @override
-  final String network;
+  final Network network;
 
   final ExactEvmSchemeClient _client;
 
@@ -23,7 +30,7 @@ class EvmSigner extends X402Signer {
     required ExactEvmSchemeClient client,
     required int chainId,
     String networkNamespace = 'eip155',
-  })  : network = '$networkNamespace:$chainId',
+  })  : network = EvmNetwork(namespace: networkNamespace, chainId: chainId),
         _client = client;
 
   /// Creates an [EvmSigner] from a hexadecimal private key string.

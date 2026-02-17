@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:x402_core/src/client/x402_client.dart';
+import 'package:x402_core/src/constants.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
 import 'package:x402_core/src/x402_exception.dart';
@@ -9,7 +10,7 @@ import 'package:x402_core/src/x402_exception.dart';
 ///
 /// This response contains the list of acceptable payment methods and the
 /// metadata of the resource being requested.
-class PaymentRequiredResponse {
+final class PaymentRequiredResponse {
   /// The version of the x402 protocol the server is using.
   final int x402Version;
 
@@ -25,13 +26,20 @@ class PaymentRequiredResponse {
   /// Arbitrary extra data included by the server.
   final Map<String, dynamic>? extensions;
 
-  const PaymentRequiredResponse({
+  PaymentRequiredResponse({
     required this.x402Version,
     this.error,
     required this.resource,
-    required this.accepts,
-    this.extensions,
-  });
+    required List<PaymentRequirement> accepts,
+    Map<String, dynamic>? extensions,
+  })  : accepts = List.unmodifiable(accepts),
+        extensions = extensions == null ? null : Map.unmodifiable(extensions) {
+    if (accepts.isEmpty) {
+      throw const InvalidPayloadException(
+        'PaymentRequiredResponse requires at least one payment requirement',
+      );
+    }
+  }
 
   /// Parses the PaymentRequiredResponse from a base64-encoded header string.
   ///
@@ -54,14 +62,29 @@ class PaymentRequiredResponse {
   ///
   /// Most users should prefer [PaymentRequiredResponse.fromHeader].
   factory PaymentRequiredResponse.fromJson(Map<String, dynamic> json) {
+    final version = json['x402Version'] as int;
+
+    if (version != kX402Version) {
+      throw InvalidPayloadException('Unsupported x402 version: $version');
+    }
+
+    final accepts = json['accepts'] as List;
+
+    if (accepts.isEmpty) {
+      throw const InvalidPayloadException(
+          '402 response contains no payment requirements');
+    }
+
     return PaymentRequiredResponse(
-      x402Version: json['x402Version'] as int,
+      x402Version: version,
       error: json['error'] as String?,
       resource: ResourceInfo.fromJson(json['resource'] as Map<String, dynamic>),
-      accepts: (json['accepts'] as List)
-          .map((e) => PaymentRequirement.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      extensions: json['extensions'] as Map<String, dynamic>?,
+      accepts: List.unmodifiable(accepts
+          .map((e) => PaymentRequirement.fromJson(e as Map<String, dynamic>))),
+      extensions: json['extensions'] == null
+          ? null
+          : Map<String, dynamic>.unmodifiable(
+              json['extensions'] as Map<String, dynamic>),
     );
   }
 
@@ -70,8 +93,8 @@ class PaymentRequiredResponse {
       'x402Version': x402Version,
       if (error != null) 'error': error,
       'resource': resource.toJson(),
-      'accepts': accepts.map((e) => e.toJson()).toList(),
-      if (extensions != null) 'extensions': extensions,
+      'accepts': List.unmodifiable(accepts.map((e) => e.toJson())),
+      if (extensions != null) 'extensions': Map.unmodifiable(extensions!),
     };
   }
 

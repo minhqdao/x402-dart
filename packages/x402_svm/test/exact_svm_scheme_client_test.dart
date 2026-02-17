@@ -43,9 +43,10 @@ void main() {
         mimeType: 'application/json',
       );
 
-      requirements = const PaymentRequirement(
+      requirements = PaymentRequirement(
         scheme: 'v2:solana:exact',
-        network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+        network: const Network(
+            namespace: 'solana', reference: 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1'),
         amount: '10000',
         payTo: 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv',
         maxTimeoutSeconds: 60,
@@ -145,7 +146,7 @@ void main() {
         () {
       final badRequirements = PaymentRequirement(
         scheme: requirements.scheme,
-        network: 'invalid-network',
+        network: const Network(namespace: 'invalid', reference: 'network'),
         amount: requirements.amount,
         payTo: requirements.payTo,
         maxTimeoutSeconds: requirements.maxTimeoutSeconds,
@@ -159,16 +160,9 @@ void main() {
       );
     });
 
-    test('should throw if network is missing hash', () {
-      final bad = requirements.copyWith(network: 'solana');
-      expect(
-        () => client.createPaymentPayload(bad, resource),
-        throwsA(isA<InvalidPayloadException>()),
-      );
-    });
-
     test('should throw if network namespace is not solana', () {
-      final bad = requirements.copyWith(network: 'eip155:1');
+      final bad = requirements.copyWith(
+          network: const Network(namespace: 'eip155', reference: '1'));
       expect(
         () => client.createPaymentPayload(bad, resource),
         throwsA(isA<InvalidPayloadException>()),

@@ -1,8 +1,10 @@
+import 'package:x402_core/src/models/network.dart';
+
 /// Signature for custom money parsers.
 ///
 /// A parser receives:
 /// - [amount]: canonical decimal string (e.g. `"1.50"`)
-/// - [network]: CAIP-2 network identifier (e.g. `"eip155:8453"`)
+/// - [network]: CAIP-2 network identifier
 ///
 /// It should return:
 /// - An [AssetAmount] if it can resolve the value for the given network
@@ -12,7 +14,7 @@
 /// never be provided as a floating-point value.
 typedef MoneyParser = Future<AssetAmount?> Function(
   String amount,
-  String network,
+  Network network,
 );
 
 /// Base type for all resource prices.

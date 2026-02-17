@@ -1,3 +1,5 @@
+import 'package:x402_core/src/models/network.dart';
+
 /// Response returned by a facilitator when settling a payment.
 class SettleResponse {
   /// Whether settlement succeeded.
@@ -13,7 +15,7 @@ class SettleResponse {
   final String transaction;
 
   /// Network on which settlement occurred.
-  final String network;
+  final Network network;
 
   /// Optional facilitator-specific extensions.
   final Map<String, dynamic>? extensions;
@@ -33,7 +35,7 @@ class SettleResponse {
       errorReason: json['errorReason'] as String?,
       payer: json['payer'] as String?,
       transaction: json['transaction'] as String,
-      network: json['network'] as String,
+      network: Network.parse(json['network'] as String),
       extensions: json['extensions'] as Map<String, dynamic>?,
     );
   }
@@ -43,7 +45,7 @@ class SettleResponse {
         if (errorReason != null) 'errorReason': errorReason,
         if (payer != null) 'payer': payer,
         'transaction': transaction,
-        'network': network,
+        'network': network.identifier,
         if (extensions != null) 'extensions': extensions,
       };
 }

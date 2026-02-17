@@ -1,4 +1,5 @@
 import 'package:x402_core/src/constants.dart';
+import 'package:x402_core/src/models/network.dart';
 import 'package:x402_core/src/models/payment_payload.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_config.dart';
@@ -26,22 +27,19 @@ import 'package:x402_core/src/server/scheme_server.dart';
 /// In short, this is the component that connects your protected
 /// resource to the x402 payment flow.
 class X402ResourceServer {
-  final Map<String, Map<String, SchemeServer>> _registeredSchemes;
-  final Map<int, Map<String, Map<String, SupportedResponse>>> _supportedMap;
-  final Map<int, Map<String, Map<String, FacilitatorClient>>> _clientMap;
+  final Map<Network, Map<String, SchemeServer>> _registeredSchemes;
+  final Map<_RouteKey, _RouteEntry> _routes;
 
   X402ResourceServer._({
-    required Map<String, SchemeServer> schemes,
-    required Map<int, Map<String, Map<String, SupportedResponse>>> supported,
-    required Map<int, Map<String, Map<String, FacilitatorClient>>> clients,
-  })  : _registeredSchemes = _registerSchemes(schemes),
-        _supportedMap = _buildImmutableSupportedMap(supported),
-        _clientMap = _buildImmutableClientMap(clients);
+    required Map<Network, Map<String, SchemeServer>> registeredSchemes,
+    required Map<_RouteKey, _RouteEntry> routes,
+  })  : _registeredSchemes = registeredSchemes,
+        _routes = routes;
 
-  static Map<String, Map<String, SchemeServer>> _registerSchemes(
-    Map<String, SchemeServer> schemes,
+  static Map<Network, Map<String, SchemeServer>> _registerSchemes(
+    Map<Network, SchemeServer> schemes,
   ) {
-    final registered = <String, Map<String, SchemeServer>>{};
+    final registered = <Network, Map<String, SchemeServer>>{};
 
     for (final entry in schemes.entries) {
       final network = entry.key;
@@ -51,51 +49,11 @@ class X402ResourceServer {
       registered[network]![server.scheme] = server;
     }
 
-    return Map<String, Map<String, SchemeServer>>.unmodifiable(
-      registered.map<String, Map<String, SchemeServer>>(
+    return Map<Network, Map<String, SchemeServer>>.unmodifiable(
+      registered.map<Network, Map<String, SchemeServer>>(
         (network, schemeMap) => MapEntry(
-            network, Map<String, SchemeServer>.unmodifiable(schemeMap)),
-      ),
-    );
-  }
-
-  static Map<int, Map<String, Map<String, SupportedResponse>>>
-      _buildImmutableSupportedMap(
-    Map<int, Map<String, Map<String, SupportedResponse>>> input,
-  ) {
-    return Map<int, Map<String, Map<String, SupportedResponse>>>.unmodifiable(
-      input.map<int, Map<String, Map<String, SupportedResponse>>>(
-        (version, networkMap) => MapEntry(
-          version,
-          Map<String, Map<String, SupportedResponse>>.unmodifiable(
-            networkMap.map<String, Map<String, SupportedResponse>>(
-              (network, schemeMap) => MapEntry(
-                network,
-                Map<String, SupportedResponse>.unmodifiable(schemeMap),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  static Map<int, Map<String, Map<String, FacilitatorClient>>>
-      _buildImmutableClientMap(
-    Map<int, Map<String, Map<String, FacilitatorClient>>> input,
-  ) {
-    return Map<int, Map<String, Map<String, FacilitatorClient>>>.unmodifiable(
-      input.map<int, Map<String, Map<String, FacilitatorClient>>>(
-        (version, networkMap) => MapEntry(
-          version,
-          Map<String, Map<String, FacilitatorClient>>.unmodifiable(
-            networkMap.map<String, Map<String, FacilitatorClient>>(
-              (network, schemeMap) => MapEntry(
-                network,
-                Map<String, FacilitatorClient>.unmodifiable(schemeMap),
-              ),
-            ),
-          ),
+          network,
+          Map<String, SchemeServer>.unmodifiable(schemeMap),
         ),
       ),
     );
@@ -116,56 +74,53 @@ class X402ResourceServer {
   /// - Any error thrown by [FacilitatorClient.getSupported]
   static Future<X402ResourceServer> create({
     List<FacilitatorClient>? facilitators,
-    required Map<String, SchemeServer> schemes,
+    required Map<Network, SchemeServer> schemes,
   }) async {
     if (schemes.isEmpty) {
       throw ArgumentError('At least one scheme must be registered.');
     }
 
-    final resolvedFacilitators = facilitators ?? [HttpFacilitatorClient()];
-    final supportedMap = <int, Map<String, Map<String, SupportedResponse>>>{};
-    final clientMap = <int, Map<String, Map<String, FacilitatorClient>>>{};
+    final registeredSchemes = _registerSchemes(schemes);
 
-    bool loadedAtLeastOne = false;
+    final resolvedFacilitators = facilitators ?? [HttpFacilitatorClient()];
+    final routes = <_RouteKey, _RouteEntry>{};
 
     for (final facilitator in resolvedFacilitators) {
       final supported = await facilitator.getSupported();
 
       for (final kind in supported.kinds) {
-        // Only register support for the current protocol version
         if (kind.x402Version != kX402Version) continue;
 
-        loadedAtLeastOne = true;
+        // Skip kinds we do not have a registered SchemeServer for.
+        if (registeredSchemes[kind.network]?[kind.scheme] == null) continue;
 
-        supportedMap.putIfAbsent(kX402Version, () => {});
-        clientMap.putIfAbsent(kX402Version, () => {});
+        final key = _RouteKey(kind.x402Version, kind.network, kind.scheme);
 
-        supportedMap[kX402Version]!.putIfAbsent(kind.network, () => {});
-        clientMap[kX402Version]!.putIfAbsent(kind.network, () => {});
+        if (routes.containsKey(key)) {
+          throw StateError(
+            'Multiple facilitators provide support for '
+            '${kind.scheme} on ${kind.network} (v${kind.x402Version}).',
+          );
+        }
 
-        supportedMap[kX402Version]![kind.network]!
-            .putIfAbsent(kind.scheme, () => supported);
-
-        clientMap[kX402Version]![kind.network]!
-            .putIfAbsent(kind.scheme, () => facilitator);
+        routes[key] = _RouteEntry(supported: supported, client: facilitator);
       }
     }
 
-    if (!loadedAtLeastOne) {
+    if (routes.isEmpty) {
       throw StateError(
-        'No facilitator support loaded. Resource server cannot start.',
+        'No compatible facilitator support for registered schemes.',
       );
     }
 
     return X402ResourceServer._(
-      schemes: schemes,
-      supported: supportedMap,
-      clients: clientMap,
+      registeredSchemes: registeredSchemes,
+      routes: Map<_RouteKey, _RouteEntry>.unmodifiable(routes),
     );
   }
 
-  /// Builds payment requirements for a protected resource.
-  Future<List<PaymentRequirement>> buildPaymentRequirements(
+  /// Builds payment requirement for a protected resource.
+  Future<PaymentRequirement> buildPaymentRequirement(
     ResourceConfig config,
   ) async {
     final server = _registeredSchemes[config.network]?[config.scheme];
@@ -176,20 +131,24 @@ class X402ResourceServer {
       );
     }
 
-    final supported =
-        _supportedMap[kX402Version]?[config.network]?[server.scheme];
+    final key = _RouteKey(kX402Version, config.network, server.scheme);
+    final route = _routes[key];
 
-    if (supported == null) {
+    if (route == null) {
       throw StateError(
         'Facilitator does not support ${server.scheme} on ${config.network}',
       );
     }
 
-    final kind = supported.kinds.firstWhere(
+    final kind = route.supported.kinds.firstWhere(
       (k) =>
           k.x402Version == kX402Version &&
           k.network == config.network &&
           k.scheme == server.scheme,
+      orElse: () => throw StateError(
+        'Facilitator support inconsistency for '
+        '${server.scheme} on ${config.network}',
+      ),
     );
 
     final parsed = await server.parsePrice(config.price, config.network);
@@ -207,19 +166,23 @@ class X402ResourceServer {
     final enhanced = await server.enhancePaymentRequirement(
       base,
       kind: kind,
-      facilitatorExtensions: supported.extensions,
+      facilitatorExtensions: route.supported.extensions,
     );
 
-    return [enhanced];
+    return enhanced;
   }
 
   /// Verifies a payment against requirements.
   Future<VerifyResponse> verifyPayment(
     PaymentPayload payload,
     PaymentRequirement requirements,
-  ) async {
-    final facilitatorClient = _clientMap[payload.x402Version]
-        ?[requirements.network]?[requirements.scheme];
+  ) {
+    final key = _RouteKey(
+      payload.x402Version,
+      requirements.network,
+      requirements.scheme,
+    );
+    final facilitatorClient = _routes[key]?.client;
 
     if (facilitatorClient == null) {
       throw StateError(
@@ -228,7 +191,7 @@ class X402ResourceServer {
       );
     }
 
-    return await facilitatorClient.verify(payload, requirements);
+    return facilitatorClient.verify(payload, requirements);
   }
 
   /// Finds matching payment requirements for a payload.
@@ -246,9 +209,7 @@ class X402ResourceServer {
     switch (payload.x402Version) {
       case 2:
         for (final requirement in available) {
-          if (requirement == payload.accepted) {
-            return requirement;
-          }
+          if (requirement == payload.accepted) return requirement;
         }
         return null;
 
@@ -267,4 +228,33 @@ class X402ResourceServer {
         );
     }
   }
+}
+
+final class _RouteEntry {
+  final SupportedResponse supported;
+  final FacilitatorClient client;
+
+  const _RouteEntry({
+    required this.supported,
+    required this.client,
+  });
+}
+
+final class _RouteKey {
+  final int version;
+  final Network network;
+  final String scheme;
+
+  const _RouteKey(this.version, this.network, this.scheme);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _RouteKey &&
+          version == other.version &&
+          network == other.network &&
+          scheme == other.scheme;
+
+  @override
+  int get hashCode => Object.hash(version, network, scheme);
 }

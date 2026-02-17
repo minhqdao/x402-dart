@@ -42,7 +42,7 @@ void main() {
 
       // 3. Create the signer instance using the mocked client.
       signer = SvmSigner.fromClient(
-        solanaNetwork: SolanaNetwork.devnet,
+        cluster: SolanaCluster.devnet,
         client: ExactSvmSchemeClient(
           signer: keyPair,
           solanaClient: mockSolanaClient,
@@ -56,14 +56,16 @@ void main() {
         mimeType: 'application/json',
       );
 
-      requirements = const PaymentRequirement(
+      requirements = PaymentRequirement(
         scheme: 'v2:solana:exact',
-        network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+        network: Network.parse('solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'),
         amount: '10000',
         payTo: 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv',
         maxTimeoutSeconds: 60,
         asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-        extra: {'feePayer': '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC'},
+        extra: const {
+          'feePayer': '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC'
+        },
       );
 
       // 5. Mock essential RPC responses.
@@ -104,7 +106,8 @@ void main() {
     });
 
     test('should have correct network and scheme', () {
-      expect(signer.network, equals('solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'));
+      expect(signer.network.identifier,
+          equals('solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'));
       expect(signer.scheme, equals('v2:solana:exact'));
     });
 
@@ -120,7 +123,7 @@ void main() {
         asset: 'asset',
         payTo: 'payTo',
         maxTimeoutSeconds: 60,
-        extra: {},
+        extra: const {},
       );
       final reqExact = PaymentRequirement(
         scheme: 'exact',
@@ -129,16 +132,16 @@ void main() {
         asset: 'asset',
         payTo: 'payTo',
         maxTimeoutSeconds: 60,
-        extra: {},
+        extra: const {},
       );
-      const reqBadNetwork = PaymentRequirement(
+      final reqBadNetwork = PaymentRequirement(
         scheme: 'exact',
-        network: 'bad-network',
+        network: const Network(namespace: '', reference: 'wrong-network'),
         amount: '1000',
         asset: 'asset',
         payTo: 'payTo',
         maxTimeoutSeconds: 60,
-        extra: {},
+        extra: const {},
       );
       final reqBadScheme = PaymentRequirement(
         scheme: 'bad-scheme',
@@ -147,7 +150,7 @@ void main() {
         asset: 'asset',
         payTo: 'payTo',
         maxTimeoutSeconds: 60,
-        extra: {},
+        extra: const {},
       );
 
       expect(signer.supports(reqStandard), isTrue);
@@ -193,44 +196,44 @@ void main() {
       test('fromPrivateKeyHex with customRpcUrl', () async {
         final s = await SvmSigner.fromPrivateKeyHex(
           privateKeyHex: hexKey,
-          network: SolanaNetwork.devnet,
+          cluster: SolanaCluster.devnet,
           customRpcUrl: customRpc,
         );
-        expect(s.network, startsWith('solana:'));
+        expect(s.network.identifier, startsWith('solana:'));
       });
 
       test('fromPrivateKeyBytes with customRpcUrl', () async {
         final s = await SvmSigner.fromPrivateKeyBytes(
           privateKeyBytes: byteKey,
-          network: SolanaNetwork.devnet,
+          cluster: SolanaCluster.devnet,
           customRpcUrl: customRpc,
         );
-        expect(s.network, startsWith('solana:'));
+        expect(s.network.identifier, startsWith('solana:'));
       });
 
       test('fromMnemonic with customRpcUrl', () async {
         final s = await SvmSigner.fromMnemonic(
           mnemonic: mnemonic,
-          network: SolanaNetwork.devnet,
+          cluster: SolanaCluster.devnet,
           customRpcUrl: customRpc,
         );
-        expect(s.network, startsWith('solana:'));
+        expect(s.network.identifier, startsWith('solana:'));
       });
 
       test('mainnet support', () async {
-        final s = await SvmSigner.createRandom(network: SolanaNetwork.mainnet);
+        final s = await SvmSigner.createRandom(cluster: SolanaCluster.mainnet);
         expect(
-            s.network,
+            s.network.identifier,
             equals(
-                'solana:${SolanaNetwork.mainnet.genesisHash.substring(0, 32)}'));
+                'solana:${SolanaCluster.mainnet.genesisHash.substring(0, 32)}'));
       });
 
       test('testnet support', () async {
-        final s = await SvmSigner.createRandom(network: SolanaNetwork.testnet);
+        final s = await SvmSigner.createRandom(cluster: SolanaCluster.testnet);
         expect(
-            s.network,
+            s.network.identifier,
             equals(
-                'solana:${SolanaNetwork.testnet.genesisHash.substring(0, 32)}'));
+                'solana:${SolanaCluster.testnet.genesisHash.substring(0, 32)}'));
       });
     });
 
@@ -256,7 +259,9 @@ void main() {
       });
 
       test('throws if network mismatches', () {
-        final req = requirements.copyWith(network: 'solana:wrong-hash');
+        final req = requirements.copyWith(
+            network:
+                const Network(namespace: 'solana', reference: 'wrong-hash'));
         expect(() => signer.sign(req, resource), throwsArgumentError);
       });
     });

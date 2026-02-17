@@ -83,7 +83,7 @@ class ExactSvmSchemeClient implements SchemeClient {
       );
     }
 
-    if (!r.network.startsWith('solana:')) {
+    if (r.network.namespace != 'solana') {
       throw InvalidPayloadException(
         'Invalid network. Expected Solana network, got "${r.network}"',
       );

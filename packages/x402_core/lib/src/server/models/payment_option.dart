@@ -1,3 +1,5 @@
+import 'package:x402_core/src/models/network.dart';
+
 /// Configuration for a single payment option.
 ///
 /// Defines how a client can pay for access to a protected resource.
@@ -21,8 +23,8 @@ class PaymentOption {
   /// The price for this payment option (e.g., '\$0.10', '0.001 ETH')
   final String price;
 
-  /// The blockchain network (CAIP-2 format, e.g., 'eip155:1')
-  final String network;
+  /// The blockchain network (CAIP-2 format)
+  final Network network;
 
   /// Optional maximum timeout in seconds for payment verification
   final int? maxTimeoutSeconds;

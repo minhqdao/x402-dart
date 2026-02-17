@@ -4,7 +4,7 @@ import 'package:x402_svm/src/schemes/exact_svm_scheme_server.dart';
 
 void main() {
   group('ExactSvmSchemeServer', () {
-    const network = 'solana:mainnet'; // 6 decimals
+    final network = Network.parse('solana:mainnet'); // 6 decimals
 
     group('Constructor & Basic Properties', () {
       test('exposes correct scheme identifier', () {
@@ -231,19 +231,20 @@ void main() {
 
       test('Unsupported network throws', () {
         expect(
-          () => server.parsePrice(const Money('1'), 'solana:unknown'),
+          () => server.parsePrice(
+              const Money('1'), Network.parse('solana:unknown')),
           throwsArgumentError,
         );
       });
 
       test('Supported networks produce correct default asset', () async {
-        final mainnet =
-            await server.parsePrice(const Money('1'), 'solana:mainnet');
+        final mainnet = await server.parsePrice(
+            const Money('1'), Network.parse('solana:mainnet'));
         expect(mainnet.asset,
             equals('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'));
 
-        final devnet =
-            await server.parsePrice(const Money('1'), 'solana:devnet');
+        final devnet = await server.parsePrice(
+            const Money('1'), Network.parse('solana:devnet'));
         expect(devnet.asset,
             equals('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'));
       });
@@ -334,21 +335,23 @@ void main() {
       final server = ExactSvmSchemeServer();
 
       test('enhancePaymentRequirement adds feePayer when present', () async {
-        const req = PaymentRequirement(
+        final req = PaymentRequirement(
           scheme: 'exact',
           network: network,
           asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
           amount: '1000000',
           payTo: 'Receiver11111111111111111111111111111111',
           maxTimeoutSeconds: 60,
-          extra: {},
+          extra: const {},
         );
 
-        const kind = SupportedKind(
+        final kind = SupportedKind(
           x402Version: 1,
           scheme: 'exact',
           network: network,
-          extra: {'feePayer': 'FeePayer111111111111111111111111111111111'},
+          extra: const {
+            'feePayer': 'FeePayer111111111111111111111111111111111'
+          },
         );
 
         final enhanced =
@@ -359,17 +362,17 @@ void main() {
 
       test('enhancePaymentRequirement leaves object unchanged when absent',
           () async {
-        const req = PaymentRequirement(
+        final req = PaymentRequirement(
           scheme: 'exact',
           network: network,
           asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
           amount: '1000000',
           payTo: 'Receiver11111111111111111111111111111111',
           maxTimeoutSeconds: 60,
-          extra: {'existing': 'data'},
+          extra: const {'existing': 'data'},
         );
 
-        const kind = SupportedKind(
+        final kind = SupportedKind(
           x402Version: 1,
           scheme: 'exact',
           network: network,
@@ -381,21 +384,21 @@ void main() {
       });
 
       test('enhancePaymentRequirement merges with existing extra', () async {
-        const req = PaymentRequirement(
+        final req = PaymentRequirement(
           scheme: 'exact',
           network: network,
           asset: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
           amount: '1000000',
           payTo: 'Receiver11111111111111111111111111111111',
           maxTimeoutSeconds: 60,
-          extra: {'existing': 'value'},
+          extra: const {'existing': 'value'},
         );
 
-        const kind = SupportedKind(
+        final kind = SupportedKind(
           x402Version: 1,
           scheme: 'exact',
           network: network,
-          extra: {'feePayer': 'FeePayerXYZ'},
+          extra: const {'feePayer': 'FeePayerXYZ'},
         );
 
         final enhanced =

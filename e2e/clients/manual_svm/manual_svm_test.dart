@@ -38,7 +38,7 @@ void main() {
     // 3. Setup Signer and Sign
     final svmSigner = await SvmSigner.fromPrivateKeyHex(
       privateKeyHex: svmPrivateKey,
-      network: SolanaNetwork.devnet,
+      cluster: SolanaCluster.devnet,
     );
 
     final requirement = paymentResponse.findFirstSupportedBy(svmSigner);

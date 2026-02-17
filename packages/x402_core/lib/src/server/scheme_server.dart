@@ -1,3 +1,4 @@
+import 'package:x402_core/src/models/network.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/price.dart';
 import 'package:x402_core/src/models/supported_kind.dart';
@@ -29,7 +30,7 @@ abstract class SchemeServer {
   /// The [network] provides context (e.g. chain ID, cluster).
   Future<AssetAmount> parsePrice(
     Price price,
-    String network,
+    Network network,
   );
 
   /// Enhances base [paymentRequirement] using scheme/network logic.

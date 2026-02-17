@@ -10,8 +10,7 @@ import 'package:x402_core/x402_core.dart';
 /// By default, prices are converted to the network’s
 /// configured stablecoin (e.g. USDC).
 ///
-/// Custom conversion logic can be registered via
-/// [registerMoneyParser].
+/// Custom conversion logic can be registered through [moneyParsers].
 class ExactEvmSchemeServer implements SchemeServer {
   @override
   String get scheme => 'exact';
@@ -29,7 +28,7 @@ class ExactEvmSchemeServer implements SchemeServer {
   @override
   Future<AssetAmount> parsePrice(
     Price price,
-    String network,
+    Network network,
   ) async {
     // If already an AssetAmount, return as-is.
     switch (price) {
@@ -74,7 +73,7 @@ class ExactEvmSchemeServer implements SchemeServer {
 
   AssetAmount _defaultMoneyConversion(
     String amount,
-    String network,
+    Network network,
   ) {
     final assetInfo = _getDefaultAsset(network);
 
@@ -93,7 +92,7 @@ class ExactEvmSchemeServer implements SchemeServer {
     );
   }
 
-  _StablecoinInfo _getDefaultAsset(String network) {
+  _StablecoinInfo _getDefaultAsset(Network network) {
     const stablecoins = <String, _StablecoinInfo>{
       'eip155:8453': _StablecoinInfo(
         address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
@@ -109,7 +108,7 @@ class ExactEvmSchemeServer implements SchemeServer {
       ),
     };
 
-    final asset = stablecoins[network];
+    final asset = stablecoins[network.identifier];
     if (asset == null) {
       throw ArgumentError(
         'No default asset configured for network $network',

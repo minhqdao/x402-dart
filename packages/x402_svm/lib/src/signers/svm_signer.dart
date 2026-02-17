@@ -2,32 +2,8 @@ import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:solana/solana.dart';
 import 'package:x402_core/x402_core.dart';
+import 'package:x402_svm/src/network/solana_cluster.dart';
 import 'package:x402_svm/src/schemes/exact_svm_scheme_client.dart';
-
-/// Supported Solana networks for the [SvmSigner].
-///
-/// Each network defines its genesis hash and a default public RPC URL.
-enum SolanaNetwork {
-  /// The Solana mainnet-beta network.
-  mainnet('5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d',
-      'https://api.mainnet-beta.solana.com'),
-
-  /// The Solana devnet network (for development and testing).
-  devnet('EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG',
-      'https://api.devnet.solana.com'),
-
-  /// The Solana testnet network.
-  testnet('4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY',
-      'https://api.testnet.solana.com');
-
-  /// The genesis hash of the network, used for CAIP-2 identification.
-  final String genesisHash;
-
-  /// The default public RPC URL for this network.
-  final String rpcUrl;
-
-  const SolanaNetwork(this.genesisHash, this.rpcUrl);
-}
 
 /// Concrete implementation of [X402Signer] for SVM (Solana) chains.
 ///
@@ -36,35 +12,35 @@ enum SolanaNetwork {
 /// It uses an underlying [ExactSvmSchemeClient] to perform scheme-specific
 /// operations.
 class SvmSigner extends X402Signer {
-  final SolanaNetwork _solanaNetwork;
+  final SolanaCluster _cluster;
   final ExactSvmSchemeClient _client;
 
   /// Creates an [SvmSigner] from an [ExactSvmSchemeClient] and the chosen
-  /// [SolanaNetwork].
+  /// [SolanaCluster].
   ///
   /// Use other constructors like [SvmSigner.fromPrivateKeyHex] for convenience.
   SvmSigner.fromClient({
-    required SolanaNetwork solanaNetwork,
+    required SolanaCluster cluster,
     required ExactSvmSchemeClient client,
-  })  : _solanaNetwork = solanaNetwork,
+  })  : _cluster = cluster,
         _client = client;
 
   /// Creates an [SvmSigner] from a hexadecimal private key string.
   ///
   /// [privateKeyHex] must be a valid hex-encoded Ed25519 seed (32 bytes).
-  /// [network] specifies the target Solana network.
+  /// [cluster] specifies the target Solana cluster.
   /// [customRpcUrl] can be used to provide a private RPC endpoint.
   static Future<SvmSigner> fromPrivateKeyHex({
     required String privateKeyHex,
-    required SolanaNetwork network,
+    required SolanaCluster cluster,
     String? customRpcUrl,
   }) async {
     final keypair = await Ed25519HDKeyPair.fromPrivateKeyBytes(
         privateKey: hex.decode(privateKeyHex));
-    final rpcUrl = customRpcUrl ?? network.rpcUrl;
+    final rpcUrl = customRpcUrl ?? cluster.rpcUrl;
 
     return SvmSigner.fromClient(
-      solanaNetwork: network,
+      cluster: cluster,
       client: ExactSvmSchemeClient(
         signer: keypair,
         solanaClient: SolanaClient(
@@ -77,13 +53,13 @@ class SvmSigner extends X402Signer {
   /// Creates an [SvmSigner] from raw private key bytes.
   ///
   /// [privateKeyBytes] can be 32 bytes (seed) or 64 bytes (secret key).
-  /// [network] specifies the target Solana network.
+  /// [cluster] specifies the target Solana cluster.
   /// [customRpcUrl] can be used to provide a private RPC endpoint.
   ///
   /// Throws [ArgumentError] if the byte length is invalid.
   static Future<SvmSigner> fromPrivateKeyBytes({
     required List<int> privateKeyBytes,
-    required SolanaNetwork network,
+    required SolanaCluster cluster,
     String? customRpcUrl,
   }) async {
     final List<int> seed;
@@ -103,7 +79,7 @@ class SvmSigner extends X402Signer {
 
     final keypair =
         await Ed25519HDKeyPair.fromPrivateKeyBytes(privateKey: seed);
-    final rpcUrl = customRpcUrl ?? network.rpcUrl;
+    final rpcUrl = customRpcUrl ?? cluster.rpcUrl;
 
     return SvmSigner.fromClient(
       client: ExactSvmSchemeClient(
@@ -112,35 +88,35 @@ class SvmSigner extends X402Signer {
             rpcUrl: Uri.parse(rpcUrl),
             websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
       ),
-      solanaNetwork: network,
+      cluster: cluster,
     );
   }
 
   /// Creates an [SvmSigner] with a randomly generated keypair.
   /// Useful for testing or temporary wallets.
   static Future<SvmSigner> createRandom(
-      {required SolanaNetwork network}) async {
+      {required SolanaCluster cluster}) async {
     final keypair = await Ed25519HDKeyPair.random();
     return SvmSigner.fromClient(
       client: ExactSvmSchemeClient(
         signer: keypair,
         solanaClient: SolanaClient(
-          rpcUrl: Uri.parse(network.rpcUrl),
-          websocketUrl: Uri.parse(network.rpcUrl.replaceFirst('https', 'wss')),
+          rpcUrl: Uri.parse(cluster.rpcUrl),
+          websocketUrl: Uri.parse(cluster.rpcUrl.replaceFirst('https', 'wss')),
         ),
       ),
-      solanaNetwork: network,
+      cluster: cluster,
     );
   }
 
   /// Restores an [SvmSigner] from a BIP-39 mnemonic phrase.
   static Future<SvmSigner> fromMnemonic({
     required String mnemonic,
-    required SolanaNetwork network,
+    required SolanaCluster cluster,
     String? customRpcUrl,
   }) async {
     final keypair = await Ed25519HDKeyPair.fromMnemonic(mnemonic);
-    final rpcUrl = customRpcUrl ?? network.rpcUrl;
+    final rpcUrl = customRpcUrl ?? cluster.rpcUrl;
 
     return SvmSigner.fromClient(
       client: ExactSvmSchemeClient(
@@ -150,12 +126,12 @@ class SvmSigner extends X402Signer {
           websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss')),
         ),
       ),
-      solanaNetwork: network,
+      cluster: cluster,
     );
   }
 
   @override
-  String get network => 'solana:${_solanaNetwork.genesisHash.substring(0, 32)}';
+  Network get network => _cluster.toNetwork();
 
   @override
   String get scheme => _client.scheme;

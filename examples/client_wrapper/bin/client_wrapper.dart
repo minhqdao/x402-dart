@@ -32,7 +32,7 @@ void main(List<String> args) async {
   final evmSigner =
       EvmSigner.fromPrivateKeyHex(chainId: 84532, privateKeyHex: evmPrivateKey);
   final svmSigner = await SvmSigner.fromPrivateKeyHex(
-      privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
+      privateKeyHex: svmPrivateKey, cluster: SolanaCluster.devnet);
 
   final client = X402Client(
     signers: [

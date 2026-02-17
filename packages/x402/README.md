@@ -30,7 +30,7 @@ The `X402Client` is a high-level wrapper around the standard `http.Client`. It a
 
 ```dart
 final evmSigner = EvmSigner.fromPrivateKeyHex(chainId: 123, privateKeyHex: 'EVM_PRIVATE_KEY');
-final svmSigner = await SvmSigner.fromPrivateKeyHex(privateKeyHex: 'SVM_PRIVATE_KEY', network: SolanaNetwork.devnet);
+final svmSigner = await SvmSigner.fromPrivateKeyHex(privateKeyHex: 'SVM_PRIVATE_KEY', cluster: SolanaCluster.devnet);
 
 final client = X402Client(
   signers: [

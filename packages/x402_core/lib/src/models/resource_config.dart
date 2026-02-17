@@ -1,3 +1,4 @@
+import 'package:x402_core/src/models/network.dart';
 import 'package:x402_core/src/models/price.dart';
 
 /// Configuration for a protected resource.
@@ -15,7 +16,7 @@ class ResourceConfig {
   final Price price;
 
   /// Network identifier (e.g. "eip155:84532").
-  final String network;
+  final Network network;
 
   /// Maximum allowed payment timeout in seconds.
   ///

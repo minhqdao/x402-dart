@@ -23,16 +23,18 @@ void main() {
       signerA = MockX402Signer();
       signerB = MockX402Signer();
 
-      when(() => signerA.network).thenReturn('net:A');
+      when(() => signerA.network)
+          .thenReturn(const Network(namespace: 'net', reference: 'A'));
       when(() => signerA.scheme).thenReturn('scheme:A');
       when(() => signerA.address).thenReturn('address:A');
 
-      when(() => signerB.network).thenReturn('net:B');
+      when(() => signerB.network)
+          .thenReturn(const Network(namespace: 'net', reference: 'B'));
       when(() => signerB.scheme).thenReturn('scheme:B');
       when(() => signerB.address).thenReturn('address:B');
 
-      requirementA = const PaymentRequirement(
-        network: 'net:A',
+      requirementA = PaymentRequirement(
+        network: const Network(namespace: 'net', reference: 'A'),
         scheme: 'scheme:A',
         amount: '100',
         payTo: 'someone',
@@ -144,7 +146,7 @@ void main() {
         onPaymentRequired: (req, res, s) async {
           callbackCalled = true;
           // Verify all three arguments
-          expect(req.network, equals('net:A'));
+          expect(req.network.identifier, equals('net:A'));
           expect(res.url, equals('http://res'));
           expect(s, equals(signerA));
           return true; // Approve
@@ -332,14 +334,14 @@ void main() {
     });
 
     test('should use second signer if first one does not match', () async {
-      const requirementB = PaymentRequirement(
-        network: 'net:B',
+      final requirementB = PaymentRequirement(
+        network: const Network(namespace: 'net', reference: 'B'),
         scheme: 'scheme:B',
         amount: '100',
         payTo: 'someone',
         asset: 'asset',
         maxTimeoutSeconds: 100,
-        extra: {},
+        extra: const {},
       );
       final multiHeader = base64Encode(utf8.encode(jsonEncode({
         'x402Version': kX402Version,
@@ -348,13 +350,11 @@ void main() {
       })));
 
       when(() => signerA.supports(any(
-              that:
-                  predicate<PaymentRequirement>((p) => p.network == 'net:B'))))
-          .thenReturn(false);
+          that: predicate<PaymentRequirement>(
+              (p) => p.network.identifier == 'net:B')))).thenReturn(false);
       when(() => signerB.supports(any(
-              that:
-                  predicate<PaymentRequirement>((p) => p.network == 'net:B'))))
-          .thenReturn(true);
+          that: predicate<PaymentRequirement>(
+              (p) => p.network.identifier == 'net:B')))).thenReturn(true);
 
       when(() =>
               signerB.sign(any(), any(), extensions: any(named: 'extensions')))

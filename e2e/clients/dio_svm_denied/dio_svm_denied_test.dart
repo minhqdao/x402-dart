@@ -17,7 +17,7 @@ void main() {
 
     final svmSigner = await SvmSigner.fromPrivateKeyHex(
       privateKeyHex: svmPrivateKey,
-      network: SolanaNetwork.devnet,
+      cluster: SolanaCluster.devnet,
     );
 
     final dio = Dio();

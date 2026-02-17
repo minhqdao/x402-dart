@@ -8,8 +8,8 @@ import 'package:x402_core/x402_core.dart';
 /// [AssetAmount]s on supported SVM networks.
 ///
 /// By default, prices are converted to the network’s configured
-/// USDC mint. Custom conversion logic may be registered via
-/// [registerMoneyParser].
+/// USDC mint. Custom conversion logic may be registered through
+/// [moneyParsers].
 ///
 /// All conversions are deterministic and string-based.
 /// Floating-point types are never used.
@@ -30,7 +30,7 @@ class ExactSvmSchemeServer implements SchemeServer {
   @override
   Future<AssetAmount> parsePrice(
     Price price,
-    String network,
+    Network network,
   ) async {
     switch (price) {
       case AssetAmount(:final asset, :final amount, :final extra):
@@ -84,7 +84,7 @@ class ExactSvmSchemeServer implements SchemeServer {
 
   AssetAmount _defaultMoneyConversion(
     String amount,
-    String network,
+    Network network,
   ) {
     final assetInfo = _getDefaultAsset(network);
 
@@ -103,7 +103,7 @@ class ExactSvmSchemeServer implements SchemeServer {
     );
   }
 
-  _SplTokenInfo _getDefaultAsset(String network) {
+  _SplTokenInfo _getDefaultAsset(Network network) {
     const tokens = <String, _SplTokenInfo>{
       'solana:mainnet': _SplTokenInfo(
         mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
@@ -117,7 +117,7 @@ class ExactSvmSchemeServer implements SchemeServer {
       ),
     };
 
-    final asset = tokens[network];
+    final asset = tokens[network.identifier];
     if (asset == null) {
       throw ArgumentError(
         'No default SPL token configured for network $network',
