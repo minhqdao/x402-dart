@@ -1,6 +1,7 @@
 /// Core protocol definitions and interfaces for the x402 payment protocol.
 library;
 
+export 'src/client/payment_approval_callback.dart';
 export 'src/client/scheme_client.dart';
 export 'src/client/x402_client.dart';
 export 'src/constants.dart';

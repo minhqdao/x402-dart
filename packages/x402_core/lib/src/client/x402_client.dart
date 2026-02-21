@@ -1,20 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+import 'package:x402_core/src/client/payment_approval_callback.dart';
 import 'package:x402_core/src/constants.dart';
 import 'package:x402_core/src/models/network.dart';
 import 'package:x402_core/src/models/payment_required_response.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
-
-/// Callback to let the user approve a payment before it's signed and sent.
-///
-/// Returns `true` to approve the payment, `false` to deny.
-typedef PaymentApprovalCallback = Future<bool> Function(
-  PaymentRequirement requirement,
-  ResourceInfo resource,
-  X402Signer signer,
-);
 
 /// A [SignedPayment] represents the final result of the signing process.
 ///
