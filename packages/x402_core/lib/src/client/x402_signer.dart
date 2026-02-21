@@ -1,4 +1,4 @@
-import 'package:x402_core/src/client/x402_client.dart';
+import 'package:x402_core/src/client/signed_payment.dart';
 import 'package:x402_core/src/models/network.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
