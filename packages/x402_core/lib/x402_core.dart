@@ -4,6 +4,7 @@ library;
 export 'src/client/payment_approval_callback.dart';
 export 'src/client/scheme_client.dart';
 export 'src/client/x402_client.dart';
+export 'src/client/x402_signer.dart';
 export 'src/constants.dart';
 export 'src/models/network.dart';
 export 'src/models/payment_payload.dart';

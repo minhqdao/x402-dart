@@ -1,10 +1,6 @@
 import 'dart:convert';
 
-import 'package:x402_core/src/client/x402_client.dart';
-import 'package:x402_core/src/constants.dart';
-import 'package:x402_core/src/models/payment_requirement.dart';
-import 'package:x402_core/src/models/resource_info.dart';
-import 'package:x402_core/src/x402_exception.dart';
+import 'package:x402_core/x402_core.dart';
 
 /// The structured response body returned by a server when it requires payment (HTTP 402).
 ///
