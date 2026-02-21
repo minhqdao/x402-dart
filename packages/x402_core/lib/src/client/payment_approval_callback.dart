@@ -1,10 +1,17 @@
-import 'package:x402_core/src/client/x402_client.dart';
+import 'package:x402_core/src/client/x402_signer.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
 
-/// Callback to let the user approve a payment before it's signed and sent.
+/// Callback invoked when a 402 Payment Required response is received,
+/// allowing the application to request user approval before a payment
+/// is signed and sent.
 ///
-/// Returns `true` to approve the payment, `false` to deny.
+/// Parameters:
+/// - [requirement]: The matched payment requirement from the server.
+/// - [resource]: Information about the resource being accessed.
+/// - [signer]: The signer that will be used to sign the payment.
+///
+/// Returns `true` to approve and process the payment, or `false` to abort.
 typedef PaymentApprovalCallback = Future<bool> Function(
   PaymentRequirement requirement,
   ResourceInfo resource,
