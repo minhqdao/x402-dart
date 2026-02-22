@@ -19,7 +19,7 @@ class ExactSvmSchemeServer implements SchemeServer {
   String get scheme => 'exact';
 
   @override
-  Network get network => _cluster.toNetwork();
+  Network get network => _cluster.network;
 
   final List<MoneyParser> _moneyParsers;
   final SolanaCluster _cluster;
@@ -109,12 +109,12 @@ class ExactSvmSchemeServer implements SchemeServer {
 
   _SplTokenInfo _getDefaultAsset(Network network) {
     final tokens = <String, _SplTokenInfo>{
-      SolanaCluster.mainnet.toNetwork().identifier: const _SplTokenInfo(
+      SolanaCluster.mainnet.network.identifier: const _SplTokenInfo(
         mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         name: 'USD Coin',
         decimals: 6,
       ),
-      SolanaCluster.devnet.toNetwork().identifier: const _SplTokenInfo(
+      SolanaCluster.devnet.network.identifier: const _SplTokenInfo(
         mint: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
         name: 'USD Coin',
         decimals: 6,

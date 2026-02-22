@@ -13,7 +13,7 @@ void main() {
 
       test('exposes correct network', () {
         final server = ExactSvmSchemeServer(cluster: SolanaCluster.mainnet);
-        expect(server.network, equals(SolanaCluster.mainnet.toNetwork()));
+        expect(server.network, equals(SolanaCluster.mainnet.network));
       });
     });
 
@@ -322,7 +322,7 @@ void main() {
 
     group('SVM-SPECIFIC TESTS', () {
       final server = ExactSvmSchemeServer(cluster: SolanaCluster.mainnet);
-      final network = SolanaCluster.mainnet.toNetwork();
+      final network = SolanaCluster.mainnet.network;
 
       test('enhancePaymentRequirement adds feePayer when present', () async {
         final req = PaymentRequirement(

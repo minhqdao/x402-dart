@@ -24,36 +24,36 @@ void main() {
 
     test('toNetwork produces correct CAIP-2 identifiers with truncated hash',
         () {
-      final mainnet = SolanaCluster.mainnet.toNetwork();
+      final mainnet = SolanaCluster.mainnet.network;
       expect(mainnet.namespace, equals('solana'));
       expect(mainnet.reference, equals('5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'));
       expect(mainnet.identifier,
           equals('solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'));
 
-      final devnet = SolanaCluster.devnet.toNetwork();
+      final devnet = SolanaCluster.devnet.network;
       expect(devnet.reference, equals('EtWTRABZaYq6iMfeYKouRu166VU2xqa1'));
       expect(
           devnet.identifier, equals('solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'));
 
-      final testnet = SolanaCluster.testnet.toNetwork();
+      final testnet = SolanaCluster.testnet.network;
       expect(testnet.reference, equals('4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z'));
       expect(testnet.identifier,
           equals('solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z'));
     });
 
     test('toNetwork returns a Network instance', () {
-      final network = SolanaCluster.mainnet.toNetwork();
+      final network = SolanaCluster.mainnet.network;
       expect(network, isA<Network>());
     });
 
     test('all clusters produce distinct networks', () {
-      final networks = SolanaCluster.values.map((c) => c.toNetwork()).toSet();
+      final networks = SolanaCluster.values.map((c) => c.network).toSet();
       expect(networks.length, equals(3)); // All unique after truncation
     });
 
     test('truncates genesis hash to 32 characters', () {
       for (final cluster in SolanaCluster.values) {
-        final network = cluster.toNetwork();
+        final network = cluster.network;
         expect(network.reference.length, equals(32));
         expect(network.reference, equals(cluster.genesisHash.substring(0, 32)));
       }

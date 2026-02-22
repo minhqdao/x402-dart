@@ -28,7 +28,7 @@ enum SolanaCluster {
   ///
   /// Note: The genesis hash is truncated to 32 characters for compatibility
   /// with the x402 TypeScript reference implementation.
-  Network toNetwork() {
+  Network get network {
     return Network(
       namespace: 'solana',
       reference: genesisHash.substring(0, 32),

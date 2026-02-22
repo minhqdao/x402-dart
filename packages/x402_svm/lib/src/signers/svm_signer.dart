@@ -131,7 +131,7 @@ class SvmSigner extends X402Signer {
   }
 
   @override
-  Network get network => _cluster.toNetwork();
+  Network get network => _cluster.network;
 
   @override
   String get scheme => _client.scheme;
