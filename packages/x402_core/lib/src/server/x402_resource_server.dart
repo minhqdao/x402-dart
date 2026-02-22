@@ -27,33 +27,39 @@ import 'package:x402_core/src/server/scheme_server.dart';
 /// In short, this is the component that connects your protected
 /// resource to the x402 payment flow.
 class X402ResourceServer {
-  final Map<Network, Map<String, SchemeServer>> _registeredSchemes;
+  final Map<Network, Map<String, SchemeServer>> _schemeServers;
   final Map<_RouteKey, _RouteEntry> _routes;
 
   X402ResourceServer._({
-    required Map<Network, Map<String, SchemeServer>> registeredSchemes,
+    required Map<Network, Map<String, SchemeServer>> schemeServers,
     required Map<_RouteKey, _RouteEntry> routes,
-  })  : _registeredSchemes = registeredSchemes,
+  })  : _schemeServers = schemeServers,
         _routes = routes;
 
-  static Map<Network, Map<String, SchemeServer>> _registerSchemes(
-    Map<Network, SchemeServer> schemes,
+  static Map<Network, Map<String, SchemeServer>> _registerSchemeServers(
+    List<SchemeServer> schemeServers,
   ) {
     final registered = <Network, Map<String, SchemeServer>>{};
 
-    for (final entry in schemes.entries) {
-      final network = entry.key;
-      final server = entry.value;
+    for (final schemeServer in schemeServers) {
+      final network = schemeServer.network;
 
       registered.putIfAbsent(network, () => {});
-      registered[network]![server.scheme] = server;
+
+      if (registered[network]!.containsKey(schemeServer.scheme)) {
+        throw ArgumentError(
+          'Duplicate SchemeServer for ${schemeServer.scheme} on $network',
+        );
+      }
+
+      registered[network]![schemeServer.scheme] = schemeServer;
     }
 
-    return Map<Network, Map<String, SchemeServer>>.unmodifiable(
-      registered.map<Network, Map<String, SchemeServer>>(
-        (network, schemeMap) => MapEntry(
+    return Map.unmodifiable(
+      registered.map(
+        (network, schemeServerMap) => MapEntry(
           network,
-          Map<String, SchemeServer>.unmodifiable(schemeMap),
+          Map<String, SchemeServer>.unmodifiable(schemeServerMap),
         ),
       ),
     );
@@ -74,13 +80,13 @@ class X402ResourceServer {
   /// - Any error thrown by [FacilitatorClient.getSupported]
   static Future<X402ResourceServer> create({
     List<FacilitatorClient>? facilitators,
-    required Map<Network, SchemeServer> schemes,
+    required List<SchemeServer> schemeServers,
   }) async {
-    if (schemes.isEmpty) {
-      throw ArgumentError('At least one scheme must be registered.');
+    if (schemeServers.isEmpty) {
+      throw ArgumentError('At least one scheme server must be registered.');
     }
 
-    final registeredSchemes = _registerSchemes(schemes);
+    final registeredSchemes = _registerSchemeServers(schemeServers);
 
     final resolvedFacilitators = facilitators ?? [HttpFacilitatorClient()];
     final routes = <_RouteKey, _RouteEntry>{};
@@ -114,7 +120,7 @@ class X402ResourceServer {
     }
 
     return X402ResourceServer._(
-      registeredSchemes: registeredSchemes,
+      schemeServers: registeredSchemes,
       routes: Map<_RouteKey, _RouteEntry>.unmodifiable(routes),
     );
   }
@@ -123,7 +129,7 @@ class X402ResourceServer {
   Future<PaymentRequirement> buildPaymentRequirement(
     ResourceConfig config,
   ) async {
-    final server = _registeredSchemes[config.network]?[config.scheme];
+    final server = _schemeServers[config.network]?[config.scheme];
 
     if (server == null) {
       throw StateError(
@@ -151,7 +157,7 @@ class X402ResourceServer {
       ),
     );
 
-    final parsed = await server.parsePrice(config.price, config.network);
+    final parsed = await server.parsePrice(config.price);
 
     final base = PaymentRequirement(
       scheme: server.scheme,

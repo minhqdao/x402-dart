@@ -41,13 +41,17 @@ class MockFacilitatorClient implements FacilitatorClient {
 class MockSchemeServer implements SchemeServer {
   @override
   final String scheme;
+
+  @override
+  final Network network;
+
   AssetAmount? parsePriceResult;
   PaymentRequirement? enhancedRequirement;
 
-  MockSchemeServer(this.scheme);
+  MockSchemeServer(this.scheme, this.network);
 
   @override
-  Future<AssetAmount> parsePrice(Price price, Network network) async {
+  Future<AssetAmount> parsePrice(Price price) async {
     if (price is AssetAmount) return price;
     return parsePriceResult ?? const AssetAmount(asset: 'asset', amount: '100');
   }
@@ -63,16 +67,16 @@ class MockSchemeServer implements SchemeServer {
 }
 
 class ThrowingParseSchemeServer extends MockSchemeServer {
-  ThrowingParseSchemeServer() : super('exact');
+  ThrowingParseSchemeServer(Network network) : super('exact', network);
 
   @override
-  Future<AssetAmount> parsePrice(Price price, Network network) {
+  Future<AssetAmount> parsePrice(Price price) {
     throw Exception('parse failure');
   }
 }
 
 class ThrowingEnhanceSchemeServer extends MockSchemeServer {
-  ThrowingEnhanceSchemeServer() : super('exact');
+  ThrowingEnhanceSchemeServer(Network network) : super('exact', network);
 
   @override
   Future<PaymentRequirement> enhancePaymentRequirement(
@@ -108,7 +112,7 @@ void main() {
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: {net1: MockSchemeServer('exact')},
+        schemeServers: [MockSchemeServer('exact', net1)],
       );
 
       expect(server, isNotNull);
@@ -134,10 +138,10 @@ void main() {
 
       final server = await X402ResourceServer.create(
         facilitators: [f1, f2],
-        schemes: {
-          n1: MockSchemeServer('s1'),
-          n2: MockSchemeServer('s2'),
-        },
+        schemeServers: [
+          MockSchemeServer('s1', n1),
+          MockSchemeServer('s2', n2),
+        ],
       );
 
       expect(server, isNotNull);
@@ -165,10 +169,10 @@ void main() {
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: {
-          n1: MockSchemeServer('s1'),
-          n2: MockSchemeServer('s2'),
-        },
+        schemeServers: [
+          MockSchemeServer('s1', n1),
+          MockSchemeServer('s2', n2),
+        ],
       );
 
       expect(server, isNotNull);
@@ -195,9 +199,55 @@ void main() {
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: {
-          n1: MockSchemeServer('s1'),
-        },
+        schemeServers: [
+          MockSchemeServer('s1', n1),
+          MockSchemeServer('s2', n1),
+        ],
+      );
+
+      expect(server, isNotNull);
+    });
+
+    test(
+        'throws ArgumentError if duplicate SchemeServer for same scheme/network',
+        () {
+      expect(
+        () => X402ResourceServer.create(
+          facilitators: [MockFacilitatorClient()],
+          schemeServers: [
+            MockSchemeServer('exact', net1),
+            MockSchemeServer('exact', net1),
+          ],
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('supports same scheme on different networks', () async {
+      final facilitator = MockFacilitatorClient()
+        ..supportedResponse = const SupportedResponse(
+          kinds: [
+            SupportedKind(
+              x402Version: kX402Version,
+              scheme: 'exact',
+              network: net1,
+            ),
+            SupportedKind(
+              x402Version: kX402Version,
+              scheme: 'exact',
+              network: net2,
+            ),
+          ],
+          extensions: [],
+          signers: {},
+        );
+
+      final server = await X402ResourceServer.create(
+        facilitators: [facilitator],
+        schemeServers: [
+          MockSchemeServer('exact', net1),
+          MockSchemeServer('exact', net2),
+        ],
       );
 
       expect(server, isNotNull);
@@ -207,7 +257,7 @@ void main() {
       expect(
         () => X402ResourceServer.create(
           facilitators: [MockFacilitatorClient()],
-          schemes: {},
+          schemeServers: [],
         ),
         throwsArgumentError,
       );
@@ -224,7 +274,7 @@ void main() {
       expect(
         () => X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {net1: MockSchemeServer('exact')},
+          schemeServers: [MockSchemeServer('exact', net1)],
         ),
         throwsStateError,
       );
@@ -237,7 +287,7 @@ void main() {
       expect(
         () => X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {net1: MockSchemeServer('exact')},
+          schemeServers: [MockSchemeServer('exact', net1)],
         ),
         throwsException,
       );
@@ -260,7 +310,7 @@ void main() {
       expect(
         () => X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {net1: MockSchemeServer('exact')},
+          schemeServers: [MockSchemeServer('exact', net1)],
         ),
         throwsStateError,
       );
@@ -287,7 +337,7 @@ void main() {
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: {net1: MockSchemeServer('exact')},
+        schemeServers: [MockSchemeServer('exact', net1)],
       );
 
       expect(server, isNotNull);
@@ -325,7 +375,7 @@ void main() {
       expect(
         () => X402ResourceServer.create(
           facilitators: [f1, f2],
-          schemes: {net1: MockSchemeServer('exact')},
+          schemeServers: [MockSchemeServer('exact', net1)],
         ),
         throwsStateError,
       );
@@ -335,7 +385,7 @@ void main() {
       expect(
         () => X402ResourceServer.create(
           facilitators: [],
-          schemes: {net1: MockSchemeServer('exact')},
+          schemeServers: [MockSchemeServer('exact', net1)],
         ),
         throwsStateError,
       );
@@ -360,7 +410,7 @@ void main() {
       expect(
         () => X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {net1: MockSchemeServer('different')}, // mismatch
+          schemeServers: [MockSchemeServer('different', net1)], // mismatch
         ),
         throwsStateError,
       );
@@ -385,11 +435,11 @@ void main() {
           extensions: ['ext1'],
           signers: {},
         );
-      schemeServer = MockSchemeServer('exact');
+      schemeServer = MockSchemeServer('exact', net1);
 
       resourceServer = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: {net1: schemeServer},
+        schemeServers: [schemeServer],
       );
     });
 
@@ -484,10 +534,10 @@ void main() {
         // We need to register the scheme for net2 too during setup if we want it to get past the first check
         final resourceServer2 = await X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {
-            net1: schemeServer,
-            net2: schemeServer,
-          },
+          schemeServers: [
+            schemeServer,
+            MockSchemeServer('exact', net2),
+          ],
         );
 
         expect(
@@ -514,14 +564,14 @@ void main() {
         expect(
           () => X402ResourceServer.create(
             facilitators: [facilitator],
-            schemes: {net1: MockSchemeServer('exact')},
+            schemeServers: [MockSchemeServer('exact', net1)],
           ),
           throwsStateError,
         );
       });
 
       test('propagates error from parsePrice', () async {
-        final scheme = ThrowingParseSchemeServer();
+        final scheme = ThrowingParseSchemeServer(net1);
 
         final facilitator = MockFacilitatorClient()
           ..supportedResponse = const SupportedResponse(
@@ -538,7 +588,7 @@ void main() {
 
         final server = await X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {net1: scheme},
+          schemeServers: [scheme],
         );
 
         const config = ResourceConfig(
@@ -555,7 +605,7 @@ void main() {
       });
 
       test('propagates error from enhancePaymentRequirement', () async {
-        final scheme = ThrowingEnhanceSchemeServer();
+        final scheme = ThrowingEnhanceSchemeServer(net1);
 
         final facilitator = MockFacilitatorClient()
           ..supportedResponse = const SupportedResponse(
@@ -572,7 +622,7 @@ void main() {
 
         final server = await X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {net1: scheme},
+          schemeServers: [scheme],
         );
 
         const config = ResourceConfig(
@@ -599,7 +649,7 @@ void main() {
 
         schemeServer.enhancedRequirement = null;
 
-        schemeServer = MockSchemeServer('exact')
+        schemeServer = MockSchemeServer('exact', net1)
           ..enhancedRequirement = PaymentRequirement(
             scheme: 'exact',
             network: net1,
@@ -612,7 +662,7 @@ void main() {
 
         resourceServer = await X402ResourceServer.create(
           facilitators: [facilitator],
-          schemes: {net1: schemeServer},
+          schemeServers: [schemeServer],
         );
 
         await resourceServer.buildPaymentRequirement(config);
@@ -738,10 +788,10 @@ void main() {
 
         final server = await X402ResourceServer.create(
           facilitators: [f1, f2],
-          schemes: {
-            n1: MockSchemeServer('s1'),
-            n2: MockSchemeServer('s2'),
-          },
+          schemeServers: [
+            MockSchemeServer('s1', n1),
+            MockSchemeServer('s2', n2),
+          ],
         );
 
         final requirement = PaymentRequirement(
@@ -1138,7 +1188,7 @@ void main() {
   });
 
   group('Immutability guarantees', () {
-    test('server is unaffected by external map mutation', () async {
+    test('server is unaffected by external list mutation', () async {
       final facilitator = MockFacilitatorClient()
         ..supportedResponse = const SupportedResponse(
           kinds: [
@@ -1152,14 +1202,14 @@ void main() {
           signers: {},
         );
 
-      final schemes = {net1: MockSchemeServer('exact')};
+      final schemes = [MockSchemeServer('exact', net1)];
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: schemes,
+        schemeServers: schemes,
       );
 
-      // Mutate original schemes map AFTER creation
+      // Mutate original schemes list AFTER creation
       schemes.clear();
 
       // Server should still function correctly
@@ -1195,17 +1245,17 @@ void main() {
           signers: {},
         );
 
-      final schemes = {
-        n1: MockSchemeServer('s1'),
-        n2: MockSchemeServer('s2'),
-      };
+      final schemes = [
+        MockSchemeServer('s1', n1),
+        MockSchemeServer('s2', n2),
+      ];
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: schemes,
+        schemeServers: schemes,
       );
 
-      schemes.remove(n1);
+      schemes.removeAt(0);
 
       const config = ResourceConfig(
         scheme: 's1',
@@ -1237,7 +1287,7 @@ void main() {
 
       final server = await X402ResourceServer.create(
         facilitators: [facilitator],
-        schemes: {net1: MockSchemeServer('exact')},
+        schemeServers: [MockSchemeServer('exact', net1)],
       );
 
       const config = ResourceConfig(

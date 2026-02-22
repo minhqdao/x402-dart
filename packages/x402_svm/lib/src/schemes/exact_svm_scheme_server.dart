@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:x402_core/x402_core.dart';
+import 'package:x402_svm/src/network/solana_cluster.dart';
 
 /// SVM (Solana) implementation of the `exact` payment scheme.
 ///
@@ -17,7 +18,11 @@ class ExactSvmSchemeServer implements SchemeServer {
   @override
   String get scheme => 'exact';
 
+  @override
+  Network get network => _cluster.toNetwork();
+
   final List<MoneyParser> _moneyParsers;
+  final SolanaCluster _cluster;
 
   /// Creates an Exact SVM scheme server.
   ///
@@ -25,13 +30,12 @@ class ExactSvmSchemeServer implements SchemeServer {
   /// if all return `null` or if no parsers are provided.
   ExactSvmSchemeServer({
     List<MoneyParser> moneyParsers = const [],
-  }) : _moneyParsers = List.unmodifiable(moneyParsers);
+    required SolanaCluster cluster,
+  })  : _moneyParsers = List.unmodifiable(moneyParsers),
+        _cluster = cluster;
 
   @override
-  Future<AssetAmount> parsePrice(
-    Price price,
-    Network network,
-  ) async {
+  Future<AssetAmount> parsePrice(Price price) async {
     switch (price) {
       case AssetAmount(:final asset, :final amount, :final extra):
         if (asset.isEmpty) {
@@ -104,13 +108,13 @@ class ExactSvmSchemeServer implements SchemeServer {
   }
 
   _SplTokenInfo _getDefaultAsset(Network network) {
-    const tokens = <String, _SplTokenInfo>{
-      'solana:mainnet': _SplTokenInfo(
+    final tokens = <String, _SplTokenInfo>{
+      SolanaCluster.mainnet.toNetwork().identifier: const _SplTokenInfo(
         mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         name: 'USD Coin',
         decimals: 6,
       ),
-      'solana:devnet': _SplTokenInfo(
+      SolanaCluster.devnet.toNetwork().identifier: const _SplTokenInfo(
         mint: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
         name: 'USD Coin',
         decimals: 6,

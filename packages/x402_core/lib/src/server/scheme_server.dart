@@ -16,6 +16,9 @@ abstract class SchemeServer {
   /// The scheme identifier (e.g. "exact").
   String get scheme;
 
+  /// The CAIP-2 network this scheme server operates on.
+  Network get network;
+
   /// Converts a user-friendly [price] into a scheme-specific [AssetAmount].
   ///
   /// This method normalizes input such as:
@@ -26,12 +29,7 @@ abstract class SchemeServer {
   /// The returned [AssetAmount] must contain:
   /// - The canonical asset identifier
   /// - The normalized on-chain amount
-  ///
-  /// The [network] provides context (e.g. chain ID, cluster).
-  Future<AssetAmount> parsePrice(
-    Price price,
-    Network network,
-  );
+  Future<AssetAmount> parsePrice(Price price);
 
   /// Enhances base [paymentRequirement] using scheme/network logic.
   ///

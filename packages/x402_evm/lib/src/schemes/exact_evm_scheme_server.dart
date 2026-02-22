@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:x402_core/x402_core.dart';
+import 'package:x402_evm/x402_evm.dart';
 
 /// EVM implementation of the "exact" payment scheme.
 ///
@@ -15,7 +16,11 @@ class ExactEvmSchemeServer implements SchemeServer {
   @override
   String get scheme => 'exact';
 
+  @override
+  Network get network => _network;
+
   final List<MoneyParser> _moneyParsers;
+  final EvmNetwork _network;
 
   /// Creates an Exact EVM scheme server.
   ///
@@ -23,13 +28,13 @@ class ExactEvmSchemeServer implements SchemeServer {
   /// if all return `null` or if no parsers are provided.
   ExactEvmSchemeServer({
     List<MoneyParser> moneyParsers = const [],
-  }) : _moneyParsers = List.unmodifiable(moneyParsers);
+    String networkNamespace = 'eip155',
+    required int chainId,
+  })  : _moneyParsers = List.unmodifiable(moneyParsers),
+        _network = EvmNetwork(namespace: networkNamespace, chainId: chainId);
 
   @override
-  Future<AssetAmount> parsePrice(
-    Price price,
-    Network network,
-  ) async {
+  Future<AssetAmount> parsePrice(Price price) async {
     // If already an AssetAmount, return as-is.
     switch (price) {
       case AssetAmount(:final asset, :final amount, :final extra):
