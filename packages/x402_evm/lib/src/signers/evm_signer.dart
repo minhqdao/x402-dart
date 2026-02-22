@@ -17,7 +17,7 @@ class EvmSigner extends X402Signer {
   /// - `eip155:1` (Ethereum mainnet)
   /// - `eip155:8453` (Base mainnet)
   @override
-  final Network network;
+  final EvmNetwork network;
 
   final ExactEvmSchemeClient _client;
 

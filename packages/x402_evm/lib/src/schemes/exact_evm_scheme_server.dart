@@ -17,10 +17,9 @@ class ExactEvmSchemeServer implements SchemeServer {
   String get scheme => 'exact';
 
   @override
-  Network get network => _network;
+  final EvmNetwork network;
 
   final List<MoneyParser> _moneyParsers;
-  final EvmNetwork _network;
 
   /// Creates an Exact EVM scheme server.
   ///
@@ -31,7 +30,7 @@ class ExactEvmSchemeServer implements SchemeServer {
     String networkNamespace = 'eip155',
     required int chainId,
   })  : _moneyParsers = List.unmodifiable(moneyParsers),
-        _network = EvmNetwork(namespace: networkNamespace, chainId: chainId);
+        network = EvmNetwork(namespace: networkNamespace, chainId: chainId);
 
   @override
   Future<AssetAmount> parsePrice(Price price) async {
