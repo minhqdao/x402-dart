@@ -280,6 +280,41 @@ void main() {
       );
     });
 
+    test('allows same scheme/network for different x402 versions', () async {
+      final f1 = MockFacilitatorClient()
+        ..supportedResponse = const SupportedResponse(
+          kinds: [
+            SupportedKind(
+              x402Version: 1,
+              scheme: 'exact',
+              network: net1,
+            ),
+          ],
+          extensions: [],
+          signers: {},
+        );
+
+      final f2 = MockFacilitatorClient()
+        ..supportedResponse = const SupportedResponse(
+          kinds: [
+            SupportedKind(
+              x402Version: 2,
+              scheme: 'exact',
+              network: net1,
+            ),
+          ],
+          extensions: [],
+          signers: {},
+        );
+
+      final server = await X402ResourceServer.create(
+        facilitators: [f1, f2],
+        schemeServers: [MockSchemeServer('exact', net1)],
+      );
+
+      expect(server, isNotNull);
+    });
+
     test('propagates error from getSupported', () {
       final facilitator = MockFacilitatorClient()
         ..getSupportedError = Exception('Network error');
