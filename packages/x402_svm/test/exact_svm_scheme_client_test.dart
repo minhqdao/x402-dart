@@ -5,6 +5,7 @@ import 'package:solana/dto.dart';
 import 'package:solana/solana.dart';
 import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
+import 'package:x402_svm/src/network/solana_cluster.dart';
 import 'package:x402_svm/src/schemes/exact_svm_scheme_client.dart';
 
 class _MockSolanaClient extends Mock implements SolanaClient {}
@@ -33,6 +34,7 @@ void main() {
       when(() => mockSolanaClient.rpcClient).thenReturn(mockRpcClient);
 
       client = ExactSvmSchemeClient(
+        cluster: SolanaCluster.devnet,
         signer: keyPair,
         solanaClient: mockSolanaClient,
       );
@@ -91,6 +93,11 @@ void main() {
 
     test('scheme getter should return correct value', () {
       expect(client.scheme, equals('v2:solana:exact'));
+    });
+
+    test('network getter should return correct network', () {
+      expect(client.network.identifier,
+          equals('solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'));
     });
 
     test('should accept "exact" as a valid scheme', () async {

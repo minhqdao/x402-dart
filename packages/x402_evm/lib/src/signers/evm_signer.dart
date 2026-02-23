@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:web3dart/web3dart.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_evm/src/network/evm_network.dart';
 import 'package:x402_evm/src/schemes/exact_evm_scheme_client.dart';
 
 /// Concrete implementation of [X402Signer] for EVM chains.
@@ -17,7 +16,7 @@ class EvmSigner extends X402Signer {
   /// - `eip155:1` (Ethereum mainnet)
   /// - `eip155:8453` (Base mainnet)
   @override
-  final EvmNetwork network;
+  Network get network => _client.network;
 
   final ExactEvmSchemeClient _client;
 
@@ -28,10 +27,7 @@ class EvmSigner extends X402Signer {
   /// Usually use [EvmSigner.fromPrivateKeyHex] for convenience.
   EvmSigner.fromClient({
     required ExactEvmSchemeClient client,
-    required int chainId,
-    String networkNamespace = 'eip155',
-  })  : network = EvmNetwork(namespace: networkNamespace, chainId: chainId),
-        _client = client;
+  }) : _client = client;
 
   /// Creates an [EvmSigner] from a hexadecimal private key string.
   ///
@@ -46,10 +42,11 @@ class EvmSigner extends X402Signer {
     final cleanedHex =
         privateKeyHex.startsWith('0x') ? privateKeyHex : '0x$privateKeyHex';
     return EvmSigner.fromClient(
-      client:
-          ExactEvmSchemeClient(privateKey: EthPrivateKey.fromHex(cleanedHex)),
-      chainId: chainId,
-      networkNamespace: networkNamespace,
+      client: ExactEvmSchemeClient(
+        privateKey: EthPrivateKey.fromHex(cleanedHex),
+        networkNamespace: networkNamespace,
+        chainId: chainId,
+      ),
     );
   }
 

@@ -1,3 +1,4 @@
+import 'package:x402_core/src/models/network.dart';
 import 'package:x402_core/src/models/payment_payload.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
@@ -6,6 +7,9 @@ import 'package:x402_core/src/models/resource_info.dart';
 abstract interface class SchemeClient {
   /// The scheme identifier
   String get scheme;
+
+  /// The CAIP-2 network this scheme client operates on
+  Network get network;
 
   /// Creates a payment payload based on requirements and resource info.
   Future<PaymentPayload> createPaymentPayload(

@@ -42,8 +42,8 @@ void main() {
 
       // 3. Create the signer instance using the mocked client.
       signer = SvmSigner.fromClient(
-        cluster: SolanaCluster.devnet,
         client: ExactSvmSchemeClient(
+          cluster: SolanaCluster.devnet,
           signer: keyPair,
           solanaClient: mockSolanaClient,
         ),
@@ -109,6 +109,20 @@ void main() {
       expect(signer.network.identifier,
           equals('solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'));
       expect(signer.scheme, equals('v2:solana:exact'));
+    });
+
+    test('network getter should return network from client', () {
+      final client = ExactSvmSchemeClient(
+        cluster: SolanaCluster.mainnet,
+        signer: keyPair,
+        solanaClient: mockSolanaClient,
+      );
+      final s = SvmSigner.fromClient(client: client);
+      expect(s.network, equals(client.network));
+      expect(
+          s.network.identifier,
+          equals(
+              'solana:${SolanaCluster.mainnet.genesisHash.substring(0, 32)}'));
     });
 
     test('should have correct address', () {

@@ -19,8 +19,8 @@ void main() {
       privateKey = EthPrivateKey.fromHex(
           '0x4efa000000000000000000000000000000000000000000000000000000000001');
       signer = EvmSigner.fromClient(
-        chainId: 8453,
         client: ExactEvmSchemeClient(
+          chainId: 8453,
           privateKey: privateKey,
           nowProvider: () => 1940,
           nonceProvider: () => Uint8List(32),
@@ -47,6 +47,13 @@ void main() {
     test('should have correct network and scheme', () {
       expect(signer.network.identifier, equals('eip155:8453'));
       expect(signer.scheme, equals('exact'));
+    });
+
+    test('network getter should return network from client', () {
+      final client = ExactEvmSchemeClient(chainId: 1, privateKey: privateKey);
+      final s = EvmSigner.fromClient(client: client);
+      expect(s.network, equals(client.network));
+      expect(s.network.identifier, equals('eip155:1'));
     });
 
     test('should have correct address', () {

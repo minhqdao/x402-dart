@@ -15,6 +15,7 @@ void main() {
       privateKey = EthPrivateKey.fromHex(
           '0x4efa000000000000000000000000000000000000000000000000000000000001');
       client = ExactEvmSchemeClient(
+          chainId: 8453,
           privateKey: privateKey,
           nowProvider: () => 1940,
           nonceProvider: () => Uint8List(32));
@@ -38,6 +39,10 @@ void main() {
 
     test('address getter should return correct hex address', () {
       expect(client.address, equals(privateKey.address.hex));
+    });
+
+    test('network getter should return correct network', () {
+      expect(client.network.identifier, equals('eip155:8453'));
     });
 
     test('should create valid payment payload', () async {

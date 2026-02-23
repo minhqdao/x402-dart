@@ -12,7 +12,6 @@ import 'package:x402_svm/src/schemes/exact_svm_scheme_client.dart';
 /// It uses an underlying [ExactSvmSchemeClient] to perform scheme-specific
 /// operations.
 class SvmSigner extends X402Signer {
-  final SolanaCluster _cluster;
   final ExactSvmSchemeClient _client;
 
   /// Creates an [SvmSigner] from an [ExactSvmSchemeClient] and the chosen
@@ -20,10 +19,8 @@ class SvmSigner extends X402Signer {
   ///
   /// Use other constructors like [SvmSigner.fromPrivateKeyHex] for convenience.
   SvmSigner.fromClient({
-    required SolanaCluster cluster,
     required ExactSvmSchemeClient client,
-  })  : _cluster = cluster,
-        _client = client;
+  }) : _client = client;
 
   /// Creates an [SvmSigner] from a hexadecimal private key string.
   ///
@@ -40,9 +37,9 @@ class SvmSigner extends X402Signer {
     final rpcUrl = customRpcUrl ?? cluster.rpcUrl;
 
     return SvmSigner.fromClient(
-      cluster: cluster,
       client: ExactSvmSchemeClient(
         signer: keypair,
+        cluster: cluster,
         solanaClient: SolanaClient(
             rpcUrl: Uri.parse(rpcUrl),
             websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
@@ -83,29 +80,30 @@ class SvmSigner extends X402Signer {
 
     return SvmSigner.fromClient(
       client: ExactSvmSchemeClient(
+        cluster: cluster,
         signer: keypair,
         solanaClient: SolanaClient(
             rpcUrl: Uri.parse(rpcUrl),
             websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss'))),
       ),
-      cluster: cluster,
     );
   }
 
   /// Creates an [SvmSigner] with a randomly generated keypair.
   /// Useful for testing or temporary wallets.
-  static Future<SvmSigner> createRandom(
-      {required SolanaCluster cluster}) async {
+  static Future<SvmSigner> createRandom({
+    required SolanaCluster cluster,
+  }) async {
     final keypair = await Ed25519HDKeyPair.random();
     return SvmSigner.fromClient(
       client: ExactSvmSchemeClient(
+        cluster: cluster,
         signer: keypair,
         solanaClient: SolanaClient(
           rpcUrl: Uri.parse(cluster.rpcUrl),
           websocketUrl: Uri.parse(cluster.rpcUrl.replaceFirst('https', 'wss')),
         ),
       ),
-      cluster: cluster,
     );
   }
 
@@ -120,18 +118,18 @@ class SvmSigner extends X402Signer {
 
     return SvmSigner.fromClient(
       client: ExactSvmSchemeClient(
+        cluster: cluster,
         signer: keypair,
         solanaClient: SolanaClient(
           rpcUrl: Uri.parse(rpcUrl),
           websocketUrl: Uri.parse(rpcUrl.replaceFirst('https', 'wss')),
         ),
       ),
-      cluster: cluster,
     );
   }
 
   @override
-  Network get network => _cluster.network;
+  Network get network => _client.network;
 
   @override
   String get scheme => _client.scheme;

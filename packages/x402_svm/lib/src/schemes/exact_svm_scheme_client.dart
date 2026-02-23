@@ -1,6 +1,7 @@
 import 'package:solana/solana.dart';
 import 'package:x402_core/x402_core.dart';
 import 'package:x402_svm/src/utils/svm_transaction_builder.dart';
+import 'package:x402_svm/x402_svm.dart';
 
 /// Scheme implementation for the "exact" SVM (Solana) payment flow.
 ///
@@ -11,15 +12,21 @@ class ExactSvmSchemeClient implements SchemeClient {
 
   final Ed25519HDKeyPair _signer;
   final SolanaClient _solanaClient;
+  final SolanaCluster cluster;
 
   /// Creates an [ExactSvmSchemeClient] with the given [signer] and [solanaClient].
-  const ExactSvmSchemeClient(
-      {required Ed25519HDKeyPair signer, required SolanaClient solanaClient})
-      : _signer = signer,
+  const ExactSvmSchemeClient({
+    required Ed25519HDKeyPair signer,
+    required SolanaClient solanaClient,
+    required this.cluster,
+  })  : _signer = signer,
         _solanaClient = solanaClient;
 
   @override
   String get scheme => _schemeId;
+
+  @override
+  Network get network => cluster.network;
 
   /// Creates a [PaymentPayload] for an SVM transaction.
   ///
