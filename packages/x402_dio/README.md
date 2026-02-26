@@ -89,10 +89,3 @@ try {
 }
 }
 ```
-
-## Related Packages
-
-- [x402](https://pub.dev/packages/x402): The main client library (http-based).
-- [x402_core](https://pub.dev/packages/x402_core): Internal protocol definitions.
-- [x402_evm](https://pub.dev/packages/x402_evm): EVM implementation details.
-- [x402_svm](https://pub.dev/packages/x402_svm): SVM implementation details.

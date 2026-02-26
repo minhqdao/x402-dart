@@ -63,7 +63,7 @@ if (response.statusCode == 402) {
 }
 ```
 
-Take a look at the [examples](https://github.com/minhqdao/x402-dart/tree/main/examples) folder for complete implementations of both approaches.
+Take a look at the [example](https://github.com/minhqdao/x402-dart/tree/main/examples) folder for complete implementations of both approaches.
 
 ## Related Packages
 
@@ -71,3 +71,4 @@ Take a look at the [examples](https://github.com/minhqdao/x402-dart/tree/main/ex
 - [x402_evm](https://pub.dev/packages/x402_evm): EVM implementation details.
 - [x402_svm](https://pub.dev/packages/x402_svm): SVM implementation details.
 - [x402_dio](https://pub.dev/packages/x402_dio): Dio-based client library.
+- [x402_shelf](https://pub.dev/packages/x402_shelf): Shelf middleware for protecting HTTP routes with x402 payments.
