@@ -1120,7 +1120,7 @@ void main() {
         expect(match, isNull);
       });
 
-      test('throws UnsupportedError for unknown versions', () {
+      test('returns null for unsupported versions', () {
         final payload = PaymentPayload(
           x402Version: 3,
           resource: const ResourceInfo(
@@ -1132,10 +1132,10 @@ void main() {
           payload: {},
         );
 
-        expect(
-          () => resourceServer.findMatchingRequirements(available, payload),
-          throwsUnsupportedError,
-        );
+        final result =
+            resourceServer.findMatchingRequirements(available, payload);
+
+        expect(result, isNull);
       });
 
       test('Version 1: does not match if network differs', () {

@@ -229,9 +229,7 @@ class X402ResourceServer {
         return null;
 
       default:
-        throw UnsupportedError(
-          'Unsupported x402 version: ${payload.x402Version}',
-        );
+        return null;
     }
   }
 }
