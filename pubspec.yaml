@@ -16,16 +16,16 @@ workspace:
   - examples/client_wrapper
   - examples/client_manual
   - examples/client_dio
-  - e2e/clients/wrapper_evm
-  - e2e/clients/wrapper_svm
-  - e2e/clients/dio_evm
-  - e2e/clients/dio_svm
-  - e2e/clients/wrapper_evm_denied
-  - e2e/clients/wrapper_svm_denied
-  - e2e/clients/dio_evm_denied
-  - e2e/clients/dio_svm_denied
-  - e2e/clients/manual_evm
-  - e2e/clients/manual_svm
+  - e2e/dart_client_ts_server/wrapper_evm
+  - e2e/dart_client_ts_server/wrapper_svm
+  - e2e/dart_client_ts_server/dio_evm
+  - e2e/dart_client_ts_server/dio_svm
+  - e2e/dart_client_ts_server/wrapper_evm_denied
+  - e2e/dart_client_ts_server/wrapper_svm_denied
+  - e2e/dart_client_ts_server/dio_evm_denied
+  - e2e/dart_client_ts_server/dio_svm_denied
+  - e2e/dart_client_ts_server/manual_evm
+  - e2e/dart_client_ts_server/manual_svm
 
 dev_dependencies:
   lint: ^2.8.0
