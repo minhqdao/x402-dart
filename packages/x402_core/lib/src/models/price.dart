@@ -3,7 +3,7 @@ import 'package:x402_core/src/models/network.dart';
 /// Signature for custom money parsers.
 ///
 /// A parser receives:
-/// - [amount]: canonical decimal string (e.g. `"1.50"`)
+/// - [amount]: canonical decimal string (e.g. `'1.50'`)
 /// - [network]: CAIP-2 network identifier
 ///
 /// It should return:
@@ -38,8 +38,8 @@ sealed class Price {
 ///
 /// Example:
 /// ```dart
-/// const Money("0.10");
-/// const Money("10");
+/// const Money('0.10');
+/// const Money('10');
 /// ```
 final class Money extends Price {
   /// Canonical decimal representation of the amount.

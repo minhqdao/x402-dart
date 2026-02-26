@@ -1,15 +1,21 @@
 import 'package:x402_core/src/models/network.dart';
+import 'package:x402_core/src/models/price.dart';
 
 /// Configuration for a single payment option.
 ///
-/// Defines how a client can pay for access to a protected resource.
+/// Represents one possible way a client can pay
+/// for access to a protected route.
+///
+/// The [price] is expressed as a [Price]:
+/// - Use [Money] for abstract monetary values
+/// - Use [AssetAmount] for fully resolved on-chain prices
 ///
 /// Example:
 /// ```dart
 /// PaymentOption(
 ///   scheme: 'exact',
-///   price: '\$0.10',
-///   network: 'eip155:84532',
+///   price: Money('0.10'),
+///   network: EvmNetwork(chainId: 84532),
 ///   payTo: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
 /// )
 /// ```
@@ -20,8 +26,8 @@ class PaymentOption {
   /// The payment recipient address or identifier
   final String payTo;
 
-  /// The price for this payment option (e.g., '\$0.10', '0.001 ETH')
-  final String price;
+  /// The price for this payment option
+  final Price price;
 
   /// The blockchain network (CAIP-2 format)
   final Network network;
