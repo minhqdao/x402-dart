@@ -6,6 +6,8 @@ import 'package:x402_core/src/models/price.dart';
 /// Contains only payment-specific configuration.
 /// Does not include resource metadata such as URL or MIME type.
 class ResourceConfig {
+  static const defaultTimeoutSeconds = 300;
+
   /// Payment scheme identifier (e.g. "exact-evm").
   final String scheme;
 
@@ -28,6 +30,6 @@ class ResourceConfig {
     required this.payTo,
     required this.price,
     required this.network,
-    this.maxTimeoutSeconds = 300,
+    this.maxTimeoutSeconds = defaultTimeoutSeconds,
   });
 }
