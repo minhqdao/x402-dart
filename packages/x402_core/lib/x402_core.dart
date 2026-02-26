@@ -20,6 +20,7 @@ export 'src/models/supported_response.dart';
 export 'src/models/verify_response.dart';
 export 'src/server/facilitator_client.dart';
 export 'src/server/http_facilitator_client.dart';
+export 'src/server/models/payment_routes.dart';
 export 'src/server/models/paywall_config.dart';
 export 'src/server/models/route_config.dart';
 export 'src/server/models/route_pattern.dart';
