@@ -1,5 +1,5 @@
 name: x402_shelf
-description: Shelf middleware for the x402 payment protocol.
+description: Shelf middleware for enforcing x402 blockchain payments on protected HTTP routes.
 version: 0.1.0
 repository: https://github.com/minhqdao/x402-dart
 homepage: https://github.com/minhqdao/x402-dart
