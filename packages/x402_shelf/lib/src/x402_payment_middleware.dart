@@ -1,21 +1,38 @@
+import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:x402_core/x402_core.dart';
 
-/// Creates a shelf middleware that handles x402 payment verification.
+/// Shelf middleware that protects routes using x402 payments.
 ///
-/// Intercepts requests to protected routes and verifies payment before
-/// allowing access. Routes without payment configuration pass through unchanged.
+/// This middleware:
+/// - Matches requests against protected routes
+/// - Builds payment requirements dynamically
+/// - Extracts and verifies payment payloads
+/// - Returns `402 Payment Required` when necessary
+///
+/// All protocol semantics are delegated to [X402ResourceServer].
+///
+/// The middleware itself is transport orchestration only.
 ///
 /// Example:
 /// ```dart
 /// final routes = <RoutePattern, RouteConfig>{
-///   RoutePattern(HttpMethod.get, '/protected'): RouteConfig.single(
-///     accept: PaymentOption(
-///       scheme: 'exact',
-///       price: '\$0.10',
-///       network: 'eip155:84532',
-///       payTo: '0xYourAddress',
-///     ),
+///   RoutePattern(HttpMethod.get, '/protected'): RouteConfig(
+///     accepts: [
+///       PaymentOption(
+///         scheme: 'exact',
+///         price: Money("0.10"),
+///         network: Network.eip155(84532),
+///         payTo: '0xYourAddress',
+///       ),
+///       PaymentOption(
+///         scheme: 'exact',
+///         price: Money("0.05"),
+///         network: Network.solanaDevnet(),
+///         payTo: 'YourSolanaAddress',
+///       ),
+///     ],
+///     description: 'Access to premium content',
 ///   ),
 /// };
 ///
@@ -25,171 +42,144 @@ import 'package:x402_core/x402_core.dart';
 /// ```
 Middleware x402PaymentMiddleware(
   PaymentRoutes routes,
-  X402ResourceServer server, {
-  PaywallConfig? paywallConfig,
-  dynamic paywall, // PaywallProvider type - define as needed
-  bool syncFacilitatorOnStart = true,
-}) {
-  // Perform any initialization
-  if (syncFacilitatorOnStart) {
-    // Sync with facilitator
-  }
-
+  X402ResourceServer server,
+) {
   return (Handler innerHandler) {
     return (Request request) async {
-      final method = request.method;
-      final path = '/${request.url.path}';
+      final matched = _matchRoute(
+        routes,
+        request.method,
+        '/${request.url.path}',
+      );
 
-      // Find matching route pattern
-      RouteConfig? routeConfig;
-      RoutePattern? matchedPattern;
-
-      for (final entry in routes.entries) {
-        if (entry.key.method.value == method &&
-            entry.key.normalizedPath == path) {
-          routeConfig = entry.value;
-          matchedPattern = entry.key;
-          break;
-        }
-      }
-
-      if (routeConfig == null) {
-        // No payment required for this route
+      if (matched == null) {
         return innerHandler(request);
       }
 
-      // Check for payment proof in headers
-      final paymentProof = request.headers['x-payment-proof'];
+      final (pattern, config) = matched;
 
-      if (paymentProof == null) {
-        // No payment proof provided - return 402 Payment Required
-        return _createPaywallResponse(request, routeConfig, matchedPattern!);
+      // Build requirements lazily per request
+      final requirements = await _buildRequirements(config, server);
+
+      final paymentHeader = request.headers['x-payment-proof'];
+
+      if (paymentHeader == null) {
+        return _paymentRequiredResponse(
+          pattern,
+          config,
+          requirements,
+        );
       }
 
-      // Verify payment proof
-      final isValid = await _verifyPayment(
-        paymentProof,
-        routeConfig,
-        server,
+      final payload = _parsePayload(paymentHeader);
+
+      if (payload == null) {
+        return _paymentRequiredResponse(
+          pattern,
+          config,
+          requirements,
+        );
+      }
+
+      final matching = server.findMatchingRequirements(
+        requirements,
+        payload,
       );
 
-      if (!isValid) {
-        // Invalid payment - return 402
-        return _createPaywallResponse(request, routeConfig, matchedPattern!);
+      if (matching == null) {
+        return _paymentRequiredResponse(
+          pattern,
+          config,
+          requirements,
+        );
       }
 
-      // Payment verified - proceed to handler
+      final verify = await server.verifyPayment(
+        payload,
+        matching,
+      );
+
+      if (!verify.isValid) {
+        return _paymentRequiredResponse(
+          pattern,
+          config,
+          requirements,
+        );
+      }
+
+      // Payment verified — continue
       return innerHandler(request);
     };
   };
 }
 
-/// Creates a 402 Payment Required response with paywall information
-Future<Response> _createPaywallResponse(
-  Request request,
+(RoutePattern, RouteConfig)? _matchRoute(
+  PaymentRoutes routes,
+  String method,
+  String path,
+) {
+  for (final entry in routes.entries) {
+    if (entry.key.method.value == method && entry.key.normalizedPath == path) {
+      return (entry.key, entry.value);
+    }
+  }
+  return null;
+}
+
+Future<List<PaymentRequirement>> _buildRequirements(
   RouteConfig config,
-  RoutePattern pattern,
+  X402ResourceServer server,
 ) async {
-  final paymentOptions = config.accepts;
+  final requirements = <PaymentRequirement>[];
 
-  // Build payment options header
-  final acceptsHeader = paymentOptions.map((opt) {
-    return '${opt.scheme}:${opt.network}';
-  }).join(', ');
-
-  // Check if this is a browser request (looks for text/html in Accept header)
-  final acceptHeader = request.headers['accept'] ?? '';
-  final isBrowserRequest = acceptHeader.contains('text/html');
-
-  // For browser requests, use custom HTML if available
-  if (isBrowserRequest && config.customPaywallHtml != null) {
-    return Response(
-      402,
-      headers: {
-        'x-accepts-payment': acceptsHeader,
-        'content-type': 'text/html',
-      },
-      body: config.customPaywallHtml,
+  for (final option in config.accepts) {
+    final resourceConfig = ResourceConfig(
+      scheme: option.scheme,
+      network: option.network,
+      price: option.price,
+      payTo: option.payTo,
+      maxTimeoutSeconds:
+          option.maxTimeoutSeconds ?? ResourceConfig.defaultTimeoutSeconds,
     );
+
+    final requirement = await server.buildPaymentRequirement(resourceConfig);
+
+    requirements.add(requirement);
   }
 
-  // For API requests or when no custom HTML, use unpaidResponseBody callback
-  String contentType;
-  Object body;
+  return requirements;
+}
 
-  // if (config.unpaidResponseBody != null) {
-  //   final context = ShelfRequestContext(
-  //     request: request,
-  //     path: pattern.key,
-  //     method: request.method,
-  //     paymentHeader: request.headers['x-payment-proof'],
-  //   );
+PaymentPayload? _parsePayload(String header) {
+  try {
+    final decoded = jsonDecode(header) as Map<String, dynamic>;
+    return PaymentPayload.fromJson(decoded);
+  } catch (_) {
+    return null;
+  }
+}
 
-  //   final result = await config.unpaidResponseBody!(context);
-  //   contentType = result.contentType;
-  //   body = result.body;
-  // } else {
-  // Default to JSON with empty body
-  contentType = 'application/json';
-  body = _buildDefaultPaywallBody(config, pattern);
-  // }
+Response _paymentRequiredResponse(
+  RoutePattern pattern,
+  RouteConfig config,
+  List<PaymentRequirement> requirements,
+) {
+  final acceptsHeader =
+      requirements.map((r) => '${r.scheme}:${r.network}').join(',');
+
+  final body = jsonEncode({
+    'error': 'Payment Required',
+    'route': pattern.key,
+    'description': config.description ?? 'This resource requires payment.',
+    'accepts': requirements.map((r) => r.toJson()).toList(),
+  });
 
   return Response(
     402,
     headers: {
+      'content-type': 'application/json',
       'x-accepts-payment': acceptsHeader,
-      'content-type': contentType,
     },
-    body: body is String ? body : _toJsonString(body),
+    body: body,
   );
-}
-
-/// Builds the default paywall response body
-Map<String, dynamic> _buildDefaultPaywallBody(
-    RouteConfig config, RoutePattern pattern) {
-  final paymentOptions = config.accepts.map((opt) {
-    return {
-      'scheme': opt.scheme,
-      'payTo': opt.payTo,
-      'price': opt.price,
-      'network': opt.network,
-      if (opt.maxTimeoutSeconds != null)
-        'maxTimeoutSeconds': opt.maxTimeoutSeconds,
-      if (opt.extra != null) 'extra': opt.extra,
-    };
-  }).toList();
-
-  return {
-    'error': 'Payment Required',
-    'route': pattern.key,
-    'description': config.description ?? 'This resource requires payment',
-    'accepts': paymentOptions,
-  };
-}
-
-/// Verifies a payment proof
-Future<bool> _verifyPayment(
-  String paymentProof,
-  RouteConfig config,
-  X402ResourceServer server,
-) {
-  // Delegate to the resource server for verification
-  // return server.verifyPayment(paymentProof, config);
-  return Future.value(true);
-}
-
-/// Simple JSON string converter (replace with dart:convert if needed)
-String _toJsonString(Object? obj) {
-  if (obj is List) {
-    return '[${obj.map(_toJsonString).join(',')}]';
-  }
-  if (obj is Map) {
-    final entries =
-        obj.entries.map((e) => '"${e.key}":${_toJsonString(e.value)}');
-    return '{${entries.join(',')}}';
-  }
-  if (obj is String) {
-    return '"$obj"';
-  }
-  return obj.toString();
 }
