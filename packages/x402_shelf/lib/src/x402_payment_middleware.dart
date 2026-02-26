@@ -21,14 +21,14 @@ import 'package:x402_core/x402_core.dart';
 ///     accepts: [
 ///       PaymentOption(
 ///         scheme: 'exact',
-///         price: Money("0.10"),
-///         network: Network.eip155(84532),
+///         price: Money('0.10'),
+///         network: EvmNetwork(chainId: 84532),
 ///         payTo: '0xYourAddress',
 ///       ),
 ///       PaymentOption(
 ///         scheme: 'exact',
-///         price: Money("0.05"),
-///         network: Network.solanaDevnet(),
+///         price: Money('0.05'),
+///         network: SolanaCluster.devnet.network,
 ///         payTo: 'YourSolanaAddress',
 ///       ),
 ///     ],
