@@ -20,7 +20,7 @@ class SupportedResponse {
   factory SupportedResponse.fromJson(Map<String, dynamic> json) {
     return SupportedResponse(
       kinds: (json['kinds'] as List<dynamic>)
-          .map((e) => SupportedKind.fromJson(e as Map<String, Object>))
+          .map((e) => SupportedKind.fromJson(e as Map<String, dynamic>))
           .toList(),
       extensions: (json['extensions'] as List<dynamic>).cast<String>(),
       signers: (json['signers'] as Map<String, dynamic>).map(
