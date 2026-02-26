@@ -1,7 +1,6 @@
 import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
-import 'package:x402_svm/src/network/solana_cluster.dart';
-import 'package:x402_svm/src/schemes/exact_svm_scheme_server.dart';
+import 'package:x402_svm/x402_svm.dart';
 
 void main() {
   group('ExactSvmSchemeServer', () {
@@ -13,7 +12,7 @@ void main() {
 
       test('exposes correct network', () {
         final server = ExactSvmSchemeServer(cluster: SolanaCluster.mainnet);
-        expect(server.network, equals(SolanaCluster.mainnet.network));
+        expect(server.network, equals(SolanaNetwork.mainnet()));
       });
     });
 
@@ -322,7 +321,7 @@ void main() {
 
     group('SVM-SPECIFIC TESTS', () {
       final server = ExactSvmSchemeServer(cluster: SolanaCluster.mainnet);
-      final network = SolanaCluster.mainnet.network;
+      final network = SolanaNetwork.mainnet();
 
       test('enhancePaymentRequirement adds feePayer when present', () async {
         final req = PaymentRequirement(

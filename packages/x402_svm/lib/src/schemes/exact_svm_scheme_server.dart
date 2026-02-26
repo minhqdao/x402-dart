@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:x402_core/x402_core.dart';
 import 'package:x402_svm/src/network/solana_cluster.dart';
+import 'package:x402_svm/src/network/solana_network.dart';
 
 /// SVM (Solana) implementation of the `exact` payment scheme.
 ///
@@ -109,12 +110,12 @@ class ExactSvmSchemeServer implements SchemeServer {
 
   _SplTokenInfo _getDefaultAsset(Network network) {
     final tokens = <String, _SplTokenInfo>{
-      SolanaCluster.mainnet.network.identifier: const _SplTokenInfo(
+      SolanaNetwork.mainnet().identifier: const _SplTokenInfo(
         mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         name: 'USD Coin',
         decimals: 6,
       ),
-      SolanaCluster.devnet.network.identifier: const _SplTokenInfo(
+      SolanaNetwork.devnet().identifier: const _SplTokenInfo(
         mint: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
         name: 'USD Coin',
         decimals: 6,

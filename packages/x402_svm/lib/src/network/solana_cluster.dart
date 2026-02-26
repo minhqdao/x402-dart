@@ -1,4 +1,4 @@
-import 'package:x402_core/x402_core.dart';
+import 'package:x402_svm/src/network/solana_network.dart';
 
 /// Predefined Solana cluster configurations.
 ///
@@ -28,10 +28,5 @@ enum SolanaCluster {
   ///
   /// Note: The genesis hash is truncated to 32 characters for compatibility
   /// with the x402 TypeScript reference implementation.
-  Network get network {
-    return Network(
-      namespace: 'solana',
-      reference: genesisHash.substring(0, 32),
-    );
-  }
+  SolanaNetwork get network => SolanaNetwork.fromCluster(this);
 }
