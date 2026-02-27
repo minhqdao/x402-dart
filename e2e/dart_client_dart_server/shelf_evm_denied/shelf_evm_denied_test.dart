@@ -16,7 +16,6 @@ void main() {
     late X402ResourceServer resourceServer;
     late String serverUrl;
 
-    final facilitatorUrl = env['FACILITATOR_URL'];
     final evmAddress = env['EVM_ADDRESS'];
     if (evmAddress == null || evmAddress.isEmpty) {
       fail('EVM_ADDRESS is not set in environment or .env file.');
@@ -28,38 +27,8 @@ void main() {
     }
 
     setUpAll(() async {
-      final List<FacilitatorClient> facilitators = [];
-      if (facilitatorUrl != null) {
-        facilitators.add(HttpFacilitatorClient(url: facilitatorUrl));
-      } else {
-        for (final url in [
-          kDefaultFacilitatorUrl,
-          'http://127.0.0.1:4022',
-          'http://facilitator:4022',
-        ]) {
-          try {
-            final client = HttpFacilitatorClient(url: url);
-            final supported = await client.getSupported();
-            if (supported.kinds.any((k) =>
-                k.scheme == 'exact' && k.network.namespace == 'eip155')) {
-              facilitators.add(client);
-              break;
-            }
-          } catch (_) {
-            continue;
-          }
-        }
-      }
-
-      if (facilitators.isEmpty) {
-        fail('No facilitator found that supports EVM payments.');
-      }
-
       resourceServer = await X402ResourceServer.create(
-        facilitators: facilitators,
-        schemeServers: [
-          ExactEvmSchemeServer(chainId: 84532),
-        ],
+        schemeServers: [ExactEvmSchemeServer(chainId: 84532)],
       );
 
       final routes = {
