@@ -18,10 +18,17 @@ class SupportedResponse {
   });
 
   factory SupportedResponse.fromJson(Map<String, dynamic> json) {
+    final kinds = <SupportedKind>[];
+    for (final item in json['kinds'] as List<dynamic>) {
+      try {
+        kinds.add(SupportedKind.fromJson(item as Map<String, dynamic>));
+      } on FormatException {
+        // Skip unsupported/legacy kind
+      }
+    }
+
     return SupportedResponse(
-      kinds: (json['kinds'] as List<dynamic>)
-          .map((e) => SupportedKind.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      kinds: kinds,
       extensions: (json['extensions'] as List<dynamic>).cast<String>(),
       signers: (json['signers'] as Map<String, dynamic>).map(
         (key, value) => MapEntry(
