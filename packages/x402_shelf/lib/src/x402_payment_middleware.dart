@@ -61,7 +61,8 @@ Middleware x402PaymentMiddleware(
       // Build requirements lazily per request
       final requirements = await _buildRequirements(config, server);
 
-      final paymentHeader = request.headers['x-payment-proof'];
+      final paymentHeader = request.headers[kPaymentSignatureHeader] ??
+          request.headers[kPaymentHeader];
 
       if (paymentHeader == null) {
         return _buildResponse(
@@ -156,7 +157,8 @@ Future<List<PaymentRequirement>> _buildRequirements(
 
 PaymentPayload? _parsePayload(String header) {
   try {
-    final decoded = jsonDecode(header) as Map<String, dynamic>;
+    final decodedJson = utf8.decode(base64Decode(header));
+    final decoded = jsonDecode(decodedJson) as Map<String, dynamic>;
     return PaymentPayload.fromJson(decoded);
   } catch (_) {
     return null;

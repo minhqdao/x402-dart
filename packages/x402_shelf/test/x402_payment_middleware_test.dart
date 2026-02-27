@@ -164,7 +164,7 @@ void main() {
       final request = Request(
         'GET',
         Uri.parse('http://localhost/protected'),
-        headers: {'x-payment-proof': 'not-json'},
+        headers: {kPaymentSignatureHeader: 'not-base64-json!'},
       );
       final response = await handler(request);
 
@@ -200,7 +200,10 @@ void main() {
       final request = Request(
         'GET',
         Uri.parse('http://localhost/protected'),
-        headers: {'x-payment-proof': jsonEncode(payload.toJson())},
+        headers: {
+          kPaymentSignatureHeader:
+              base64Encode(utf8.encode(jsonEncode(payload.toJson())))
+        },
       );
       final response = await handler(request);
 
@@ -241,7 +244,10 @@ void main() {
       final request = Request(
         'GET',
         Uri.parse('http://localhost/protected'),
-        headers: {'x-payment-proof': jsonEncode(payload.toJson())},
+        headers: {
+          kPaymentSignatureHeader:
+              base64Encode(utf8.encode(jsonEncode(payload.toJson())))
+        },
       );
       final response = await handler(request);
 
@@ -279,7 +285,10 @@ void main() {
       final request = Request(
         'GET',
         Uri.parse('http://localhost/protected'),
-        headers: {'x-payment-proof': jsonEncode(payload.toJson())},
+        headers: {
+          kPaymentSignatureHeader:
+              base64Encode(utf8.encode(jsonEncode(payload.toJson())))
+        },
       );
       final response = await handler(request);
 
@@ -406,7 +415,10 @@ void main() {
       final request = Request(
         'GET',
         Uri.parse('http://localhost/protected'),
-        headers: {'x-payment-proof': jsonEncode(payload.toJson())},
+        headers: {
+          kPaymentSignatureHeader:
+              base64Encode(utf8.encode(jsonEncode(payload.toJson())))
+        },
       );
 
       expect(() => handler(request), throwsA(isA<Exception>()));
@@ -421,7 +433,8 @@ void main() {
         'GET',
         Uri.parse('http://localhost/protected'),
         headers: {
-          'x-payment-proof': jsonEncode({'invalid': 'payload'})
+          kPaymentSignatureHeader:
+              base64Encode(utf8.encode(jsonEncode({'invalid': 'payload'})))
         },
       );
       final response = await handler(request);
@@ -523,7 +536,7 @@ void main() {
       final request = Request(
         'GET',
         Uri.parse('http://localhost/protected'),
-        headers: {'x-payment-proof': ''},
+        headers: {kPaymentSignatureHeader: ''},
       );
 
       final response = await handler(request);
@@ -558,7 +571,10 @@ void main() {
       final request = Request(
         'GET',
         Uri.parse('http://localhost/protected'),
-        headers: {'x-payment-proof': jsonEncode(payload.toJson())},
+        headers: {
+          kPaymentSignatureHeader:
+              base64Encode(utf8.encode(jsonEncode(payload.toJson())))
+        },
       );
 
       final response = await handler(request);
@@ -614,7 +630,10 @@ void main() {
       final request = Request(
         'GET',
         Uri.parse('http://localhost/protected'),
-        headers: {'x-payment-proof': jsonEncode(payload.toJson())},
+        headers: {
+          kPaymentSignatureHeader:
+              base64Encode(utf8.encode(jsonEncode(payload.toJson())))
+        },
       );
 
       final response = await handler(request);
@@ -692,7 +711,10 @@ void main() {
       final request = Request(
         'GET',
         Uri.parse('http://localhost/protected'),
-        headers: {'x-payment-proof': jsonEncode(payload.toJson())},
+        headers: {
+          kPaymentSignatureHeader:
+              base64Encode(utf8.encode(jsonEncode(payload.toJson())))
+        },
       );
 
       final response = await handler(request);

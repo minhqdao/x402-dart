@@ -14,4 +14,4 @@ const kPaymentHeader = 'X-PAYMENT';
 const kPaymentRequiredStatus = 402;
 
 /// Default facilitator URL (testnet)
-const kDefaultFacilitatorUrl = 'https://x402.org/facilitator';
+const kDefaultFacilitatorUrl = 'https://www.x402.org/facilitator';
