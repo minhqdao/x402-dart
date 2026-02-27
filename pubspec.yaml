@@ -18,6 +18,9 @@ workspace:
   - examples/client_dio
   - examples/server_shelf
   - e2e/dart_client_dart_server/shelf_evm
+  - e2e/dart_client_dart_server/shelf_evm_denied
+  - e2e/dart_client_dart_server/shelf_svm
+  - e2e/dart_client_dart_server/shelf_svm_denied
   - e2e/dart_client_ts_server/wrapper_evm
   - e2e/dart_client_ts_server/wrapper_svm
   - e2e/dart_client_ts_server/dio_evm

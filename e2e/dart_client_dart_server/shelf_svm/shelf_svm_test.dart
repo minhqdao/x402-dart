@@ -11,29 +11,31 @@ import 'package:x402_shelf/x402_shelf.dart';
 void main() {
   final env = DotEnv(includePlatformEnvironment: true)..load(['e2e/.env']);
 
-  group('Shelf Server + Client Wrapper E2E (EVM)', () {
+  group('Shelf Server + Client Wrapper E2E (SVM)', () {
     late HttpServer server;
     late X402ResourceServer resourceServer;
     late String serverUrl;
 
     final facilitatorUrl = env['FACILITATOR_URL'];
-    final evmAddress = env['EVM_ADDRESS'];
-    if (evmAddress == null || evmAddress.isEmpty) {
-      fail('EVM_ADDRESS is not set in environment or .env file.');
+    final svmAddress = env['SVM_ADDRESS'];
+    if (svmAddress == null || svmAddress.isEmpty) {
+      fail('SVM_ADDRESS is not set in environment or .env file.');
     }
 
-    final evmPrivateKey = env['EVM_PRIVATE_KEY_PAYER'];
-    if (evmPrivateKey == null || evmPrivateKey.isEmpty) {
-      fail('EVM_PRIVATE_KEY_PAYER is not set in environment or .env file.');
+    final svmPrivateKey = env['SVM_PRIVATE_KEY_PAYER'];
+    if (svmPrivateKey == null || svmPrivateKey.isEmpty) {
+      fail('SVM_PRIVATE_KEY_PAYER is not set in environment or .env file.');
     }
 
     setUpAll(() async {
       // 1. Create Resource Server
+      // If FACILITATOR_URL is missing, we try to connect to the local TS facilitator
+      // which is usually running at :4022 in the E2E environment.
       final List<FacilitatorClient> facilitators = [];
       if (facilitatorUrl != null) {
         facilitators.add(HttpFacilitatorClient(url: facilitatorUrl));
       } else {
-        // Try common local/CI facilitator locations or fallback to official
+        // Try common local/CI facilitator locations for SVM support
         for (final url in [
           kDefaultFacilitatorUrl,
           'http://127.0.0.1:4022',
@@ -43,7 +45,7 @@ void main() {
             final client = HttpFacilitatorClient(url: url);
             final supported = await client.getSupported();
             if (supported.kinds.any((k) =>
-                k.scheme == 'exact' && k.network.namespace == 'eip155')) {
+                k.scheme == 'exact' && k.network.namespace == 'solana')) {
               facilitators.add(client);
               break;
             }
@@ -54,13 +56,13 @@ void main() {
       }
 
       if (facilitators.isEmpty) {
-        fail('No facilitator found that supports EVM payments.');
+        fail('No facilitator found that supports Solana payments.');
       }
 
       resourceServer = await X402ResourceServer.create(
         facilitators: facilitators,
         schemeServers: [
-          ExactEvmSchemeServer(chainId: 84532),
+          ExactSvmSchemeServer(cluster: SolanaCluster.devnet),
         ],
       );
 
@@ -71,11 +73,11 @@ void main() {
             PaymentOption(
               scheme: 'exact',
               price: const Money('0.10'),
-              network: const EvmNetwork(chainId: 84532),
-              payTo: evmAddress,
+              network: SolanaNetwork.devnet(),
+              payTo: svmAddress,
             ),
           ],
-          description: 'Premium content via Shelf',
+          description: 'Premium content via Shelf SVM',
         ),
       };
 
@@ -83,10 +85,7 @@ void main() {
       final handler = const Pipeline()
           .addMiddleware(x402PaymentMiddleware(routes, resourceServer))
           .addHandler((request) {
-        if (request.url.path == 'premium') {
-          return Response.ok(jsonEncode({'data': 'Shelf Premium Content'}));
-        }
-        return Response.notFound('Not Found');
+        return Response.ok(jsonEncode({'data': 'Shelf SVM Premium Content'}));
       });
 
       // 4. Start Server
@@ -96,28 +95,27 @@ void main() {
 
     tearDownAll(() async => await server.close(force: true));
 
-    test('Client pays and accesses Shelf server premium content', () async {
-      final evmSigner = EvmSigner.fromPrivateKeyHex(
-        privateKeyHex: evmPrivateKey,
-        chainId: 84532,
+    test('Client pays and accesses Shelf server SVM premium content', () async {
+      final svmSigner = await SvmSigner.fromPrivateKeyHex(
+        privateKeyHex: svmPrivateKey,
+        cluster: SolanaCluster.devnet,
       );
 
       final client = X402Client(
-        signers: [evmSigner],
+        signers: [svmSigner],
         retryDelay: const Duration(seconds: 1),
       );
 
       addTearDown(() => client.close());
 
       final uri = Uri.parse('$serverUrl/premium');
-
       final response = await client.get(uri);
 
       expect(response.statusCode, equals(200),
-          reason: 'Should return 200 OK after successful payment');
+          reason: 'Should return 200 OK after successful SVM payment');
 
       final body = jsonDecode(response.body) as Map<String, dynamic>;
-      expect(body['data'], equals('Shelf Premium Content'));
+      expect(body['data'], equals('Shelf SVM Premium Content'));
     });
   });
 }

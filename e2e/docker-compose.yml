@@ -64,4 +64,6 @@ services:
     environment:
       - EVM_PRIVATE_KEY_PAYER
       - SVM_PRIVATE_KEY_PAYER
+      - EVM_ADDRESS
+      - SVM_ADDRESS
     command: dart test --concurrency=1 e2e
