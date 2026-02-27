@@ -164,22 +164,26 @@ Response _paymentRequiredResponse(
   RouteConfig config,
   List<PaymentRequirement> requirements,
 ) {
-  final acceptsHeader =
-      requirements.map((r) => '${r.scheme}:${r.network}').join(',');
+  final paymentRequired = PaymentRequiredResponse(
+    x402Version: kX402Version,
+    error: 'Payment Required',
+    resource: ResourceInfo(
+      url: pattern.normalizedPath,
+      description: config.description ?? 'This resource requires payment.',
+      mimeType: 'application/json',
+    ),
+    accepts: requirements,
+  );
 
-  final body = jsonEncode({
-    'error': 'Payment Required',
-    'route': pattern.key,
-    'description': config.description ?? 'This resource requires payment.',
-    'accepts': requirements.map((r) => r.toJson()).toList(),
-  });
+  final encoded =
+      base64Encode(utf8.encode(jsonEncode(paymentRequired.toJson())));
 
   return Response(
     402,
     headers: {
       'content-type': 'application/json',
-      'x-accepts-payment': acceptsHeader,
+      kPaymentRequiredHeader: encoded,
     },
-    body: body,
+    body: '',
   );
 }

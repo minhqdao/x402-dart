@@ -102,6 +102,16 @@ void main() {
 
     Response innerHandler(Request request) => Response.ok('Success');
 
+    PaymentRequiredResponse decodePaymentRequired(Response response) {
+      final header = response.headers[kPaymentRequiredHeader];
+      if (header == null) {
+        throw Exception('Missing $kPaymentRequiredHeader header');
+      }
+      final decoded = utf8.decode(base64Decode(header));
+      return PaymentRequiredResponse.fromJson(
+          jsonDecode(decoded) as Map<String, dynamic>);
+    }
+
     test('passes through when no routes are configured', () async {
       final handler = const Pipeline()
           .addMiddleware(x402PaymentMiddleware({}, resourceServer))
@@ -135,12 +145,15 @@ void main() {
       final response = await handler(request);
 
       expect(response.statusCode, 402);
-      expect(response.headers['x-accepts-payment'], 'exact:eip155:1');
+      expect(response.headers[kPaymentRequiredHeader], isNotNull);
 
-      final body = jsonDecode(await response.readAsString()) as Map;
-      expect(body['error'], 'Payment Required');
-      expect(body['route'], 'GET /protected');
-      expect(body['accepts'], isNotEmpty);
+      final paymentRequired = decodePaymentRequired(response);
+      expect(paymentRequired.error, 'Payment Required');
+      expect(paymentRequired.resource.url, '/protected');
+      expect(paymentRequired.accepts, isNotEmpty);
+
+      // Body should be empty JSON
+      expect(await response.readAsString(), '');
     });
 
     test('returns 402 for invalid payload header', () async {
@@ -156,6 +169,7 @@ void main() {
       final response = await handler(request);
 
       expect(response.statusCode, 402);
+      expect(await response.readAsString(), '');
     });
 
     test('returns 402 when payload does not match requirements', () async {
@@ -191,6 +205,7 @@ void main() {
       final response = await handler(request);
 
       expect(response.statusCode, 402);
+      expect(await response.readAsString(), '');
     });
 
     test('returns 402 when verification fails', () async {
@@ -231,6 +246,7 @@ void main() {
       final response = await handler(request);
 
       expect(response.statusCode, 402);
+      expect(await response.readAsString(), '');
     });
 
     test('allows access when payment is valid and verified', () async {
@@ -293,8 +309,8 @@ void main() {
       final response = await handler(request);
 
       expect(response.statusCode, 402);
-      expect((jsonDecode(await response.readAsString()) as Map)['route'],
-          'POST /submit');
+      final paymentRequired = decodePaymentRequired(response);
+      expect(paymentRequired.resource.url, '/submit');
     });
 
     test('method-specific route protection works correctly', () async {
@@ -436,8 +452,8 @@ void main() {
       final request = Request('GET', Uri.parse('http://localhost/protected'));
       final response = await handler(request);
 
-      final body = jsonDecode(await response.readAsString()) as Map;
-      expect(body['description'], description);
+      final paymentRequired = decodePaymentRequired(response);
+      expect(paymentRequired.resource.description, description);
     });
 
     test('handles multiple payment options', () async {
@@ -492,9 +508,11 @@ void main() {
       final response = await handler(request);
 
       expect(response.statusCode, 402);
-      final acceptsHeader = response.headers['x-accepts-payment']!;
-      expect(acceptsHeader, contains('exact:eip155:1'));
-      expect(acceptsHeader, contains('exact:solana:mainnet'));
+      final paymentRequired = decodePaymentRequired(response);
+      final accepts = paymentRequired.accepts;
+      expect(accepts, hasLength(2));
+      expect(accepts[0].network.identifier, 'eip155:1');
+      expect(accepts[1].network.identifier, 'solana:mainnet');
     });
 
     test('returns 402 when header is empty string', () async {
@@ -679,6 +697,52 @@ void main() {
 
       final response = await handler(request);
       expect(response.statusCode, 200);
+    });
+
+    group('V2 Protocol Compliance', () {
+      test('strictly returns empty body and header-based requirement',
+          () async {
+        final handler = const Pipeline()
+            .addMiddleware(x402PaymentMiddleware(routes, resourceServer))
+            .addHandler(innerHandler);
+
+        final request = Request('GET', Uri.parse('http://localhost/protected'));
+        final response = await handler(request);
+
+        expect(response.statusCode, 402);
+
+        // MUST NOT have legacy header
+        expect(response.headers['x-accepts-payment'], isNull);
+
+        // MUST have V2 header
+        final header = response.headers[kPaymentRequiredHeader];
+        expect(header, isNotNull);
+
+        // MUST be valid Base64 encoded JSON
+        final decoded = utf8.decode(base64Decode(header!));
+        final json = jsonDecode(decoded) as Map<String, dynamic>;
+        expect(json['x402Version'], 2);
+        expect(json['error'], 'Payment Required');
+        final resource = json['resource'] as Map<String, dynamic>;
+        expect(resource['url'], '/protected');
+        expect(json['accepts'], isNotEmpty);
+
+        // MUST have empty body
+        expect(await response.readAsString(), '');
+      });
+
+      test('normalizes resource URL in header', () async {
+        final handler = const Pipeline()
+            .addMiddleware(x402PaymentMiddleware(routes, resourceServer))
+            .addHandler(innerHandler);
+
+        // Request with path only, no leading slash in url object sometimes (shelf handles this)
+        final request = Request('GET', Uri.parse('http://localhost/protected'));
+        final response = await handler(request);
+
+        final paymentRequired = decodePaymentRequired(response);
+        expect(paymentRequired.resource.url, '/protected');
+      });
     });
   });
 }
