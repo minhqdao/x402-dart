@@ -64,7 +64,8 @@ Middleware x402PaymentMiddleware(
       final paymentHeader = request.headers['x-payment-proof'];
 
       if (paymentHeader == null) {
-        return _paymentRequiredResponse(
+        return _buildResponse(
+          server,
           pattern,
           config,
           requirements,
@@ -74,7 +75,8 @@ Middleware x402PaymentMiddleware(
       final payload = _parsePayload(paymentHeader);
 
       if (payload == null) {
-        return _paymentRequiredResponse(
+        return _buildResponse(
+          server,
           pattern,
           config,
           requirements,
@@ -87,7 +89,8 @@ Middleware x402PaymentMiddleware(
       );
 
       if (matching == null) {
-        return _paymentRequiredResponse(
+        return _buildResponse(
+          server,
           pattern,
           config,
           requirements,
@@ -100,10 +103,19 @@ Middleware x402PaymentMiddleware(
       );
 
       if (!verify.isValid) {
-        return _paymentRequiredResponse(
-          pattern,
-          config,
-          requirements,
+        final header = server.buildPaymentRequiredHeader(
+          resourceUrl: pattern.normalizedPath,
+          description: config.description,
+          requirements: requirements,
+        );
+
+        return Response(
+          402,
+          headers: {
+            'content-type': 'application/json',
+            kPaymentRequiredHeader: header,
+          },
+          body: '',
         );
       }
 
@@ -159,30 +171,23 @@ PaymentPayload? _parsePayload(String header) {
   }
 }
 
-Response _paymentRequiredResponse(
+Response _buildResponse(
+  X402ResourceServer server,
   RoutePattern pattern,
   RouteConfig config,
   List<PaymentRequirement> requirements,
 ) {
-  final paymentRequired = PaymentRequiredResponse(
-    x402Version: kX402Version,
-    error: 'Payment Required',
-    resource: ResourceInfo(
-      url: pattern.normalizedPath,
-      description: config.description ?? 'This resource requires payment.',
-      mimeType: 'application/json',
-    ),
-    accepts: requirements,
+  final header = server.buildPaymentRequiredHeader(
+    resourceUrl: pattern.normalizedPath,
+    description: config.description,
+    requirements: requirements,
   );
-
-  final encoded =
-      base64Encode(utf8.encode(jsonEncode(paymentRequired.toJson())));
 
   return Response(
     402,
     headers: {
       'content-type': 'application/json',
-      kPaymentRequiredHeader: encoded,
+      kPaymentRequiredHeader: header,
     },
     body: '',
   );

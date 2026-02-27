@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:x402_core/src/constants.dart';
 import 'package:x402_core/src/models/network.dart';
 import 'package:x402_core/src/models/payment_payload.dart';
+import 'package:x402_core/src/models/payment_required_response.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_config.dart';
+import 'package:x402_core/src/models/resource_info.dart';
 import 'package:x402_core/src/models/supported_response.dart';
 import 'package:x402_core/src/models/verify_response.dart';
 import 'package:x402_core/src/server/facilitator_client.dart';
@@ -231,6 +235,47 @@ class X402ResourceServer {
       default:
         return null;
     }
+  }
+
+  /// Builds a canonical PaymentRequiredResponse for a protected resource.
+  PaymentRequiredResponse _buildPaymentRequiredResponse({
+    required String resourceUrl,
+    String? description,
+    required List<PaymentRequirement> requirements,
+    String mimeType = 'application/json',
+  }) {
+    return PaymentRequiredResponse(
+      x402Version: kX402Version,
+      error: 'Payment Required',
+      resource: ResourceInfo(
+        url: resourceUrl,
+        description: description ?? 'This resource requires payment.',
+        mimeType: mimeType,
+      ),
+      accepts: requirements,
+    );
+  }
+
+  /// Encodes a PaymentRequiredResponse for the x402 header.
+  String _encodePaymentRequiredHeader(PaymentRequiredResponse response) {
+    return base64Encode(utf8.encode(jsonEncode(response.toJson())));
+  }
+
+  /// Convenience method that builds + encodes in one step.
+  String buildPaymentRequiredHeader({
+    required String resourceUrl,
+    String? description,
+    required List<PaymentRequirement> requirements,
+    String mimeType = 'application/json',
+  }) {
+    final response = _buildPaymentRequiredResponse(
+      resourceUrl: resourceUrl,
+      description: description,
+      requirements: requirements,
+      mimeType: mimeType,
+    );
+
+    return _encodePaymentRequiredHeader(response);
   }
 }
 

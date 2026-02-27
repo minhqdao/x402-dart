@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:test/test.dart';
 import 'package:x402_core/x402_core.dart';
 
@@ -1352,6 +1353,98 @@ void main() {
       final verifyResult = await server.verifyPayment(payload, matched!);
 
       expect(verifyResult.isValid, isTrue);
+    });
+  });
+
+  group('X402ResourceServer.buildPaymentRequiredHeader', () {
+    test('builds and encodes correctly', () async {
+      final facilitator = MockFacilitatorClient()
+        ..supportedResponse = const SupportedResponse(
+          kinds: [
+            SupportedKind(
+              x402Version: kX402Version,
+              scheme: 'exact',
+              network: net1,
+            ),
+          ],
+          extensions: [],
+          signers: {},
+        );
+
+      final server = await X402ResourceServer.create(
+        facilitators: [facilitator],
+        schemeServers: [MockSchemeServer('exact', net1)],
+      );
+
+      final requirement = PaymentRequirement(
+        scheme: 'exact',
+        network: net1,
+        amount: '100',
+        asset: 'USDC',
+        payTo: '0xAddress',
+        maxTimeoutSeconds: 300,
+        extra: const {},
+      );
+
+      final header = server.buildPaymentRequiredHeader(
+        resourceUrl: '/protected',
+        requirements: [requirement],
+        description: 'Test Description',
+      );
+
+      expect(header, isNotEmpty);
+
+      // Verify encoding
+      final decoded = utf8.decode(base64Decode(header));
+      final json = jsonDecode(decoded) as Map;
+
+      expect(json['x402Version'], equals(kX402Version));
+      expect(json['error'], equals('Payment Required'));
+      expect((json['resource'] as Map)['url'], equals('/protected'));
+      expect(
+          (json['resource'] as Map)['description'], equals('Test Description'));
+      expect(json['accepts'], hasLength(1));
+      expect(((json['accepts'] as List)[0] as Map)['scheme'], equals('exact'));
+    });
+
+    test('uses default description if omitted', () async {
+      final facilitator = MockFacilitatorClient()
+        ..supportedResponse = const SupportedResponse(
+          kinds: [
+            SupportedKind(
+              x402Version: kX402Version,
+              scheme: 'exact',
+              network: net1,
+            ),
+          ],
+          extensions: [],
+          signers: {},
+        );
+
+      final server = await X402ResourceServer.create(
+        facilitators: [facilitator],
+        schemeServers: [MockSchemeServer('exact', net1)],
+      );
+
+      final requirement = PaymentRequirement(
+        scheme: 'exact',
+        network: net1,
+        amount: '100',
+        asset: 'USDC',
+        payTo: '0xAddress',
+        maxTimeoutSeconds: 300,
+        extra: const {},
+      );
+
+      final header = server.buildPaymentRequiredHeader(
+        resourceUrl: '/protected',
+        requirements: [requirement],
+      );
+
+      final decoded = utf8.decode(base64Decode(header));
+      final json = jsonDecode(decoded) as Map;
+      expect((json['resource'] as Map)['description'],
+          equals('This resource requires payment.'));
     });
   });
 }
