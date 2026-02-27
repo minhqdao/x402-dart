@@ -103,19 +103,11 @@ Middleware x402PaymentMiddleware(
       );
 
       if (!verify.isValid) {
-        final header = server.buildPaymentRequiredHeader(
-          resourceUrl: pattern.normalizedPath,
-          description: config.description,
-          requirements: requirements,
-        );
-
-        return Response(
-          402,
-          headers: {
-            'content-type': 'application/json',
-            kPaymentRequiredHeader: header,
-          },
-          body: '',
+        return _buildResponse(
+          server,
+          pattern,
+          config,
+          requirements,
         );
       }
 
@@ -189,6 +181,6 @@ Response _buildResponse(
       'content-type': 'application/json',
       kPaymentRequiredHeader: header,
     },
-    body: '',
+    body: '{}',
   );
 }

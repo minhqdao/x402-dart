@@ -153,7 +153,7 @@ void main() {
       expect(paymentRequired.accepts, isNotEmpty);
 
       // Body should be empty JSON
-      expect(await response.readAsString(), '');
+      expect(await response.readAsString(), '{}');
     });
 
     test('returns 402 for invalid payload header', () async {
@@ -169,7 +169,7 @@ void main() {
       final response = await handler(request);
 
       expect(response.statusCode, 402);
-      expect(await response.readAsString(), '');
+      expect(await response.readAsString(), '{}');
     });
 
     test('returns 402 when payload does not match requirements', () async {
@@ -205,7 +205,7 @@ void main() {
       final response = await handler(request);
 
       expect(response.statusCode, 402);
-      expect(await response.readAsString(), '');
+      expect(await response.readAsString(), '{}');
     });
 
     test('returns 402 when verification fails', () async {
@@ -246,7 +246,7 @@ void main() {
       final response = await handler(request);
 
       expect(response.statusCode, 402);
-      expect(await response.readAsString(), '');
+      expect(await response.readAsString(), '{}');
     });
 
     test('allows access when payment is valid and verified', () async {
@@ -728,7 +728,7 @@ void main() {
         expect(json['accepts'], isNotEmpty);
 
         // MUST have empty body
-        expect(await response.readAsString(), '');
+        expect(await response.readAsString(), '{}');
       });
 
       test('normalizes resource URL in header', () async {
