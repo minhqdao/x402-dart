@@ -31,6 +31,7 @@ workspace:
   - e2e/dart_client_ts_server/dio_svm_denied
   - e2e/dart_client_ts_server/manual_evm
   - e2e/dart_client_ts_server/manual_svm
+  - e2e/ts_client_dart_server/shelf_evm
 
 dev_dependencies:
   lint: ^2.8.0

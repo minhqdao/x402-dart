@@ -58,15 +58,23 @@ async function main(): Promise<void> {
     const body = await response.json();
     console.log("Response body:", JSON.stringify(body, null, 2));
 
-    const paymentResponse = new x402HTTPClient(client).getPaymentSettleResponse(
-        (name) => response.headers.get(name),
-    );
+    let paymentResponse;
+
+    try {
+        paymentResponse = new x402HTTPClient(client).getPaymentSettleResponse(
+            (name) => response.headers.get(name),
+        );
+    } catch {
+        paymentResponse = null;
+    }
 
     if (paymentResponse) {
         console.log(
             "\nPayment response:",
             JSON.stringify(paymentResponse, null, 2),
         );
+    } else {
+        console.log("\nPayment succeeded (no settlement header returned)");
     }
 }
 

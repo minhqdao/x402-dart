@@ -16,6 +16,11 @@ void main() {
     if (node.exitCode != 0) {
       markTestSkipped('Node.js not installed');
     }
+
+    final npx = await Process.run('npx', ['--version']);
+    if (npx.exitCode != 0) {
+      throw Exception('npx is required for TS client e2e tests.');
+    }
   }
 
   group('TS Client + Shelf Server E2E (EVM)', () {
@@ -75,14 +80,6 @@ void main() {
     tearDownAll(() async => await server.close(force: true));
 
     test('TS client successfully pays and accesses premium content', () async {
-      // Check if node/npx is available
-      try {
-        await Process.run('npx', ['--version']);
-      } catch (_) {
-        markTestSkipped('npx not found, skipping TS client test');
-        return;
-      }
-
       // Execute TS client
       final result = await Process.run(
         'npx',

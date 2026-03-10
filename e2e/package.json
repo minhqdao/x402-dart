@@ -15,6 +15,6 @@
     "@types/node": "^25.4.0"
   },
   "scripts": {
-    "ts-clients": "find . -type f -name 'index.ts' -exec ts-node {} \\;"
+    "ts-client": "npx ts-node ts_client_dart_server/shelf_evm/index.ts"
   }
 }
