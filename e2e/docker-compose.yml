@@ -70,6 +70,6 @@ services:
       - SVM_ADDRESS
     command: >
       bash -c "
-        find e2e -name package.json -execdir npm install \; &&
+        find e2e -name package.json -execdir npm install \;
         dart test --concurrency=1 e2e
       "
