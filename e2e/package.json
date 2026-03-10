@@ -1,8 +1,10 @@
 {
   "name": "x402-e2e",
-  "version": "1.0.0",
-  "private": true,
   "type": "module",
+  "private": true,
+  "scripts": {
+    "ts-client": "tsx ts_client_dart_server/shelf_evm/index.ts"
+  },
   "dependencies": {
     "@x402/evm": "^2.6.0",
     "@x402/fetch": "^2.6.0",
@@ -10,11 +12,8 @@
     "viem": "^2.47.1"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "ts-node": "^10.9.2",
-    "@types/node": "^25.4.0"
-  },
-  "scripts": {
-    "ts-client": "npx ts-node ts_client_dart_server/shelf_evm/index.ts"
+    "@types/node": "^25.4.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }

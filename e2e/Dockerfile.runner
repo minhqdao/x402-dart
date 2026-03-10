@@ -1,9 +1,7 @@
-FROM node:25
-
-RUN npm install -g ts-node typescript
+FROM dart:stable
 
 RUN apt-get update \
-    && apt-get install -y dart \
+    && apt-get install -y --no-install-recommends nodejs npm \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
