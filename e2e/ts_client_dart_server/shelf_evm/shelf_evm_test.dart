@@ -83,7 +83,7 @@ void main() {
       // Execute TS client
       final result = await Process.run(
         'npx',
-        ['ts-node', 'index.ts'],
+        ['ts-node', '--esm', 'index.ts'],
         workingDirectory: 'e2e/ts_client_dart_server/shelf_evm',
         environment: {
           ...Platform.environment,
