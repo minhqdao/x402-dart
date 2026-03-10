@@ -53,7 +53,9 @@ services:
       timeout: 3s
 
   dart-tests:
-    image: dart:stable
+    build:
+      context: .
+      dockerfile: Dockerfile.runner
     container_name: x402-e2e-tests
     volumes:
       - ..:/app
@@ -66,4 +68,8 @@ services:
       - SVM_PRIVATE_KEY_PAYER
       - EVM_ADDRESS
       - SVM_ADDRESS
-    command: dart test --concurrency=1 e2e
+    command: >
+      bash -c "
+        find e2e -name package.json -execdir npm install \; &&
+        dart test --concurrency=1 e2e
+      "
