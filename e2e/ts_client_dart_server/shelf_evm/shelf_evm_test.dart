@@ -82,8 +82,8 @@ void main() {
     test('TS client successfully pays and accesses premium content', () async {
       // Execute TS client
       final result = await Process.run(
-        'npx',
-        ['ts-node', 'index.ts'],
+        'npm',
+        ['run', 'ts-client'],
         workingDirectory: 'e2e/ts_client_dart_server/shelf_evm',
         environment: {
           ...Platform.environment,
