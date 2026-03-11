@@ -17,7 +17,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  dio: ^5.9.1
+  dio: ^5.9.2
   x402_core: ^0.2.0
 
 dev_dependencies:
