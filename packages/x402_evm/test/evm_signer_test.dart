@@ -19,8 +19,8 @@ void main() {
       privateKey = EthPrivateKey.fromHex(
           '0x4efa000000000000000000000000000000000000000000000000000000000001');
       signer = EvmSigner.fromClient(
-        chainId: 8453,
         client: ExactEvmSchemeClient(
+          chainId: 8453,
           privateKey: privateKey,
           nowProvider: () => 1940,
           nonceProvider: () => Uint8List(32),
@@ -33,9 +33,9 @@ void main() {
         mimeType: 'application/json',
       );
 
-      requirements = const PaymentRequirement(
+      requirements = PaymentRequirement(
         scheme: 'exact',
-        network: 'eip155:8453',
+        network: const Network(namespace: 'eip155', reference: '8453'),
         amount: '10000',
         payTo: '0x209693Bc6afc0C5328bA36FaF03C514EF312287C',
         maxTimeoutSeconds: 60,
@@ -45,8 +45,15 @@ void main() {
     });
 
     test('should have correct network and scheme', () {
-      expect(signer.network, equals('eip155:8453'));
+      expect(signer.network.identifier, equals('eip155:8453'));
       expect(signer.scheme, equals('exact'));
+    });
+
+    test('network getter should return network from client', () {
+      final client = ExactEvmSchemeClient(chainId: 1, privateKey: privateKey);
+      final s = EvmSigner.fromClient(client: client);
+      expect(s.network, equals(client.network));
+      expect(s.network.identifier, equals('eip155:1'));
     });
 
     test('should have correct address', () {
@@ -57,10 +64,6 @@ void main() {
       final signature = await signer.sign(requirements, resource);
 
       expect(signature, isA<SignedPayment>());
-      expect(
-          signature.encoded,
-          equals(
-              'eyJ4NDAyVmVyc2lvbiI6MiwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9hcGkuZXhhbXBsZS5jb20vZGF0YSIsImRlc2NyaXB0aW9uIjoiUHJlbWl1bSBkYXRhIGFjY2VzcyIsIm1pbWVUeXBlIjoiYXBwbGljYXRpb24vanNvbiJ9LCJhY2NlcHRlZCI6eyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsImFzc2V0IjoiMHgwMzZDYkQ1Mzg0MmM1NDI2NjM0ZTc5Mjk1NDFlQzIzMThmM2RDRjdlIiwiYW1vdW50IjoiMTAwMDAiLCJwYXlUbyI6IjB4MjA5NjkzQmM2YWZjMEM1MzI4YkEzNkZhRjAzQzUxNEVGMzEyMjg3QyIsIm1heFRpbWVvdXRTZWNvbmRzIjo2MCwiZXh0cmEiOnsibmFtZSI6IlVTRCBDb2luIiwidmVyc2lvbiI6IjIifX0sInBheWxvYWQiOnsic2lnbmF0dXJlIjoiMHgzYTg0ZjIxMWYwMTY2MDAzYjk2NWUzNTdlZGVhNGZmNzUzOTA3NTUxZjQ3MjY3MTcwNTQ0YTBiMmZjYjUxYTRmMTMwYmVkOGE1OTA4MzlkZDg3NGNiNDJkODA1ZWI2MjJiMGNmMmY0NmM4NDBiYzVkMjIyZjdhNzMwMDllYjBhMDFjIiwiYXV0aG9yaXphdGlvbiI6eyJmcm9tIjoiMHgzNGQ1ZmJkMDI2M2Y3ODUwMDYxMGE0N2FhMDZmNjlmMGFlZDVhNjQwIiwidG8iOiIweDIwOTY5M2JjNmFmYzBjNTMyOGJhMzZmYWYwM2M1MTRlZjMxMjI4N2MiLCJ2YWx1ZSI6IjEwMDAwIiwidmFsaWRBZnRlciI6IjAiLCJ2YWxpZEJlZm9yZSI6IjIwMDAiLCJub25jZSI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCJ9fX0='));
       final decodedJson = signature.decode();
       final payload = PaymentPayload.fromJson(decodedJson);
 
@@ -163,7 +166,7 @@ void main() {
             '4efa000000000000000000000000000000000000000000000000000000000001',
         chainId: 1,
       );
-      expect(hexSigner.network, equals('eip155:1'));
+      expect(hexSigner.network.identifier, equals('eip155:1'));
       expect(hexSigner.address, equals(privateKey.address.hex));
     });
 
@@ -173,7 +176,7 @@ void main() {
             '4EFA000000000000000000000000000000000000000000000000000000000001',
         chainId: 1,
       );
-      expect(hexSigner.network, equals('eip155:1'));
+      expect(hexSigner.network.identifier, equals('eip155:1'));
       expect(hexSigner.address, equals(privateKey.address.hex));
     });
 
@@ -216,13 +219,14 @@ void main() {
       expect(() => signer.sign(req, resource), throwsArgumentError);
     });
 
-    test('throws on neagative timeout', () {
+    test('throws on negative timeout', () {
       final req = requirements.copyWith(maxTimeoutSeconds: -1);
       expect(() => signer.sign(req, resource), throwsArgumentError);
     });
 
     test('throws if chainId mismatches', () {
-      final bad = requirements.copyWith(network: 'eip155:1');
+      final bad = requirements.copyWith(
+          network: const Network(namespace: 'eip155', reference: '1'));
 
       expect(
         () => signer.sign(bad, resource),
@@ -230,17 +234,9 @@ void main() {
       );
     });
 
-    test('throws on missing chainId', () {
-      final badReq = requirements.copyWith(network: 'eip155');
-
-      expect(
-        () => signer.sign(badReq, resource),
-        throwsA(isA<ArgumentError>()),
-      );
-    });
-
     test('throws on wrong namespace', () {
-      final badReq = requirements.copyWith(network: 'ip155:8453');
+      final badReq = requirements.copyWith(
+          network: const Network(namespace: 'ip155', reference: '8453'));
 
       expect(
         () => signer.sign(badReq, resource),

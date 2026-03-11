@@ -25,16 +25,18 @@ void main() {
       signerA = MockX402Signer();
       signerB = MockX402Signer();
 
-      when(() => signerA.network).thenReturn('net:A');
+      when(() => signerA.network)
+          .thenReturn(const Network(namespace: 'net', reference: 'A'));
       when(() => signerA.scheme).thenReturn('scheme:A');
       when(() => signerA.address).thenReturn('address:A');
 
-      when(() => signerB.network).thenReturn('net:B');
+      when(() => signerB.network)
+          .thenReturn(const Network(namespace: 'net', reference: 'B'));
       when(() => signerB.scheme).thenReturn('scheme:B');
       when(() => signerB.address).thenReturn('address:B');
 
-      requirementA = const PaymentRequirement(
-        network: 'net:A',
+      requirementA = PaymentRequirement(
+        network: const Network(namespace: 'net', reference: 'A'),
         scheme: 'scheme:A',
         amount: '100',
         payTo: 'someone',
@@ -150,14 +152,14 @@ void main() {
     });
 
     test('should use first matching signer if multiple match', () async {
-      const requirementB = PaymentRequirement(
-        network: 'net:B',
+      final requirementB = PaymentRequirement(
+        network: const Network(namespace: 'net', reference: 'B'),
         scheme: 'scheme:B',
         amount: '100',
         payTo: 'someone',
         asset: 'asset',
         maxTimeoutSeconds: 100,
-        extra: {},
+        extra: const {},
       );
 
       final multiHeaderValue = base64Encode(utf8.encode(jsonEncode({
@@ -167,22 +169,18 @@ void main() {
       })));
 
       when(() => signerA.supports(any(
-              that:
-                  predicate<PaymentRequirement>((p) => p.network == 'net:A'))))
-          .thenReturn(true);
+          that: predicate<PaymentRequirement>(
+              (p) => p.network.identifier == 'net:A')))).thenReturn(true);
       when(() => signerA.supports(any(
-              that:
-                  predicate<PaymentRequirement>((p) => p.network == 'net:B'))))
-          .thenReturn(false);
+          that: predicate<PaymentRequirement>(
+              (p) => p.network.identifier == 'net:B')))).thenReturn(false);
 
       when(() => signerB.supports(any(
-              that:
-                  predicate<PaymentRequirement>((p) => p.network == 'net:A'))))
-          .thenReturn(false);
+          that: predicate<PaymentRequirement>(
+              (p) => p.network.identifier == 'net:A')))).thenReturn(false);
       when(() => signerB.supports(any(
-              that:
-                  predicate<PaymentRequirement>((p) => p.network == 'net:B'))))
-          .thenReturn(true);
+          that: predicate<PaymentRequirement>(
+              (p) => p.network.identifier == 'net:B')))).thenReturn(true);
 
       when(() =>
               signerA.sign(any(), any(), extensions: any(named: 'extensions')))
@@ -217,14 +215,14 @@ void main() {
     });
 
     test('should use second signer if first one does not match', () async {
-      const requirementB = PaymentRequirement(
-        network: 'net:B',
+      final requirementB = PaymentRequirement(
+        network: const Network(namespace: 'net', reference: 'B'),
         scheme: 'scheme:B',
         amount: '100',
         payTo: 'someone',
         asset: 'asset',
         maxTimeoutSeconds: 100,
-        extra: {},
+        extra: const {},
       );
 
       final multiHeaderValue = base64Encode(utf8.encode(jsonEncode({
@@ -234,13 +232,11 @@ void main() {
       })));
 
       when(() => signerA.supports(any(
-              that:
-                  predicate<PaymentRequirement>((p) => p.network == 'net:B'))))
-          .thenReturn(false);
+          that: predicate<PaymentRequirement>(
+              (p) => p.network.identifier == 'net:B')))).thenReturn(false);
       when(() => signerB.supports(any(
-              that:
-                  predicate<PaymentRequirement>((p) => p.network == 'net:B'))))
-          .thenReturn(true);
+          that: predicate<PaymentRequirement>(
+              (p) => p.network.identifier == 'net:B')))).thenReturn(true);
 
       when(() =>
               signerB.sign(any(), any(), extensions: any(named: 'extensions')))

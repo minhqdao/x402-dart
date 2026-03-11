@@ -1,0 +1,16 @@
+name: server_shelf_example
+description: x402 Shelf Server Example
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+resolution: workspace
+
+dependencies:
+  shelf: ^1.4.2
+  x402:
+  x402_shelf:
+
+dev_dependencies:
+  lint: ^2.8.0

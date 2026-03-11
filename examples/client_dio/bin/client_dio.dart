@@ -36,7 +36,7 @@ void main() async {
   final evmSigner =
       EvmSigner.fromPrivateKeyHex(chainId: 84532, privateKeyHex: evmPrivateKey);
   final svmSigner = await SvmSigner.fromPrivateKeyHex(
-      privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
+      privateKeyHex: svmPrivateKey, cluster: SolanaCluster.devnet);
 
   // 2. Setup Dio with the interceptor
   final dio = Dio();

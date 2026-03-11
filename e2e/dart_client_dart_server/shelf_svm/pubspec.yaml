@@ -1,0 +1,17 @@
+name: shelf_svm_e2e_test
+description: x402 Shelf Server + Client Wrapper SVM e2e test
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+resolution: workspace
+
+dependencies:
+  dotenv: ^4.2.0
+  shelf: ^1.4.2
+  x402:
+  x402_shelf:
+
+dev_dependencies:
+  test: ^1.29.0

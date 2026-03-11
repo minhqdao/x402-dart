@@ -8,9 +8,15 @@ import 'package:x402_evm/src/schemes/exact_evm_scheme_client.dart';
 /// This signer uses an [EthPrivateKey] to sign EIP-3009 authorizations.
 /// It delegates the scheme-specific payload creation to [ExactEvmSchemeClient].
 class EvmSigner extends X402Signer {
-  /// The CAIP-2 network identifier (e.g., 'eip155:8453').
+  /// The CAIP-2 network this signer operates on.
+  ///
+  /// For EVM networks this is typically `eip155:<chainId>`.
+  ///
+  /// Example:
+  /// - `eip155:1` (Ethereum mainnet)
+  /// - `eip155:8453` (Base mainnet)
   @override
-  final String network;
+  Network get network => _client.network;
 
   final ExactEvmSchemeClient _client;
 
@@ -21,10 +27,7 @@ class EvmSigner extends X402Signer {
   /// Usually use [EvmSigner.fromPrivateKeyHex] for convenience.
   EvmSigner.fromClient({
     required ExactEvmSchemeClient client,
-    required int chainId,
-    String networkNamespace = 'eip155',
-  })  : network = '$networkNamespace:$chainId',
-        _client = client;
+  }) : _client = client;
 
   /// Creates an [EvmSigner] from a hexadecimal private key string.
   ///
@@ -39,10 +42,11 @@ class EvmSigner extends X402Signer {
     final cleanedHex =
         privateKeyHex.startsWith('0x') ? privateKeyHex : '0x$privateKeyHex';
     return EvmSigner.fromClient(
-      client:
-          ExactEvmSchemeClient(privateKey: EthPrivateKey.fromHex(cleanedHex)),
-      chainId: chainId,
-      networkNamespace: networkNamespace,
+      client: ExactEvmSchemeClient(
+        privateKey: EthPrivateKey.fromHex(cleanedHex),
+        networkNamespace: networkNamespace,
+        chainId: chainId,
+      ),
     );
   }
 

@@ -1,73 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+import 'package:x402_core/src/client/payment_approval_callback.dart';
+import 'package:x402_core/src/client/x402_signer.dart';
 import 'package:x402_core/src/constants.dart';
 import 'package:x402_core/src/models/payment_required_response.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
-import 'package:x402_core/src/models/resource_info.dart';
-
-/// Callback to let the user approve a payment before it's signed and sent.
-///
-/// Returns `true` to approve the payment, `false` to deny.
-typedef PaymentApprovalCallback = Future<bool> Function(
-  PaymentRequirement requirement,
-  ResourceInfo resource,
-  X402Signer signer,
-);
-
-/// A [SignedPayment] represents the final result of the signing process.
-///
-/// The [encoded] field contains a Base64-encoded, UTF-8 JSON document
-/// that includes the payment data, associated metadata, and the
-/// cryptographic signature.
-///
-/// This object provides a convenience method to decode the payload back
-/// into its JSON representation. It does **not** perform any validation
-/// or signature verification.
-class SignedPayment {
-  /// Base64-encoded UTF-8 JSON payload.
-  final String encoded;
-
-  /// Creates a [SignedPayment] from a base64-encoded string.
-  const SignedPayment(this.encoded);
-
-  /// Decodes the base64 payload into a JSON map.
-  ///
-  /// Throws a [FormatException] if the payload is not valid base64
-  /// or does not contain valid UTF-8 JSON.
-  Map<String, dynamic> decode() =>
-      jsonDecode(utf8.decode(base64Decode(encoded))) as Map<String, dynamic>;
-
-  @override
-  String toString() => encoded;
-}
-
-/// The interface every blockchain-specific package must implement to support
-/// signing x402 payment requirements.
-abstract class X402Signer {
-  /// The CAIP-2 network identifier this signer supports (e.g., 'eip155:8453').
-  String get network;
-
-  /// The scheme this signer supports (e.g., 'exact').
-  String get scheme;
-
-  /// The public address or identifier this signer uses.
-  String get address;
-
-  /// Checks if this signer supports the given [requirement] based on its
-  /// [network] and [scheme].
-  bool supports(PaymentRequirement requirement) =>
-      requirement.network == network && requirement.scheme == scheme;
-
-  /// Signs the [requirement] and returns a [SignedPayment] containing a
-  /// Base64-encoded JSON string that represents the [PaymentPayload].
-  ///
-  /// [resource] provides context about what is being paid for.
-  /// [extensions] allow for arbitrary extra data to be included in the signature.
-  Future<SignedPayment> sign(
-      PaymentRequirement requirement, ResourceInfo resource,
-      {Map<String, dynamic>? extensions});
-}
 
 /// A high-level HTTP client that automatically handles 402 Payment Required flows.
 ///

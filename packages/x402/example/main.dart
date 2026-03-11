@@ -10,7 +10,7 @@ void main() async {
 
   final svmSigner = await SvmSigner.fromPrivateKeyHex(
     privateKeyHex: 'YOUR_SVM_PRIVATE_KEY',
-    network: SolanaNetwork.devnet,
+    cluster: SolanaCluster.devnet,
   );
 
   final client = X402Client(

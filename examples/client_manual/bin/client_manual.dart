@@ -92,7 +92,7 @@ void main(List<String> args) async {
       }
 
       final svmSigner = await SvmSigner.fromPrivateKeyHex(
-          privateKeyHex: svmPrivateKey, network: SolanaNetwork.devnet);
+          privateKeyHex: svmPrivateKey, cluster: SolanaCluster.devnet);
       stdout.writeln('SVM Address: ${svmSigner.address}');
 
       // Try SVM
