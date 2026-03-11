@@ -23,19 +23,19 @@ void main() {
     }
   }
 
-  group('TS Client + Shelf Server E2E (EVM)', () {
+  group('TS Client + Shelf Server E2E (SVM)', () {
     late HttpServer server;
     late X402ResourceServer resourceServer;
     late String serverUrl;
 
-    final evmAddress = env['EVM_ADDRESS'];
-    if (evmAddress == null || evmAddress.isEmpty) {
-      throw Exception('EVM_ADDRESS is not set in environment or .env file.');
+    final svmAddress = env['SVM_ADDRESS'];
+    if (svmAddress == null || svmAddress.isEmpty) {
+      throw Exception('SVM_ADDRESS is not set in environment or .env file.');
     }
 
-    final evmPrivateKeyPayer = env['EVM_PRIVATE_KEY_PAYER'];
-    if (evmPrivateKeyPayer == null || evmPrivateKeyPayer.isEmpty) {
-      throw Exception('EVM_PRIVATE_KEY_PAYER is not set.');
+    final svmPrivateKeyPayer = env['SVM_PRIVATE_KEY_PAYER'];
+    if (svmPrivateKeyPayer == null || svmPrivateKeyPayer.isEmpty) {
+      throw Exception('SVM_PRIVATE_KEY_PAYER is not set.');
     }
 
     setUpAll(() async {
@@ -43,7 +43,7 @@ void main() {
 
       // 1. Create Resource Server
       resourceServer = await X402ResourceServer.create(
-        schemeServers: [ExactEvmSchemeServer(chainId: 84532)],
+        schemeServers: [ExactSvmSchemeServer(cluster: SolanaCluster.devnet)],
       );
 
       // 2. Define Protected Routes
@@ -53,8 +53,8 @@ void main() {
             PaymentOption(
               scheme: 'exact',
               price: const Money('0.10'),
-              network: const EvmNetwork(chainId: 84532),
-              payTo: evmAddress,
+              network: SolanaNetwork.devnet(),
+              payTo: svmAddress,
             ),
           ],
           description: 'Premium content for TS client',
@@ -83,11 +83,11 @@ void main() {
       // Execute TS client
       final result = await Process.run(
         'npm',
-        ['run', 'ts-client-evm'],
+        ['run', 'ts-client-svm'],
         workingDirectory: 'e2e',
         environment: {
           ...Platform.environment,
-          'EVM_PRIVATE_KEY': evmPrivateKeyPayer,
+          'SVM_PRIVATE_KEY': svmPrivateKeyPayer,
           'RESOURCE_SERVER_URL': serverUrl,
         },
       ).timeout(const Duration(seconds: 30));

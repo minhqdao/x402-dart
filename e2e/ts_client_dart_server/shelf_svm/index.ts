@@ -1,20 +1,18 @@
 import { config } from "dotenv";
 
 import { wrapFetchWithPayment, x402Client, x402HTTPClient } from "@x402/fetch";
-import { ExactEvmScheme, toClientEvmSigner } from "@x402/evm";
+import { ExactSvmScheme, toClientSvmSigner } from "@x402/svm";
 
-import { createPublicClient, http } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { createKeyPairSignerFromPrivateKeyBytes } from "@solana/kit";
 
 config();
 
-const evmPrivateKey = process.env.EVM_PRIVATE_KEY as `0x${string}`;
+const svmPrivateKey = process.env.SVM_PRIVATE_KEY;
 const baseURL = process.env.RESOURCE_SERVER_URL;
 
 async function main(): Promise<void> {
-    if (!evmPrivateKey) {
-        throw new Error("EVM_PRIVATE_KEY not set");
+    if (!svmPrivateKey) {
+        throw new Error("SVM_PRIVATE_KEY not set");
     }
 
     if (!baseURL) {
@@ -23,17 +21,16 @@ async function main(): Promise<void> {
 
     const url = `${baseURL}/premium`;
 
-    const account = privateKeyToAccount(evmPrivateKey);
+    const privateKeyBytes = Buffer.from(svmPrivateKey, "hex");
 
-    const publicClient = createPublicClient({
-        chain: baseSepolia,
-        transport: http(),
-    });
+    const keypair = await createKeyPairSignerFromPrivateKeyBytes(
+        privateKeyBytes,
+    );
 
-    const signer = toClientEvmSigner(account, publicClient);
+    const signer = toClientSvmSigner(keypair);
 
     const client = new x402Client();
-    client.register("eip155:*", new ExactEvmScheme(signer));
+    client.register("solana:*", new ExactSvmScheme(signer));
 
     if (typeof fetch === "undefined") {
         throw new Error("Global fetch not available. Use Node 18+.");
