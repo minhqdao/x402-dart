@@ -3,8 +3,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "ts-client-evm": "tsx ts_client_dart_server/shelf_evm/index.ts",
-    "ts-client-svm": "tsx ts_client_dart_server/shelf_svm/index.ts"
+    "ts-client-evm": "tsx ts_client_dart_server/evm_client.ts",
+    "ts-client-svm": "tsx ts_client_dart_server/svm_client.ts"
   },
   "dependencies": {
     "@solana/kit": "^5.5.1",

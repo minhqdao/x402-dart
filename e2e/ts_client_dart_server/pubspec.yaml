@@ -1,5 +1,5 @@
-name: ts_client_shelf_svm_e2e_test
-description: TS Client + x402 Shelf Server SVM e2e test
+name: ts_client_shelf_e2e_tests
+description: TS Client + x402 Shelf Server E2E Tests
 publish_to: none
 
 environment:

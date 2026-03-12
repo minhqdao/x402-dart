@@ -33,9 +33,19 @@ void main() {
       throw Exception('EVM_ADDRESS is not set in environment or .env file.');
     }
 
+    final svmAddress = env['SVM_ADDRESS'];
+    if (svmAddress == null || svmAddress.isEmpty) {
+      throw Exception('SVM_ADDRESS is not set in environment or .env file.');
+    }
+
     final evmPrivateKeyPayer = env['EVM_PRIVATE_KEY_PAYER'];
     if (evmPrivateKeyPayer == null || evmPrivateKeyPayer.isEmpty) {
       throw Exception('EVM_PRIVATE_KEY_PAYER is not set.');
+    }
+
+    final svmPrivateKeyPayer = env['SVM_PRIVATE_KEY_PAYER'];
+    if (svmPrivateKeyPayer == null || svmPrivateKeyPayer.isEmpty) {
+      throw Exception('SVM_PRIVATE_KEY_PAYER is not set.');
     }
 
     setUpAll(() async {
@@ -43,7 +53,10 @@ void main() {
 
       // 1. Create Resource Server
       resourceServer = await X402ResourceServer.create(
-        schemeServers: [ExactEvmSchemeServer(chainId: 84532)],
+        schemeServers: [
+          ExactEvmSchemeServer(chainId: 84532),
+          ExactSvmSchemeServer(cluster: SolanaCluster.devnet)
+        ],
       );
 
       // 2. Define Protected Routes
@@ -55,6 +68,12 @@ void main() {
               price: const Money('0.10'),
               network: const EvmNetwork(chainId: 84532),
               payTo: evmAddress,
+            ),
+            PaymentOption(
+              scheme: 'exact',
+              price: const Money('0.10'),
+              network: SolanaNetwork.devnet(),
+              payTo: svmAddress,
             ),
           ],
           description: 'Premium content for TS client',
@@ -79,7 +98,8 @@ void main() {
 
     tearDownAll(() async => await server.close(force: true));
 
-    test('TS client successfully pays and accesses premium content', () async {
+    test('TS client successfully pays on EVM and accesses premium content',
+        () async {
       // Execute TS client
       final result = await Process.run(
         'npm',
@@ -88,6 +108,32 @@ void main() {
         environment: {
           ...Platform.environment,
           'EVM_PRIVATE_KEY': evmPrivateKeyPayer,
+          'RESOURCE_SERVER_URL': serverUrl,
+        },
+      ).timeout(const Duration(seconds: 30));
+
+      stdout.writeln('TS Client STDOUT:');
+      stdout.writeln(result.stdout);
+      stderr.writeln('TS Client STDERR:');
+      stderr.writeln(result.stderr);
+
+      if (result.exitCode != 0) {
+        fail(
+            'TS client failed.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}');
+      }
+      expect(result.stdout, contains('TS Client Reward'));
+    });
+
+    test('TS client successfully pays on SVM and accesses premium content',
+        () async {
+      // Execute TS client
+      final result = await Process.run(
+        'npm',
+        ['run', 'ts-client-svm'],
+        workingDirectory: 'e2e',
+        environment: {
+          ...Platform.environment,
+          'SVM_PRIVATE_KEY': svmPrivateKeyPayer,
           'RESOURCE_SERVER_URL': serverUrl,
         },
       ).timeout(const Duration(seconds: 30));
