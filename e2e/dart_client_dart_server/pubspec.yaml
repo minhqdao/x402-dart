@@ -1,5 +1,5 @@
-name: shelf_svm_e2e_test
-description: x402 Shelf Server + Client Wrapper SVM e2e test
+name: dart_client_shelf_e2e_tests
+description: Dart Client + x402 Shelf Server EVM E2E Tests
 publish_to: none
 
 environment:

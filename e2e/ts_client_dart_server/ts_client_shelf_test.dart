@@ -98,8 +98,7 @@ void main() {
 
     tearDownAll(() async => await server.close(force: true));
 
-    test('TS client successfully pays on EVM and accesses premium content',
-        () async {
+    test('TS client pays on EVM and accesses premium content', () async {
       // Execute TS client
       final result = await Process.run(
         'npm',
@@ -124,8 +123,7 @@ void main() {
       expect(result.stdout, contains('TS Client Reward'));
     });
 
-    test('TS client successfully pays on SVM and accesses premium content',
-        () async {
+    test('TS client pays on SVM and accesses premium content', () async {
       // Execute TS client
       final result = await Process.run(
         'npm',
