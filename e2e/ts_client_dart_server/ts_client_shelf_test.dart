@@ -23,7 +23,7 @@ void main() {
     }
   }
 
-  group('TS Client + Shelf Server E2E (EVM)', () {
+  group('TS Client + Shelf Server E2E', () {
     late HttpServer server;
     late X402ResourceServer resourceServer;
     late String serverUrl;
