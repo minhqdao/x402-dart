@@ -5,7 +5,7 @@ RUN apk add --no-cache git
 
 WORKDIR /app
 RUN git clone https://github.com/coinbase/x402 . && \
-    git checkout be253a872d1022c8d5d3f1f7ac9326daf30e999d
+    git checkout cc6d0fcc1efafc7f00b05ebe1887a0086d5a7cef
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
