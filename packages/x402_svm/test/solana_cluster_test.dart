@@ -4,6 +4,28 @@ import 'package:x402_svm/x402_svm.dart';
 
 void main() {
   group('SolanaCluster', () {
+    test('solanaMainnetGenesisPrefix has correct value', () {
+      expect(solanaMainnetGenesisPrefix,
+          equals('5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'));
+    });
+
+    test('solanaDevnetGenesisPrefix has correct value', () {
+      expect(solanaDevnetGenesisPrefix,
+          equals('EtWTRABZaYq6iMfeYKouRu166VU2xqa1'));
+    });
+
+    test('solanaTestnetGenesisPrefix has correct value', () {
+      expect(solanaTestnetGenesisPrefix,
+          equals('4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z'));
+    });
+
+    test('genesisHash combines prefix and suffix', () {
+      for (final cluster in SolanaCluster.values) {
+        expect(cluster.genesisHash,
+            equals('${cluster.genesisHashPrefix}${cluster.genesisHashSuffix}'));
+      }
+    });
+
     test('has correct genesis hashes', () {
       expect(SolanaCluster.mainnet.genesisHash,
           equals('5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d'));

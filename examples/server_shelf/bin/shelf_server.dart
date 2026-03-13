@@ -33,7 +33,7 @@ void main() async {
         PaymentOption(
           scheme: 'exact',
           price: const Money('0.10'),
-          network: SolanaNetwork.devnet(),
+          network: const SolanaNetwork.devnet(),
           payTo: svmAddress,
         ),
       ],

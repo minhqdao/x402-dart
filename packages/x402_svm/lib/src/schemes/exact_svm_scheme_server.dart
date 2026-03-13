@@ -110,12 +110,12 @@ class ExactSvmSchemeServer implements SchemeServer {
 
   _SplTokenInfo _getDefaultAsset(Network network) {
     final tokens = <String, _SplTokenInfo>{
-      SolanaNetwork.mainnet().identifier: const _SplTokenInfo(
+      const SolanaNetwork.mainnet().identifier: const _SplTokenInfo(
         mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         name: 'USD Coin',
         decimals: 6,
       ),
-      SolanaNetwork.devnet().identifier: const _SplTokenInfo(
+      const SolanaNetwork.devnet().identifier: const _SplTokenInfo(
         mint: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
         name: 'USD Coin',
         decimals: 6,
