@@ -9,19 +9,16 @@ class SolanaNetwork extends Network {
   const SolanaNetwork._(String reference)
       : super(namespace: 'solana', reference: reference);
 
-  /// Creates a Solana network from a [SolanaCluster].
-  factory SolanaNetwork.fromCluster(SolanaCluster cluster) =>
-      SolanaNetwork._(cluster.genesisHash.substring(0, 32));
-
   /// Solana mainnet-beta.
-  factory SolanaNetwork.mainnet() =>
-      SolanaNetwork.fromCluster(SolanaCluster.mainnet);
+  const SolanaNetwork.mainnet() : this._(solanaMainnetGenesisPrefix);
 
   /// Solana devnet.
-  factory SolanaNetwork.devnet() =>
-      SolanaNetwork.fromCluster(SolanaCluster.devnet);
+  const SolanaNetwork.devnet() : this._(solanaDevnetGenesisPrefix);
 
   /// Solana testnet.
-  factory SolanaNetwork.testnet() =>
-      SolanaNetwork.fromCluster(SolanaCluster.testnet);
+  const SolanaNetwork.testnet() : this._(solanaTestnetGenesisPrefix);
+
+  /// Creates a Solana network from a [SolanaCluster].
+  factory SolanaNetwork.fromCluster(SolanaCluster cluster) =>
+      SolanaNetwork._(cluster.genesisHashPrefix);
 }

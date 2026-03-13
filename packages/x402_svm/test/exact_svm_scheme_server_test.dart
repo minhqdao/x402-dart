@@ -12,7 +12,7 @@ void main() {
 
       test('exposes correct network', () {
         final server = ExactSvmSchemeServer(cluster: SolanaCluster.mainnet);
-        expect(server.network, equals(SolanaNetwork.mainnet()));
+        expect(server.network, equals(const SolanaNetwork.mainnet()));
       });
     });
 
@@ -321,7 +321,7 @@ void main() {
 
     group('SVM-SPECIFIC TESTS', () {
       final server = ExactSvmSchemeServer(cluster: SolanaCluster.mainnet);
-      final network = SolanaNetwork.mainnet();
+      const network = SolanaNetwork.mainnet();
 
       test('enhancePaymentRequirement adds feePayer when present', () async {
         final req = PaymentRequirement(
@@ -334,13 +334,11 @@ void main() {
           extra: const {},
         );
 
-        final kind = SupportedKind(
+        const kind = SupportedKind(
           x402Version: 1,
           scheme: 'exact',
           network: network,
-          extra: const {
-            'feePayer': 'FeePayer111111111111111111111111111111111'
-          },
+          extra: {'feePayer': 'FeePayer111111111111111111111111111111111'},
         );
 
         final enhanced =
@@ -361,7 +359,7 @@ void main() {
           extra: const {'existing': 'data'},
         );
 
-        final kind = SupportedKind(
+        const kind = SupportedKind(
           x402Version: 1,
           scheme: 'exact',
           network: network,
@@ -383,11 +381,11 @@ void main() {
           extra: const {'existing': 'value'},
         );
 
-        final kind = SupportedKind(
+        const kind = SupportedKind(
           x402Version: 1,
           scheme: 'exact',
           network: network,
-          extra: const {'feePayer': 'FeePayerXYZ'},
+          extra: {'feePayer': 'FeePayerXYZ'},
         );
 
         final enhanced =
