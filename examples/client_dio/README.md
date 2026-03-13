@@ -7,19 +7,19 @@ This example demonstrates how to use the `X402Interceptor` with `Dio` to automat
 1. **Environment Variables**:
    - Rename `.env-example` to `.env`.
    - Fill in your `EVM_PRIVATE_KEY` and `SVM_PRIVATE_KEY`.
-   - Ensure `RESOURCE_SERVER_URL` and `ENDPOINT_PATH` point to your running x402 server.
+   - Ensure `RESOURCE_SERVER_URL` and `ENDPOINT_PATH` point to a running x402 server.
 
 2. **Server & Facilitator**:
    - You need a running x402 facilitator and a resource server.
-   - You can set these up using the [TypeScript examples in the x402 repository](https://github.com/coinbase/x402).
+   - You can set these up using the servers from the [examples](https://github.com/minhqdao/x402-dart/tree/main/examples/server_shelf) folder.
 
 3. **Running**:
    ```bash
-   dart run bin/client_dio.dart
+   dart run bin/dio_client.dart
    ```
 
 ## Multi-Chain Switching
 
 To change the preferred payment method:
 - The `X402Interceptor` uses the first compatible signer in the `signers` list.
-- You can reorder `evmSigner` and `svmSigner` in `bin/client_dio.dart` or comment one out to force the client to use a specific chain.
+- You can reorder `evmSigner` and `svmSigner` in `bin/dio_client.dart` or comment one out to force the client to use a specific chain.
