@@ -27,18 +27,12 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-
-            - name: Login to GHCR
-              uses: docker/login-action@v4
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
+            - uses: dart-lang/setup-dart@v1
+            - uses: actions/setup-node@v6
 
             - name: Run e2e tests
               working-directory: e2e
               env:
-                  IMAGE_OWNER: ${{ github.repository_owner }}
                   EVM_PRIVATE_KEY: ${{ secrets.EVM_PRIVATE_KEY }}
                   SVM_PRIVATE_KEY: ${{ secrets.SVM_PRIVATE_KEY }}
                   EVM_ADDRESS: ${{ secrets.EVM_ADDRESS }}
@@ -46,8 +40,5 @@ jobs:
                   EVM_PRIVATE_KEY_PAYER: ${{ secrets.EVM_PRIVATE_KEY_PAYER }}
                   SVM_PRIVATE_KEY_PAYER: ${{ secrets.SVM_PRIVATE_KEY_PAYER }}
               run: |
-                  docker compose \
-                    -f docker-compose.yml \
-                    -f docker-compose.ci.yml \
-                    up --abort-on-container-exit --exit-code-from dart-tests
-                  docker compose down -v
+                  npm install
+                  dart test --concurrency=1 .

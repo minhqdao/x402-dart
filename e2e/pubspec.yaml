@@ -1,5 +1,5 @@
-name: dio_svm_denied_e2e_test
-description: x402 Client Dio SVM Denied e2e test
+name: e2e_tests
+description: E2E tests (Dart client + TS server, Dart client + Dart server, TS client + Dart server)
 publish_to: none
 
 environment:
@@ -10,8 +10,11 @@ resolution: workspace
 dependencies:
   dio: ^5.9.2
   dotenv: ^4.2.0
+  http: ^1.6.0
+  shelf: ^1.4.2
   x402:
   x402_dio:
+  x402_shelf:
 
 dev_dependencies:
   test: ^1.30.0

@@ -9,23 +9,18 @@ import 'package:x402/x402.dart';
 import 'package:x402_shelf/x402_shelf.dart';
 
 void main() {
-  final env = DotEnv(includePlatformEnvironment: true)..load(['e2e/.env']);
+  final env = DotEnv(includePlatformEnvironment: true)..load();
 
   Future<void> ensureNodeAvailable() async {
     final node = await Process.run('node', ['--version']);
     if (node.exitCode != 0) {
       markTestSkipped('Node.js not installed');
     }
-
-    final npx = await Process.run('npx', ['--version']);
-    if (npx.exitCode != 0) {
-      throw Exception('npx is required for TS client e2e tests.');
-    }
   }
 
-  late HttpServer server;
-  late X402ResourceServer resourceServer;
-  late String serverUrl;
+  late final HttpServer server;
+  late final X402ResourceServer resourceServer;
+  late final String serverUrl;
 
   final evmAddress = env['EVM_ADDRESS'];
   if (evmAddress == null || evmAddress.isEmpty) {
@@ -102,7 +97,6 @@ void main() {
     final result = await Process.run(
       'npm',
       ['run', 'ts-client-evm'],
-      workingDirectory: 'e2e',
       environment: {
         ...Platform.environment,
         'EVM_PRIVATE_KEY': evmPrivateKeyPayer,
@@ -112,7 +106,8 @@ void main() {
 
     if (result.exitCode != 0) {
       fail(
-          'TS client failed.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}');
+        'TS client failed.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}',
+      );
     }
     expect(result.stdout, contains('TS Client Reward'));
   });
@@ -122,7 +117,6 @@ void main() {
     final result = await Process.run(
       'npm',
       ['run', 'ts-client-svm'],
-      workingDirectory: 'e2e',
       environment: {
         ...Platform.environment,
         'SVM_PRIVATE_KEY': svmPrivateKeyPayer,
@@ -132,7 +126,8 @@ void main() {
 
     if (result.exitCode != 0) {
       fail(
-          'TS client failed.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}');
+        'TS client failed.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}',
+      );
     }
     expect(result.stdout, contains('TS Client Reward'));
   });

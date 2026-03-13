@@ -3,18 +3,22 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "ts-server": "tsx dart_client_ts_server/server.ts",
     "ts-client-evm": "tsx ts_client_dart_server/ts_clients/evm_client.ts",
     "ts-client-svm": "tsx ts_client_dart_server/ts_clients/svm_client.ts"
   },
   "dependencies": {
     "@solana/kit": "^5.5.1",
     "@x402/evm": "^2.6.0",
+    "@x402/express": "^2.6.0",
     "@x402/fetch": "^2.6.0",
     "@x402/svm": "^2.6.0",
     "dotenv": "^17.3.1",
+    "express": "^5.2.1",
     "viem": "^2.47.1"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^25.4.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

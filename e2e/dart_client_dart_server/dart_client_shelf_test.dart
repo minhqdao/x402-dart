@@ -9,7 +9,7 @@ import 'package:x402/x402.dart';
 import 'package:x402_shelf/x402_shelf.dart';
 
 void main() {
-  final env = DotEnv(includePlatformEnvironment: true)..load(['e2e/.env']);
+  final env = DotEnv(includePlatformEnvironment: true)..load();
 
   late final HttpServer server;
   late final X402ResourceServer resourceServer;
