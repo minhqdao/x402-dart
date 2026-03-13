@@ -1,45 +1,45 @@
-# x402 End-to-End Tests
+# End-to-End Tests
 
-This directory contains end-to-end tests for the x402 protocol, covering both EVM and SVM implementations across different HTTP clients (Standard HTTP and Dio).
+This directory contains end-to-end tests for the x402 protocol, covering various client and server combinations for both EVM and SVM.
 
 ## Overview
 
-The tests spin up a complete environment including:
-- **Facilitator**: Negotiates and verifies payments.
-- **Resource Server**: A mock server that requires x402 payments to access "weather" data.
-- **Dart Clients**: Various E2E test packages that exercise different client implementations.
-
-The Facilitator and Resource Server are taken from the official [x402 TypeScript examples](https://github.com/coinbase/x402/tree/main/examples/typescript).
+These end-to-end tests validate the cross-compatibility of the x402 protocol across various client and server implementations, including the official TypeScript reference. The test suite ensures seamless interaction between Dart and TypeScript components, covering both EVM and SVM.
 
 ## Prerequisites
 
 To run these tests locally, you need:
-1. **Docker & Docker Compose** installed.
-2. **Public Addresses** and **Private Keys** with funds on:
-   - **Base Sepolia** (EVM)
-   - **Solana Devnet** (SVM)
+1.  **Node.js and npm**: Required for setting up TypeScript-based servers and clients.
+2.  **Dart SDK**: Required for running Dart-based servers and clients, and for executing the tests.
+3.  **Public Addresses** and **Private Keys** with funds on:
+    - **Base Sepolia** (EVM)
+    - **Solana Devnet** (SVM)
 
 ## Running Locally
 
-1. Navigate to the `e2e` directory.
-   ```bash
-   cd e2e
-   ```
-2. Create a `.env` file from the example:
-   ```bash
-   cp .env-example .env
-   ```
-3. Fill in the values in the `.env` file:
-   ```env
-   EVM_PRIVATE_KEY_PAYER=your_evm_private_key
-   SVM_PRIVATE_KEY_PAYER=your_svm_private_key
-   ...
-   ```
+1.  Navigate to the `e2e` directory.
+    ```bash
+    cd e2e
+    ```
+2.  Install TypeScript client/server dependencies:
+    ```bash
+    npm install
+    ```
+3.  Create a `.env` file from the example and fill in the values:
+    ```bash
+    cp .env-example .env
+    ```
+    Edit the `.env` file with your specific keys and addresses:
+    ```env
+    EVM_PRIVATE_KEY_PAYER=your_evm_private_key
+    SVM_PRIVATE_KEY_PAYER=your_svm_private_key
+    ...
+    ```
 
-4. Execute the tests:
-   ```bash
-   docker compose up --build --abort-on-container-exit
-   ```
+4.  Execute the tests using Dart's test runner:
+    ```bash
+    dart test --concurrency=1 .
+    ```
 
 ## Continuous Integration
 
@@ -56,7 +56,9 @@ If you fork this repository, the E2E tests in the CI will fail unless you provid
 
 ## Test Cases
 
-- **wrapper_***: Tests using the high-level `X402Client` (http package wrapper).
-- **dio_***: Tests using the `X402Interceptor` for Dio.
-- **manual_***: Tests demonstrating manual handling of the 402 flow.
-- **_denied**: Verifies that the client correctly handles user-rejected payment requests.
+The test cases are designed to verify interoperability across client and server stacks, ensuring compatibility with the official TypeScript implementation. They cover:
+
+- **Dart Client <> Dart Server**: Validates end-to-end flow purely within Dart.
+- **Dart Client <> TypeScript Server**: Ensures Dart clients can interact with TypeScript servers (including the reference implementation).
+- **TypeScript Client <> Dart Server**: Confirms TypeScript clients (including the reference implementation) can interact with Dart servers.
+- **_denied**: Verifies correct handling of user-rejected payment requests.
