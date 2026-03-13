@@ -11,17 +11,21 @@ This example demonstrates how to use `x402_shelf` to protect HTTP routes behind 
 
 ## Running the Example
 
-1. Ensure you have the dependencies installed:
+1. Environment Variables:
+   - Rename `.env-example` to `.env`.
+   - Fill in `EVM_ADDRESS` and `SVM_ADDRESS`.
+
+2. Ensure you have the dependencies installed:
    ```bash
    dart pub get
    ```
 
-2. Start the server:
+3. Start the server:
    ```bash
-   dart bin/main.dart
+   dart bin/shelf_server.dart
    ```
 
-3. Test the routes:
+4. Test the routes:
 
    - **Public route** (No payment needed):
      ```bash
@@ -32,6 +36,8 @@ This example demonstrates how to use `x402_shelf` to protect HTTP routes behind 
      ```bash
      curl -v http://localhost:8080/protected
      ```
+
+5. You can also run the [example clients](https://github.com/minhqdao/x402-dart/tree/main/examples) against this server.
 
 ## How it Works
 

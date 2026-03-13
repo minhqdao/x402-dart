@@ -1,26 +1,40 @@
 import 'dart:io';
 
+import 'package:dotenv/dotenv.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:x402/x402.dart';
 import 'package:x402_shelf/x402_shelf.dart';
 
 void main() async {
+  // Load environment variables
+  final env = DotEnv(includePlatformEnvironment: true)..load();
+
+  final evmAddress = env['EVM_ADDRESS'];
+  if (evmAddress == null || evmAddress.isEmpty) {
+    throw Exception('EVM_ADDRESS is not set in environment or .env file.');
+  }
+
+  final svmAddress = env['SVM_ADDRESS'];
+  if (svmAddress == null || svmAddress.isEmpty) {
+    throw Exception('SVM_ADDRESS is not set in environment or .env file.');
+  }
+
   // 1. Define Protected Routes
   final routes = {
     const RoutePattern(HttpMethod.get, '/protected'): RouteConfig(
       accepts: [
-        const PaymentOption(
+        PaymentOption(
           scheme: 'exact',
-          price: Money('0.10'),
-          network: EvmNetwork(chainId: 84532),
-          payTo: '0xYourEvmAddress',
+          price: const Money('0.10'),
+          network: const EvmNetwork(chainId: 84532),
+          payTo: evmAddress,
         ),
         PaymentOption(
           scheme: 'exact',
           price: const Money('0.10'),
           network: SolanaNetwork.devnet(),
-          payTo: 'YourSolanaAddress',
+          payTo: svmAddress,
         ),
       ],
       description: 'Access to premium content',
