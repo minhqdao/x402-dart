@@ -118,5 +118,17 @@ void main() {
       expect(decodedResponse.transaction, response.transaction);
       expect(decodedResponse.network.identifier, response.network.identifier);
     });
+
+    test('encoded matches expected fixed string', () {
+      const response = SettleResponse(
+        success: true,
+        transaction: '0xTx',
+        network: Network(namespace: 'eip155', reference: '1'),
+      );
+      // {"success":true,"transaction":"0xTx","network":"eip155:1"}
+      // Base64 encoded: eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6IjB4VHgiLCJuZXR3b3JrIjoiZWlwMTU1OjEifQ==
+      expect(response.encoded,
+          'eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6IjB4VHgiLCJuZXR3b3JrIjoiZWlwMTU1OjEifQ==');
+    });
   });
 }
