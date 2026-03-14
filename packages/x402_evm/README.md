@@ -7,6 +7,7 @@ EVM-compatible blockchain implementation for the x402 payment protocol. This pac
 ## Features
 
 - `EvmSigner`: Signature handling using Ethereum private keys.
+- `ExactEvmSchemeServer`: Enables a server to accept and verify payments on EVM networks using the `exact` scheme.
 - EIP-3009 (USDC) authorization support.
 - EIP-712 typed data signing.
 
