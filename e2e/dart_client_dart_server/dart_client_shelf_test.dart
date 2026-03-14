@@ -102,6 +102,14 @@ void main() {
     expect(response.statusCode, equals(200),
         reason: 'Should return 200 OK after successful payment');
 
+    // Verify SettleResponse header
+    final settleHeader = response.headers[kPaymentResponseHeader];
+    expect(settleHeader, isNotNull,
+        reason: 'Should return x402-payment-response header');
+    final settleResponse = SettleResponse.fromHeader(settleHeader!);
+    expect(settleResponse.success, isTrue);
+    expect(settleResponse.transaction, isNotEmpty);
+
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     expect(body['data'], equals('Shelf Premium Content'));
   });
@@ -143,6 +151,14 @@ void main() {
 
     expect(response.statusCode, equals(200),
         reason: 'Should return 200 OK after successful SVM payment');
+
+    // Verify SettleResponse header
+    final settleHeader = response.headers[kPaymentResponseHeader];
+    expect(settleHeader, isNotNull,
+        reason: 'Should return x402-payment-response header');
+    final settleResponse = SettleResponse.fromHeader(settleHeader!);
+    expect(settleResponse.success, isTrue);
+    expect(settleResponse.transaction, isNotEmpty);
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     expect(body['data'], equals('Shelf Premium Content'));

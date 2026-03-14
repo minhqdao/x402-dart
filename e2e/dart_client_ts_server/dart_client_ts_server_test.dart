@@ -102,6 +102,14 @@ void main() {
 
         expect(response.statusCode, equals(200),
             reason: 'Should return 200 OK after payment');
+
+        // Verify SettleResponse header
+        final settleHeader = response.headers[kPaymentResponseHeader];
+        expect(settleHeader, isNotNull,
+            reason: 'Should return x402-payment-response header');
+        final settleResponse = SettleResponse.fromHeader(settleHeader!);
+        expect(settleResponse.success, isTrue);
+
         expect(response.body, isNotEmpty,
             reason: 'Response body should not be empty');
 
@@ -158,6 +166,14 @@ void main() {
 
         expect(response.statusCode, equals(200),
             reason: 'Should return 200 OK after payment');
+
+        // Verify SettleResponse header
+        final settleHeader = response.headers[kPaymentResponseHeader];
+        expect(settleHeader, isNotNull,
+            reason: 'Should return x402-payment-response header');
+        final settleResponse = SettleResponse.fromHeader(settleHeader!);
+        expect(settleResponse.success, isTrue);
+
         expect(response.body, isNotEmpty,
             reason: 'Response body should not be empty');
 
@@ -240,6 +256,14 @@ void main() {
       expect(retryResponse.statusCode, equals(200),
           reason: 'Retry with signature should return 200 OK');
 
+      // Verify SettleResponse header
+      final settleHeader = retryResponse.headers[kPaymentResponseHeader];
+      expect(settleHeader, isNotNull,
+          reason: 'Should return x402-payment-response header');
+      final settleResponse = SettleResponse.fromHeader(settleHeader!);
+      expect(settleResponse.success, isTrue);
+      expect(settleResponse.transaction, isNotEmpty);
+
       final decoded = json.decode(retryResponse.body) as Map<String, dynamic>;
       expect(decoded, contains('report'));
       final report = decoded['report'] as Map<String, dynamic>;
@@ -289,6 +313,14 @@ void main() {
       expect(retryResponse.statusCode, equals(200),
           reason: 'Retry with signature should return 200 OK');
 
+      // Verify SettleResponse header
+      final settleHeader = retryResponse.headers[kPaymentResponseHeader];
+      expect(settleHeader, isNotNull,
+          reason: 'Should return x402-payment-response header');
+      final settleResponse = SettleResponse.fromHeader(settleHeader!);
+      expect(settleResponse.success, isTrue);
+      expect(settleResponse.transaction, isNotEmpty);
+
       final decoded = json.decode(retryResponse.body) as Map<String, dynamic>;
       expect(decoded, contains('report'));
       final report = decoded['report'] as Map<String, dynamic>;
@@ -316,6 +348,14 @@ void main() {
 
         expect(response.statusCode, equals(200),
             reason: 'Should return 200 OK after payment');
+
+        // Verify SettleResponse header
+        final settleHeader = response.headers.value(kPaymentResponseHeader);
+        expect(settleHeader, isNotNull,
+            reason: 'Should return x402-payment-response header');
+        final settleResponse = SettleResponse.fromHeader(settleHeader!);
+        expect(settleResponse.success, isTrue);
+
         expect(response.data, isNotEmpty,
             reason: 'Response body should not be empty');
 
@@ -383,6 +423,14 @@ void main() {
 
         expect(response.statusCode, equals(200),
             reason: 'Should return 200 OK after payment');
+
+        // Verify SettleResponse header
+        final settleHeader = response.headers.value(kPaymentResponseHeader);
+        expect(settleHeader, isNotNull,
+            reason: 'Should return x402-payment-response header');
+        final settleResponse = SettleResponse.fromHeader(settleHeader!);
+        expect(settleResponse.success, isTrue);
+
         expect(response.data, isNotEmpty,
             reason: 'Response body should not be empty');
 

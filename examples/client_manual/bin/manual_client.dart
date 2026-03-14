@@ -127,6 +127,18 @@ void main(List<String> args) async {
     if (retryResponse.statusCode == 200) {
       stdout.writeln('--- Success (payment approved) ---');
       stdout.writeln('Content: ${retryResponse.body}');
+
+      // Parse the settlement response from the header
+      final settleHeader = retryResponse.headers[kPaymentResponseHeader];
+      if (settleHeader != null) {
+        final settleResponse = SettleResponse.fromHeader(settleHeader);
+        stdout.writeln('--- Settlement Details ---');
+        stdout.writeln('Transaction: ${settleResponse.transaction}');
+        stdout.writeln('Network:     ${settleResponse.network}');
+        if (settleResponse.payer != null) {
+          stdout.writeln('Payer:       ${settleResponse.payer}');
+        }
+      }
     } else {
       stdout.writeln('--- Failed (payment rejected) ---');
       stdout.writeln('Status: ${retryResponse.statusCode}');

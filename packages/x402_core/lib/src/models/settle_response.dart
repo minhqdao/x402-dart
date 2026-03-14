@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:x402_core/src/models/network.dart';
+import 'package:x402_core/src/x402_exception.dart';
 
 /// Response returned by a facilitator when settling a payment.
 class SettleResponse {
@@ -34,6 +35,23 @@ class SettleResponse {
     required this.network,
     this.extensions,
   });
+
+  /// Parses the SettleResponse from a base64-encoded header string.
+  ///
+  /// Throws an [InvalidPayloadException] if the header is not a valid base64 or
+  /// cannot be decoded into a valid [SettleResponse].
+  factory SettleResponse.fromHeader(String header) {
+    try {
+      return SettleResponse.fromJson(
+        jsonDecode(utf8.decode(base64Decode(header))) as Map<String, dynamic>,
+      );
+    } catch (e) {
+      throw InvalidPayloadException(
+        'Invalid settle response (payment-response header)',
+        originalError: e,
+      );
+    }
+  }
 
   factory SettleResponse.fromJson(Map<String, dynamic> json) {
     return SettleResponse(

@@ -59,7 +59,14 @@ void main(List<String> args) async {
     if (response.statusCode == 200) {
       stdout.writeln('--- Success! ---');
       stdout.writeln('Data received: ${response.body}');
-      // 402 case handled in the callback function
+
+      final settleHeader = response.headers[kPaymentResponseHeader];
+      if (settleHeader != null) {
+        final settleResponse = SettleResponse.fromHeader(settleHeader);
+        stdout.writeln('--- Settlement Details ---');
+        stdout.writeln('Transaction: ${settleResponse.transaction}');
+        stdout.writeln('Network:     ${settleResponse.network}');
+      }
     } else {
       stdout.writeln('--- Failed ---');
       stdout.writeln('Status: ${response.statusCode}');
