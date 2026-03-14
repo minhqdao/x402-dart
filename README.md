@@ -101,13 +101,13 @@ melos bootstrap
 melos format
 
 # Analyze all packages
-melos run analyze
+melos analyze
 
-# Run all tests
-melos run test
+# Run unit tests
+melos test
 
 # Run e2e tests
-melos run e2e
+melos e2e
 ```
 
 ## License

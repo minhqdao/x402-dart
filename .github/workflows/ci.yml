@@ -39,4 +39,4 @@ jobs:
                   SVM_ADDRESS: ${{ secrets.SVM_ADDRESS }}
                   EVM_PRIVATE_KEY_PAYER: ${{ secrets.EVM_PRIVATE_KEY_PAYER }}
                   SVM_PRIVATE_KEY_PAYER: ${{ secrets.SVM_PRIVATE_KEY_PAYER }}
-              run: melos run e2e
+              run: melos e2e
