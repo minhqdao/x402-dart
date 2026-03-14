@@ -1,0 +1,15 @@
+name: server_manual_example
+description: x402 Shelf Manual Example
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+resolution: workspace
+
+dependencies:
+  dotenv: ^4.2.0
+  x402:
+
+dev_dependencies:
+  lint: ^2.8.0
