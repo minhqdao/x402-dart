@@ -1,10 +1,21 @@
 # End-to-End Tests
 
-This directory contains end-to-end tests for the x402 protocol, covering various client and server combinations for both EVM and SVM.
 
-## Overview
+These end-to-end tests verify that the Dart implementation interoperates correctly with both Dart and TypeScript clients and servers. The tests exercise the full payment flow across different client–server combinations.
 
-These end-to-end tests validate the cross-compatibility of the x402 protocol across various client and server implementations, including the official TypeScript reference. The test suite ensures seamless interaction between Dart and TypeScript components, covering both EVM and SVM.
+The following scenarios are covered:
+
+- **Dart Client <> Dart Server**  
+  Ensures the Dart implementation works end-to-end within the Dart ecosystem.
+
+- **Dart Client <> TypeScript Server**  
+  Verifies that Dart clients can interact with the official TypeScript server implementation.
+
+- **TypeScript Client <> Dart Server**  
+  Confirms that TypeScript clients (including the reference implementation) can interact with the Dart server.
+
+- **_denied**  
+  Verifies correct behavior when a payment request is rejected by the user.
 
 ## Prerequisites
 
@@ -41,6 +52,8 @@ To run these tests locally, you need:
     dart test --concurrency=1 .
     ```
 
+For convenience, you can also run the tests with `melos e2e` after having added all the necessary information to the `.env` file.
+
 ## Continuous Integration
 
 These tests run automatically on every push via GitHub Actions.
@@ -53,12 +66,3 @@ If you fork this repository, the E2E tests in the CI will fail unless you provid
 - `SVM_PRIVATE_KEY`: Private key for the facilitator (SVM).
 - `EVM_ADDRESS`: Target address for EVM payments.
 - `SVM_ADDRESS`: Target address for SVM payments.
-
-## Test Cases
-
-The test cases are designed to verify interoperability across client and server stacks, ensuring compatibility with the official TypeScript implementation. They cover:
-
-- **Dart Client <> Dart Server**: Validates end-to-end flow purely within Dart.
-- **Dart Client <> TypeScript Server**: Ensures Dart clients can interact with TypeScript servers (including the reference implementation).
-- **TypeScript Client <> Dart Server**: Confirms TypeScript clients (including the reference implementation) can interact with Dart servers.
-- **_denied**: Verifies correct handling of user-rejected payment requests.
