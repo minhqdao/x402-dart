@@ -77,7 +77,7 @@ When a request matches a protected route:
 2. If no payment proof is provided, it returns `402 Payment Required`.
 3. If a payment proof is present:
    - The server verifies it.
-   - If valid, the request proceeds.
+   - If valid, the request proceeds and a successful response is returned with an `payment-response` header containing settlement details.
    - If invalid, a `402` response is returned again.
 
 The middleware handles HTTP orchestration only.  
