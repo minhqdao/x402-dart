@@ -31,7 +31,6 @@ jobs:
             - uses: actions/setup-node@v6
 
             - name: Run e2e tests
-              working-directory: e2e
               env:
                   EVM_PRIVATE_KEY: ${{ secrets.EVM_PRIVATE_KEY }}
                   SVM_PRIVATE_KEY: ${{ secrets.SVM_PRIVATE_KEY }}
