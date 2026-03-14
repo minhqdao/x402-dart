@@ -32,3 +32,9 @@ melos:
     test:
       description: Run all tests in this workspace.
       run: melos exec --dir-exists=test -- dart test
+    e2e:
+      description: Run all e2e tests.
+      run: |
+        cd e2e
+        if [ ! -d node_modules ]; then npm install; fi
+        dart test --concurrency=1 .
