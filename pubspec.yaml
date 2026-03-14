@@ -16,6 +16,7 @@ workspace:
   - examples/client_wrapper
   - examples/client_manual
   - examples/client_dio
+  - examples/server_manual
   - examples/server_shelf
   - e2e
 
