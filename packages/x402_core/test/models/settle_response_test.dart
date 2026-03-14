@@ -110,13 +110,44 @@ void main() {
         network: Network(namespace: 'eip155', reference: '1'),
       );
       final encoded = response.encoded;
-      final decodedJson = jsonDecode(utf8.decode(base64Decode(encoded)))
-          as Map<String, dynamic>;
-      final decodedResponse = SettleResponse.fromJson(decodedJson);
+      final decodedResponse = SettleResponse.fromHeader(encoded);
 
       expect(decodedResponse.success, response.success);
       expect(decodedResponse.transaction, response.transaction);
       expect(decodedResponse.network.identifier, response.network.identifier);
+    });
+
+    test('fromHeader throws InvalidPayloadException for invalid base64', () {
+      expect(() => SettleResponse.fromHeader('not-base64!'),
+          throwsA(isA<InvalidPayloadException>()));
+    });
+
+    test('fromHeader throws InvalidPayloadException for invalid JSON', () {
+      final invalidJsonBase64 = base64Encode(utf8.encode('{"invalid": "json"'));
+      expect(() => SettleResponse.fromHeader(invalidJsonBase64),
+          throwsA(isA<InvalidPayloadException>()));
+    });
+
+    test('fromHeader matches expected fixed string', () {
+      const encoded =
+          'eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6IjB4VHgiLCJuZXR3b3JrIjoiZWlwMTU1OjEifQ==';
+      final response = SettleResponse.fromHeader(encoded);
+
+      expect(response.success, true);
+      expect(response.transaction, '0xTx');
+      expect(response.network.identifier, 'eip155:1');
+    });
+
+    test('encoded matches expected fixed string', () {
+      const response = SettleResponse(
+        success: true,
+        transaction: '0xTx',
+        network: Network(namespace: 'eip155', reference: '1'),
+      );
+      // {"success":true,"transaction":"0xTx","network":"eip155:1"}
+      // Base64 encoded: eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6IjB4VHgiLCJuZXR3b3JrIjoiZWlwMTU1OjEifQ==
+      expect(response.encoded,
+          'eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6IjB4VHgiLCJuZXR3b3JrIjoiZWlwMTU1OjEifQ==');
     });
   });
 }

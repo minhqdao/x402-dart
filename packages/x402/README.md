@@ -1,6 +1,6 @@
 # x402
 
-A client-side library for the x402 payment protocol in Dart. It provides a unified interface to handle "402 Payment Required" flows across multiple blockchain ecosystems, currently supporting EVM (Ethereum) and SVM (Solana).
+This library implements the x402 payment protocol in Dart. It provides a unified interface to handle "402 Payment Required" flows across multiple blockchain ecosystems, currently supporting EVM (Ethereum) and SVM (Solana).
 
 > This library currently only supports **V2** of the protocol. V1 was marked legacy and is **unsupported**.
 
@@ -9,7 +9,8 @@ This is the primary package intended for general use. You typically do not need 
 ## Features
 
 - **Multi-Chain Support**: Unified handling for EVM and SVM chains.
-- **Automated Handshake**: Simplifies the negotiation between client signers and server requirements.
+- **Client Payments**: Sign and send payments automatically when encountering `402 Payment Required` responses.
+- **Server Verification & Settlement**: Build payment requirements, verify incoming payments, and settle them through the facilitator.
 - **Standardized Models**: Consistent data structures for payment requirements and payloads.
 
 ## Getting Started
@@ -18,14 +19,14 @@ Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  x402: ^0.2.0
+  x402: ^0.3.0
 ```
 
 ## Usage
 
-There are two primary ways to interact with the protocol:
+The library can be used both as a client (to pay for resources) and as a server (to protect resources).
 
-### 1. Using X402Client (Recommended)
+### 1. Client Usage
 The `X402Client` is a high-level wrapper around the standard `http.Client`. It automatically detects 402 responses, finds a compatible signer, and retries the request with the required payment proof.
 
 ```dart
@@ -38,7 +39,7 @@ final client = X402Client(
     svmSigner
   ],
   onPaymentRequired: (req, resource, signer) async {
-    // Optional: Ask for user confirmation or add condition
+    // Optional: Ask for confirmation before paying
     return true;
   },
 );
@@ -53,17 +54,29 @@ if (response.statusCode == 200) {
 }
 ```
 
-### 2. Manual Handling
-If you need granular control, you can perform the handshake manually by parsing the `payment-required` header and using a specific `X402Signer` to generate the signature.
+### 2. Server Usage
+Servers define which resources require payment and verify incoming payment proofs.
+
+The core component is `X402ResourceServer`, which builds payment requirements, verifies payments, and performs settlement.
 
 ```dart
-final response = await client.get(uri);
-if (response.statusCode == 402) {
-  // Parse header, negotiate, sign, and retry manually
-}
+final resourceServer = await X402ResourceServer.create(
+  schemeServers: [
+    ExactEvmSchemeServer(chainId: 84532),
+    ExactSvmSchemeServer(cluster: SolanaCluster.devnet),
+  ],
+);
 ```
 
-Take a look at the [example](https://github.com/minhqdao/x402-dart/tree/main/examples) folder for complete implementations of both approaches.
+The server then:
+	1.	Builds payment requirements for protected resources.
+	2.	Sends a 402 Payment Required response with the requirements header.
+	3.	Verifies the payment payload sent by the client.
+	4.	Settles the payment through the facilitator before serving the resource.
+
+For integration with `shelf`, see the [x402_shelf](https://pub.dev/packages/x402_shelf) package.
+
+See the [example](https://github.com/minhqdao/x402-dart/tree/main/examples) folder for complete client and server implementations.
 
 ## Related Packages
 

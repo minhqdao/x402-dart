@@ -294,6 +294,16 @@ void main() {
 
       expect(response.statusCode, 200);
       expect(await response.readAsString(), 'Success');
+
+      // MUST have settlement header
+      final settleHeader = response.headers[kPaymentResponseHeader];
+      expect(settleHeader, isNotNull);
+
+      final decoded = utf8.decode(base64Decode(settleHeader!));
+      final json = jsonDecode(decoded) as Map<String, dynamic>;
+      expect(json['success'], true);
+      expect(json['transaction'], 'tx');
+      expect(json['network'], 'net:test');
     });
 
     test('supports different HTTP methods', () async {

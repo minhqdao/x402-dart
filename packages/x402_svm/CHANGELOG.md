@@ -1,3 +1,10 @@
+## 0.3.0
+
+- **Breaking Change**: Introduced `SolanaCluster` and `SolanaNetwork` (CAIP-2 compliant) for identifying Solana networks.
+- Added `ExactSvmSchemeServer` for server-side verification of SPL Token transfers.
+- Updated `ExactSvmSchemeClient` to conform to the new `Network` model.
+- Updated to `x402_core: ^0.3.0`.
+
 ## 0.2.0
 
 - Updated `SvmSigner` to support the new `SignedPayment` return type.

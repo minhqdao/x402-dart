@@ -1,3 +1,8 @@
+## 0.3.0
+
+- Updated to `x402_core: ^0.3.0`.
+- Updated `X402Interceptor` to use the new `PaymentRequiredResponse.fromHeader` and `SignedPayment.encoded`.
+
 ## 0.2.0
 
 - Updated `X402Interceptor` to support the new `SignedPayment` return type from signers.

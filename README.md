@@ -37,22 +37,22 @@ For most use cases, you only need to add the main `x402` package to your project
 
 ```yaml
 dependencies:
-  x402: ^0.2.0
+  x402: ^0.3.0
 ```
 
 If you prefer using **Dio**, you can use the `x402_dio` package:
 
 ```yaml
 dependencies:
-  x402: ^0.2.0     # For signers (EvmSigner, SvmSigner)
-  x402_dio: ^0.2.0 # For X402Interceptor
+  x402: ^0.3.0     # For signers (EvmSigner, SvmSigner)
+  x402_dio: ^0.3.0 # For X402Interceptor
 ```
 
 On the server side, you can turn your `shelf` route into a paid one using the `x402PaymentMiddleware`:
 
 ```yaml
 dependencies:
-  x402: ^0.2.0     # For facilitator clients and resource servers
+  x402: ^0.3.0     # For facilitator clients and resource servers
   x402_shelf: ^0.1.0 # For x402PaymentMiddleware
 ```
 

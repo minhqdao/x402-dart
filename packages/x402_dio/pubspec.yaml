@@ -1,6 +1,6 @@
 name: x402_dio
 description: Dio interceptor for automatic HTTP 402 Payment Required handling with the x402 protocol.
-version: 0.2.0
+version: 0.3.0
 repository: https://github.com/minhqdao/x402-dart
 homepage: https://github.com/minhqdao/x402-dart
 issue_tracker: https://github.com/minhqdao/x402-dart/issues
@@ -18,7 +18,7 @@ resolution: workspace
 
 dependencies:
   dio: ^5.9.2
-  x402_core: ^0.2.0
+  x402_core: ^0.3.0
 
 dev_dependencies:
   lint: ^2.8.0

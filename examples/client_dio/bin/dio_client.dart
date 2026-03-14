@@ -57,6 +57,18 @@ void main() async {
   try {
     final response = await dio.get('$host$endpointPath');
     stdout.writeln('✅ Success: ${response.data}');
+
+    // Extract settlement details from the header
+    final settleHeader = response.headers.value(kPaymentResponseHeader);
+    if (settleHeader != null) {
+      final settleResponse = SettleResponse.fromHeader(settleHeader);
+      stdout.writeln('--- Settlement Details ---');
+      stdout.writeln('Transaction: ${settleResponse.transaction}');
+      stdout.writeln('Network:     ${settleResponse.network}');
+      if (settleResponse.payer != null) {
+        stdout.writeln('Payer:       ${settleResponse.payer}');
+      }
+    }
   } on DioException catch (e) {
     stderr.writeln('❌ Error: ${e.message}');
     if (e.response != null) {
