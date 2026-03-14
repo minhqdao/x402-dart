@@ -52,9 +52,7 @@ Middleware x402PaymentMiddleware(
         '/${request.url.path}',
       );
 
-      if (matched == null) {
-        return innerHandler(request);
-      }
+      if (matched == null) return innerHandler(request);
 
       final (pattern, config) = matched;
 
@@ -84,10 +82,7 @@ Middleware x402PaymentMiddleware(
         );
       }
 
-      final matching = server.findMatchingRequirements(
-        requirements,
-        payload,
-      );
+      final matching = server.findMatchingRequirements(requirements, payload);
 
       if (matching == null) {
         return _buildResponse(
@@ -98,10 +93,7 @@ Middleware x402PaymentMiddleware(
         );
       }
 
-      final verify = await server.verifyPayment(
-        payload,
-        matching,
-      );
+      final verify = await server.verifyPayment(payload, matching);
 
       if (!verify.isValid) {
         return _buildResponse(
@@ -112,8 +104,28 @@ Middleware x402PaymentMiddleware(
         );
       }
 
-      // Payment verified — continue
-      return innerHandler(request);
+      final settle = await server.settlePayment(payload, matching);
+
+      if (!settle.success) {
+        return Response.internalServerError(body: 'Payment settlement failed');
+      }
+
+      final enrichedRequest = request.change(
+        context: {
+          ...request.context,
+          'x402.payer': settle.payer,
+          'x402.transaction': settle.transaction,
+        },
+      );
+
+      final response = await innerHandler(enrichedRequest);
+
+      return response.change(
+        headers: {
+          ...response.headers,
+          kPaymentResponseHeader: settle.encoded,
+        },
+      );
     };
   };
 }

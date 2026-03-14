@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:x402_core/src/models/network.dart';
 
 /// Response returned by a facilitator when settling a payment.
@@ -7,6 +9,9 @@ class SettleResponse {
 
   /// Error reason if settlement failed.
   final String? errorReason;
+
+  /// Error message if settlement failed.
+  final String? errorMessage;
 
   /// Address or identifier of the payer.
   final String? payer;
@@ -23,6 +28,7 @@ class SettleResponse {
   const SettleResponse({
     required this.success,
     this.errorReason,
+    this.errorMessage,
     this.payer,
     required this.transaction,
     required this.network,
@@ -33,6 +39,7 @@ class SettleResponse {
     return SettleResponse(
       success: json['success'] as bool,
       errorReason: json['errorReason'] as String?,
+      errorMessage: json['errorMessage'] as String?,
       payer: json['payer'] as String?,
       transaction: json['transaction'] as String,
       network: Network.parse(json['network'] as String),
@@ -43,9 +50,13 @@ class SettleResponse {
   Map<String, dynamic> toJson() => {
         'success': success,
         if (errorReason != null) 'errorReason': errorReason,
+        if (errorMessage != null) 'errorMessage': errorMessage,
         if (payer != null) 'payer': payer,
         'transaction': transaction,
         'network': network.identifier,
         if (extensions != null) 'extensions': extensions,
       };
+
+  /// Encodes this response as a base64-encoded JSON string.
+  String get encoded => base64Encode(utf8.encode(jsonEncode(toJson())));
 }

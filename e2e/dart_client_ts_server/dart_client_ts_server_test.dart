@@ -170,7 +170,7 @@ void main() {
       } catch (e) {
         fail('Exception during request: $e');
       }
-    });
+    }, timeout: const Timeout(Duration(minutes: 1)));
 
     test('Client wrapper returns 402 when payment is denied via SVM', () async {
       final svmSigner = await SvmSigner.fromPrivateKeyHex(
@@ -194,7 +194,7 @@ void main() {
       } catch (e) {
         fail('Exception during request: $e');
       }
-    });
+    }, timeout: const Timeout(Duration(minutes: 1)));
   });
 
   group('Manually-handled clients', () {
@@ -294,7 +294,7 @@ void main() {
       final report = decoded['report'] as Map<String, dynamic>;
       expect(report['weather'], equals('sunny'));
       expect(report['temperature'], equals(70));
-    });
+    }, timeout: const Timeout(Duration(minutes: 1)));
   });
 
   group('Clients using the Dio interceptor', () {
@@ -396,7 +396,7 @@ void main() {
       } catch (e) {
         fail('Exception during request: $e');
       }
-    });
+    }, timeout: const Timeout(Duration(minutes: 1)));
 
     test('Client Dio returns 402 when payment is denied via SVM', () async {
       final svmSigner = await SvmSigner.fromPrivateKeyHex(
@@ -429,6 +429,6 @@ void main() {
       } catch (e) {
         fail('Exception during request: $e');
       }
-    });
+    }, timeout: const Timeout(Duration(minutes: 1)));
   });
 }

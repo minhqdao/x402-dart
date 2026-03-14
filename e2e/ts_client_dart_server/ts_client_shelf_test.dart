@@ -59,13 +59,13 @@ void main() {
         accepts: [
           PaymentOption(
             scheme: 'exact',
-            price: const Money('0.10'),
+            price: const Money('0.001'),
             network: const EvmNetwork(chainId: 84532),
             payTo: evmAddress,
           ),
           PaymentOption(
             scheme: 'exact',
-            price: const Money('0.10'),
+            price: const Money('0.001'),
             network: const SolanaNetwork.devnet(),
             payTo: svmAddress,
           ),
@@ -122,7 +122,7 @@ void main() {
         'SVM_PRIVATE_KEY': svmPrivateKeyPayer,
         'RESOURCE_SERVER_URL': serverUrl,
       },
-    ).timeout(const Duration(seconds: 30));
+    ).timeout(const Duration(minutes: 1));
 
     if (result.exitCode != 0) {
       fail(
@@ -130,5 +130,5 @@ void main() {
       );
     }
     expect(result.stdout, contains('TS Client Reward'));
-  });
+  }, timeout: const Timeout(Duration(minutes: 1)));
 }
