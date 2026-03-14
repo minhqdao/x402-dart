@@ -32,13 +32,13 @@ app.use(
                 accepts: [
                     {
                         scheme: "exact",
-                        price: "$0.001",
+                        price: "$0.000001",
                         network: "eip155:84532",
                         payTo: evmAddress,
                     },
                     {
                         scheme: "exact",
-                        price: "$0.001",
+                        price: "$0.000001",
                         network: "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
                         payTo: svmAddress,
                     },

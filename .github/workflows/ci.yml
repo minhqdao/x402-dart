@@ -28,10 +28,9 @@ jobs:
         steps:
             - uses: actions/checkout@v6
             - uses: dart-lang/setup-dart@v1
+            - uses: bluefireteam/melos-action@v3
             - uses: actions/setup-node@v6
-
             - name: Run e2e tests
-              working-directory: e2e
               env:
                   EVM_PRIVATE_KEY: ${{ secrets.EVM_PRIVATE_KEY }}
                   SVM_PRIVATE_KEY: ${{ secrets.SVM_PRIVATE_KEY }}
@@ -39,6 +38,4 @@ jobs:
                   SVM_ADDRESS: ${{ secrets.SVM_ADDRESS }}
                   EVM_PRIVATE_KEY_PAYER: ${{ secrets.EVM_PRIVATE_KEY_PAYER }}
                   SVM_PRIVATE_KEY_PAYER: ${{ secrets.SVM_PRIVATE_KEY_PAYER }}
-              run: |
-                  npm install
-                  dart test --concurrency=1 .
+              run: melos e2e

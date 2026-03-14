@@ -4,7 +4,7 @@ This repository contains the **Dart implementation** of the [x402 protocol](http
 
 > This library currently only supports **V2** of the protocol. V1 was marked legacy and is **unsupported**.
 
-x402 enables instant, automatic stablecoin payments directly over HTTP by reviving the HTTP 402 "Payment Required" status code. This implementation provides a suite of client-side libraries to integrate x402 payments into your Dart and Flutter applications.
+x402 enables instant, automatic stablecoin payments directly over HTTP by reviving the HTTP 402 "Payment Required" status code. This implementation provides a suite of both client- and server-side libraries to integrate x402 payments into your Dart and Flutter applications.
 
 ## Official Resources
 
@@ -17,11 +17,12 @@ This project is organized as a monorepo managed with [Melos](https://melos.inver
 
 | Package | Description |
 | --- | --- |
-| [**x402**](./packages/x402) | **Main entry point.** The primary client-side package for most users. |
+| [**x402**](./packages/x402) | **Main entry point.** The primary package for most users. |
 | [**x402_core**](./packages/x402_core) | Core protocol definitions, models, and blockchain-agnostic interfaces. |
 | [**x402_evm**](./packages/x402_evm) | EVM implementation supporting Ethereum and compatible chains (e.g., Base). |
 | [**x402_svm**](./packages/x402_svm) | SVM implementation supporting Solana and compatible chains. |
 | [**x402_dio**](./packages/x402_dio) | Dio-based client library providing an `X402Interceptor`. |
+| [**x402_shelf**](./packages/x402_shelf) | Shelf-based server library providing an `x402PaymentMiddleware`. |
 
 ## Why use x402 Dart?
 
@@ -45,6 +46,14 @@ If you prefer using **Dio**, you can use the `x402_dio` package:
 dependencies:
   x402: ^0.2.0     # For signers (EvmSigner, SvmSigner)
   x402_dio: ^0.2.0 # For X402Interceptor
+```
+
+On the server side, you can turn your `shelf` route into a paid one using the `x402PaymentMiddleware`:
+
+```yaml
+dependencies:
+  x402: ^0.2.0     # For facilitator clients and resource servers
+  x402_shelf: ^0.1.0 # For x402PaymentMiddleware
 ```
 
 ### Quick Example
@@ -88,16 +97,19 @@ This repo uses Melos for workspace management.
 # Bootstrap the workspace
 melos bootstrap
 
-# Run all tests
-melos run test
-
-# Analyze all packages
-melos run analyze
-
 # Format all Dart files
 melos format
+
+# Analyze all packages
+melos analyze
+
+# Run unit tests
+melos test
+
+# Run e2e tests
+melos e2e
 ```
 
 ## License
 
-This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the [Apache-2.0 License](LICENSE).

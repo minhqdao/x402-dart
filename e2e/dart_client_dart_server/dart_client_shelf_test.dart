@@ -51,13 +51,13 @@ void main() {
         accepts: [
           PaymentOption(
             scheme: 'exact',
-            price: const Money('0.001'),
+            price: const Money('0.000001'),
             network: const EvmNetwork(chainId: 84532),
             payTo: evmAddress,
           ),
           PaymentOption(
             scheme: 'exact',
-            price: const Money('0.001'),
+            price: const Money('0.000001'),
             network: const SolanaNetwork.devnet(),
             payTo: svmAddress,
           ),

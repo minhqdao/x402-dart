@@ -49,7 +49,7 @@ Middleware x402PaymentMiddleware(
       final matched = _matchRoute(
         routes,
         request.method,
-        '/${request.url.path}',
+        request.requestedUri.path,
       );
 
       if (matched == null) return innerHandler(request);
