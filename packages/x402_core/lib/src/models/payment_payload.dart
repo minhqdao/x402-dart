@@ -1,7 +1,7 @@
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_info.dart';
 
-/// The payload sent by the client in the `payment-signature` (or `X-PAYMENT`) header.
+/// The payload sent by the client in the `payment-signature` (or `x-payment`) header.
 ///
 /// This object contains the proof of payment (signature or transaction) and
 /// the context of the payment being made.

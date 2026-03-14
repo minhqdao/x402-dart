@@ -51,13 +51,13 @@ void main() {
         accepts: [
           PaymentOption(
             scheme: 'exact',
-            price: const Money('0.10'),
+            price: const Money('0.001'),
             network: const EvmNetwork(chainId: 84532),
             payTo: evmAddress,
           ),
           PaymentOption(
             scheme: 'exact',
-            price: const Money('0.10'),
+            price: const Money('0.001'),
             network: const SolanaNetwork.devnet(),
             payTo: svmAddress,
           ),
@@ -146,7 +146,7 @@ void main() {
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     expect(body['data'], equals('Shelf Premium Content'));
-  });
+  }, timeout: const Timeout(Duration(minutes: 1)));
 
   test('Client returns 402 when SVM payment is denied', () async {
     final svmSigner = await SvmSigner.fromPrivateKeyHex(
@@ -166,5 +166,5 @@ void main() {
 
     expect(response.statusCode, equals(402),
         reason: 'Should return 402 Payment Required when user denies payment');
-  });
+  }, timeout: const Timeout(Duration(minutes: 1)));
 }

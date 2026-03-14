@@ -5,7 +5,7 @@ void main() {
   group('Constants', () {
     test('should have correct values', () {
       expect(kX402Version, equals(2));
-      expect(kPaymentHeader, equals('X-PAYMENT'));
+      expect(kPaymentHeader, equals('x-payment'));
       expect(kPaymentRequiredStatus, equals(402));
     });
   });

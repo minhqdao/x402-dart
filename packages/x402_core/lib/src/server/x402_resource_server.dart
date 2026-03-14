@@ -7,6 +7,7 @@ import 'package:x402_core/src/models/payment_required_response.dart';
 import 'package:x402_core/src/models/payment_requirement.dart';
 import 'package:x402_core/src/models/resource_config.dart';
 import 'package:x402_core/src/models/resource_info.dart';
+import 'package:x402_core/src/models/settle_response.dart';
 import 'package:x402_core/src/models/supported_response.dart';
 import 'package:x402_core/src/models/verify_response.dart';
 import 'package:x402_core/src/server/facilitator_client.dart';
@@ -276,6 +277,28 @@ class X402ResourceServer {
     );
 
     return _encodePaymentRequiredHeader(response);
+  }
+
+  Future<SettleResponse> settlePayment(
+    PaymentPayload payload,
+    PaymentRequirement requirement,
+  ) {
+    final key = _RouteKey(
+      payload.x402Version,
+      requirement.network,
+      requirement.scheme,
+    );
+
+    final facilitatorClient = _routes[key]?.client;
+
+    if (facilitatorClient == null) {
+      throw StateError(
+        'No facilitator available for version ${payload.x402Version}, '
+        '${requirement.scheme} on ${requirement.network}',
+      );
+    }
+
+    return facilitatorClient.settle(payload, requirement);
   }
 }
 

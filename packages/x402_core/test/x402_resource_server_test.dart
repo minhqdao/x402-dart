@@ -912,6 +912,62 @@ void main() {
         }
       });
 
+      test('settlePayment calls facilitator settle', () async {
+        final requirement = PaymentRequirement(
+          scheme: 'exact',
+          network: net1,
+          asset: 'asset',
+          amount: '100',
+          payTo: 'receiver',
+          maxTimeoutSeconds: 60,
+          extra: const {},
+        );
+
+        final payload = PaymentPayload(
+          x402Version: kX402Version,
+          resource: const ResourceInfo(
+            url: 'url',
+            description: 'desc',
+            mimeType: 'mime',
+          ),
+          accepted: requirement,
+          payload: const {},
+        );
+
+        final result = await resourceServer.settlePayment(payload, requirement);
+
+        expect(result.success, isTrue);
+        expect(result.transaction, equals('tx'));
+      });
+
+      test('throws StateError if no facilitator available for version', () {
+        final requirement = PaymentRequirement(
+          scheme: 'exact',
+          network: net1,
+          asset: 'asset',
+          amount: '100',
+          payTo: 'receiver',
+          maxTimeoutSeconds: 60,
+          extra: const {},
+        );
+
+        final payload = PaymentPayload(
+          x402Version: 999,
+          resource: const ResourceInfo(
+            url: 'url',
+            description: 'desc',
+            mimeType: 'mime',
+          ),
+          accepted: requirement,
+          payload: const {},
+        );
+
+        expect(
+          () => resourceServer.settlePayment(payload, requirement),
+          throwsStateError,
+        );
+      });
+
       test(
           'verifyPayment does not validate payload.accepted vs requirements mismatch',
           () async {
