@@ -247,23 +247,13 @@ void main() {
         extensions: paymentResponse.extensions,
       );
 
+      await Future.delayed(const Duration(milliseconds: 200));
+
       // 4. Retry Request with Signature
       final retryResponse = await client.get(
         uri,
         headers: {kPaymentSignatureHeader: signature.encoded},
       );
-
-      // Add this before the expect:
-      if (retryResponse.statusCode != 200) {
-        print('Retry failed with ${retryResponse.statusCode}');
-        print('Body: ${retryResponse.body}');
-        print('Headers: ${retryResponse.headers}');
-        final retryHeader = retryResponse.headers[kPaymentRequiredHeader];
-        if (retryHeader != null) {
-          final retryPayment = PaymentRequiredResponse.fromHeader(retryHeader);
-          print('Payment required response: $retryPayment');
-        }
-      }
 
       expect(retryResponse.statusCode, equals(200),
           reason: 'Retry with signature should return 200 OK');
