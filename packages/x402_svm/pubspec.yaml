@@ -1,6 +1,6 @@
 name: x402_svm
 description: SVM blockchain implementation of the x402 protocol.
-version: 0.2.0
+version: 0.3.0
 repository: https://github.com/minhqdao/x402-dart
 homepage: https://github.com/minhqdao/x402-dart
 issue_tracker: https://github.com/minhqdao/x402-dart/issues
@@ -20,7 +20,7 @@ dependencies:
   convert: ^3.1.2
   http: ^1.6.0
   solana: ^0.32.0
-  x402_core: ^0.2.0
+  x402_core: ^0.3.0
 
 dev_dependencies:
   lint: ^2.8.0

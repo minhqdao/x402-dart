@@ -1,6 +1,6 @@
 name: x402
 description: Unified package for the x402 protocol with support for multiple blockchains.
-version: 0.2.0
+version: 0.3.0
 repository: https://github.com/minhqdao/x402-dart
 homepage: https://github.com/minhqdao/x402-dart
 issue_tracker: https://github.com/minhqdao/x402-dart/issues
@@ -17,9 +17,9 @@ environment:
 resolution: workspace
 
 dependencies:
-  x402_core: ^0.2.0
-  x402_evm: ^0.2.0
-  x402_svm: ^0.2.0
+  x402_core: ^0.3.0
+  x402_evm: ^0.3.0
+  x402_svm: ^0.3.0
 
 dev_dependencies:
   lint: ^2.8.0

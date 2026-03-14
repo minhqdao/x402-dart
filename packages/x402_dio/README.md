@@ -20,8 +20,8 @@ Add the dependencies to your `pubspec.yaml`:
 ```yaml
 dependencies:
   dio: ^5.9.0
-  x402: ^0.2.0     # For signers (EvmSigner, SvmSigner)
-  x402_dio: ^0.2.0 # For X402Interceptor
+  x402: ^0.3.0     # For signers (EvmSigner, SvmSigner)
+  x402_dio: ^0.3.0 # For X402Interceptor
 ```
 
 ## Usage

@@ -1,6 +1,6 @@
 name: x402_evm
 description: EVM-compatible blockchain implementation of the x402 protocol.
-version: 0.2.0
+version: 0.3.0
 repository: https://github.com/minhqdao/x402-dart
 homepage: https://github.com/minhqdao/x402-dart
 issue_tracker: https://github.com/minhqdao/x402-dart/issues
@@ -21,7 +21,7 @@ dependencies:
   crypto: ^3.0.7
   http: ^1.6.0
   web3dart: ^2.7.3
-  x402_core: ^0.2.0
+  x402_core: ^0.3.0
 
 dev_dependencies:
   lint: ^2.8.0

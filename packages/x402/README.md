@@ -19,7 +19,7 @@ Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  x402: ^0.2.0
+  x402: ^0.3.0
 ```
 
 ## Usage

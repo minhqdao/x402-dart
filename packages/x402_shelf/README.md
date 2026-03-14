@@ -23,7 +23,7 @@ Add dependencies to your `pubspec.yaml`:
 ```yaml
 dependencies:
   shelf: ^1.4.2
-  x402: ^0.2.0
+  x402: ^0.3.0
   x402_shelf: ^0.1.0
 ```
 
