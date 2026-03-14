@@ -1,3 +1,10 @@
+## 0.3.0
+
+- **Breaking Change**: Transitioned to the `Network` class (`EvmNetwork`) instead of string-based network identifiers.
+- Added `ExactEvmSchemeServer` for server-side verification of EIP-3009 (USDC) payments.
+- Updated `ExactEvmSchemeClient` to conform to the new `Network` model.
+- Updated to `x402_core: ^0.3.0`.
+
 ## 0.2.0
 
 - Updated `EvmSigner` to support the new `SignedPayment` return type.

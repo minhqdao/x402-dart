@@ -1,16 +1,13 @@
 ## 0.3.0
 
-- Add e2e tests
-- Add `PaymentRequiredResponse.fromHeader`
-- Add `PaymentRequiredResponse.findFirstSupportedby()`
-- Remove `code` from `X402Exception`, include `originalError` in `toString()`
-- Restructure directory, move folders into protocol
-- Introduced framework-agnostic server-side protocol primitives
-- Added `X402Request` abstraction for describing incoming requests
-- Added `PaymentSchemeVerifier` interface for scheme-specific verification
-- Added `PaymentVerifier` to orchestrate payment verification
-- Added `VerificationResult` model
-- Included core unit tests for server-side verification behavior
+- **Breaking Change**: Changed `network` from `String` to a dedicated `Network` class (CAIP-2 compliant).
+- Added `X402ResourceServer` as a framework-agnostic component for protecting resources and verifying payments.
+- Added `SettleResponse` and `VerifyResponse` models for payment verification and settlement reporting.
+- Added `PaymentRequiredResponse.fromHeader` and `findFirstSupportedBy`.
+- Removed `code` from `X402Exception`, include `originalError` in `toString()`.
+- Restructured internal directory, moving core logic into sub-directories.
+- Completely revamped e2e tests using npm packages for facilitator and server.
+- Significantly expanded test coverage with unit tests for models and server logic.
 
 ## 0.2.0
 
