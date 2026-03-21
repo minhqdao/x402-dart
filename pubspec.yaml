@@ -22,7 +22,7 @@ workspace:
 
 dev_dependencies:
   lint: ^2.8.0
-  melos: ^7.4.0
+  melos: ^7.4.1
 
 melos:
   scripts:
