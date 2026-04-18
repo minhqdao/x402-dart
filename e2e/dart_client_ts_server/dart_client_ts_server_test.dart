@@ -9,7 +9,7 @@ import 'package:x402/x402.dart';
 import 'package:x402_dio/x402_dio.dart';
 
 void main() {
-  const url = 'http://localhost:4021/weather';
+  const url = 'http://localhost:4021/premium';
   final uri = Uri.parse(url);
 
   Future<void> ensureNodeAvailable() async {

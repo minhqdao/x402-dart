@@ -28,7 +28,7 @@ const resourceServer = new x402ResourceServer()
 app.use(
     paymentMiddleware(
         {
-            "GET /weather": {
+            "GET /premium": {
                 accepts: [
                     {
                         scheme: "exact",
@@ -50,7 +50,7 @@ app.use(
     ),
 );
 
-app.get("/weather", (req, res) => {
+app.get("/premium", (req, res) => {
     res.send({
         report: {
             weather: "sunny",
