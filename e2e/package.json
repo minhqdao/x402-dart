@@ -8,7 +8,7 @@
     "ts-client-svm": "tsx ts_client_dart_server/ts_clients/svm_client.ts"
   },
   "dependencies": {
-    "@solana/kit": "^6.3.1",
+    "@solana/kit": "^6.9.0",
     "@x402/evm": "^2.11.0",
     "@x402/express": "^2.11.0",
     "@x402/fetch": "^2.11.0",
