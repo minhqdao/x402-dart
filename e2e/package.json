@@ -9,17 +9,17 @@
   },
   "dependencies": {
     "@solana/kit": "^6.10.0",
-    "@x402/evm": "^2.15.0",
-    "@x402/express": "^2.15.0",
-    "@x402/fetch": "^2.15.0",
-    "@x402/svm": "^2.15.0",
+    "@x402/evm": "^2.16.0",
+    "@x402/express": "^2.16.0",
+    "@x402/fetch": "^2.16.0",
+    "@x402/svm": "^2.16.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "viem": "^2.52.2"
+    "viem": "^2.53.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^26.0.0",
+    "@types/node": "^26.0.1",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   }
