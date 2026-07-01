@@ -15,7 +15,7 @@
     "@x402/svm": "^2.16.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "viem": "^2.53.1"
+    "viem": "^2.54.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
