@@ -8,18 +8,18 @@
     "ts-client-svm": "tsx ts_client_dart_server/ts_clients/svm_client.ts"
   },
   "dependencies": {
-    "@solana/kit": "^6.10.0",
-    "@x402/evm": "^2.16.0",
-    "@x402/express": "^2.16.0",
-    "@x402/fetch": "^2.16.0",
-    "@x402/svm": "^2.16.0",
+    "@solana/kit": "^7.0.0",
+    "@x402/evm": "^2.17.0",
+    "@x402/express": "^2.17.0",
+    "@x402/fetch": "^2.17.0",
+    "@x402/svm": "^2.17.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "viem": "^2.53.1"
+    "viem": "^2.54.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^26.0.1",
+    "@types/node": "^26.1.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   }
