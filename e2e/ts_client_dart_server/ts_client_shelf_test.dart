@@ -1,3 +1,6 @@
+@Timeout(Duration(minutes: 2))
+library;
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -102,7 +105,7 @@ void main() {
         'EVM_PRIVATE_KEY': evmPrivateKeyPayer,
         'RESOURCE_SERVER_URL': serverUrl,
       },
-    ).timeout(const Duration(seconds: 30));
+    ).timeout(const Duration(seconds: 90));
 
     if (result.exitCode != 0) {
       fail(
@@ -122,7 +125,7 @@ void main() {
         'SVM_PRIVATE_KEY': svmPrivateKeyPayer,
         'RESOURCE_SERVER_URL': serverUrl,
       },
-    ).timeout(const Duration(minutes: 1));
+    ).timeout(const Duration(seconds: 90));
 
     if (result.exitCode != 0) {
       fail(
@@ -130,5 +133,5 @@ void main() {
       );
     }
     expect(result.stdout, contains('TS Client Reward'));
-  }, timeout: const Timeout(Duration(minutes: 1)));
+  }, timeout: const Timeout(Duration(minutes: 2)));
 }

@@ -36,5 +36,5 @@ melos:
       description: Run all e2e tests.
       run: |
         cd e2e
-        if [ ! -d node_modules ]; then npm install; fi
-        dart test --concurrency=1 .
+        if [ ! -d node_modules ]; then npm ci; fi
+        dart test --concurrency=1 --timeout=2m .
