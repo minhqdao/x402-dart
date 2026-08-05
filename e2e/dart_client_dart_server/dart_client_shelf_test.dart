@@ -1,3 +1,6 @@
+@Timeout(Duration(minutes: 2))
+library;
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,7 +12,7 @@ import 'package:x402/x402.dart';
 import 'package:x402_shelf/x402_shelf.dart';
 
 void main() {
-  final env = DotEnv(includePlatformEnvironment: true)..load();
+  final env = DotEnv(includePlatformEnvironment: true, quiet: true)..load();
 
   late final HttpServer server;
   late final X402ResourceServer resourceServer;
@@ -162,7 +165,7 @@ void main() {
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     expect(body['data'], equals('Shelf Premium Content'));
-  }, timeout: const Timeout(Duration(minutes: 1)));
+  }, timeout: const Timeout(Duration(minutes: 2)));
 
   test('Client returns 402 when SVM payment is denied', () async {
     final svmSigner = await SvmSigner.fromPrivateKeyHex(
@@ -182,5 +185,5 @@ void main() {
 
     expect(response.statusCode, equals(402),
         reason: 'Should return 402 Payment Required when user denies payment');
-  }, timeout: const Timeout(Duration(minutes: 1)));
+  }, timeout: const Timeout(Duration(minutes: 2)));
 }

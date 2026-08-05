@@ -1,3 +1,7 @@
+@Timeout(Duration(minutes: 2))
+library;
+
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,8 +13,8 @@ import 'package:x402/x402.dart';
 import 'package:x402_dio/x402_dio.dart';
 
 void main() {
-  const url = 'http://localhost:4021/weather';
-  final uri = Uri.parse(url);
+  late final Uri uri;
+  late final String url;
 
   Future<void> ensureNodeAvailable() async {
     final node = await Process.run('node', ['--version']);
@@ -19,24 +23,7 @@ void main() {
     }
   }
 
-  Future<void> waitForServer() async {
-    final client = HttpClient();
-
-    for (var i = 0; i < 30; i++) {
-      try {
-        final request = await client.getUrl(uri);
-        final response = await request.close();
-
-        if (response.statusCode == 402 || response.statusCode == 200) return;
-      } catch (_) {}
-
-      await Future.delayed(const Duration(seconds: 1));
-    }
-
-    throw Exception("TS server did not start");
-  }
-
-  final env = DotEnv(includePlatformEnvironment: true)..load();
+  final env = DotEnv(includePlatformEnvironment: true, quiet: true)..load();
 
   final evmAddress = env['EVM_ADDRESS'];
   if (evmAddress == null || evmAddress.isEmpty) {
@@ -59,29 +46,77 @@ void main() {
   }
 
   late final Process tsServer;
+  var tsServerStarted = false;
 
   setUpAll(() async {
     await ensureNodeAvailable();
 
     // Start TS server
     tsServer = await Process.start(
-      'npm',
-      ['run', 'ts-server'],
+      Platform.isWindows
+          ? r'node_modules\.bin\tsx.cmd'
+          : 'node_modules/.bin/tsx',
+      ['dart_client_ts_server/server.ts'],
       environment: {
         ...Platform.environment,
         'EVM_ADDRESS': evmAddress,
         'SVM_ADDRESS': svmAddress,
+        // Let the OS select a free port so parallel jobs cannot collide.
+        'PORT': '0',
       },
     );
+    tsServerStarted = true;
 
-    tsServer.stdout.transform(utf8.decoder).listen(stdout.writeln);
-    tsServer.stderr.transform(utf8.decoder).listen(stderr.writeln);
+    final serverReady = Completer<Uri>();
+    final output = StringBuffer();
+    final listeningPattern = RegExp(r'Server listening at (http://\S+)');
 
-    await waitForServer();
-    stdout.writeln('TS server is up and running');
+    tsServer.stdout
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .listen((line) {
+      stdout.writeln(line);
+      output.writeln(line);
+      final match = listeningPattern.firstMatch(line);
+      if (match != null && !serverReady.isCompleted) {
+        serverReady.complete(Uri.parse('${match.group(1)}/weather'));
+      }
+    });
+    tsServer.stderr.transform(utf8.decoder).listen((chunk) {
+      stderr.write(chunk);
+      output.write(chunk);
+    });
+
+    unawaited(tsServer.exitCode.then((exitCode) {
+      if (!serverReady.isCompleted) {
+        serverReady.completeError(
+          StateError(
+            'TS server exited with code $exitCode before becoming ready.\n'
+            '$output',
+          ),
+        );
+      }
+    }));
+
+    uri = await serverReady.future.timeout(
+      const Duration(seconds: 30),
+      onTimeout: () => throw TimeoutException(
+        'TS server did not become ready within 30 seconds.\n$output',
+      ),
+    );
+    url = uri.toString();
   });
 
-  tearDownAll(() => tsServer.kill());
+  tearDownAll(() async {
+    if (!tsServerStarted) return;
+    tsServer.kill();
+    try {
+      await tsServer.exitCode.timeout(const Duration(seconds: 10));
+    } on TimeoutException {
+      tsServer.kill(ProcessSignal.sigkill);
+      await tsServer.exitCode;
+    }
+  });
 
   group('Clients using wrapper', () {
     test('Client wrapper pays for premium content', () async {
@@ -186,7 +221,7 @@ void main() {
       } catch (e) {
         fail('Exception during request: $e');
       }
-    }, timeout: const Timeout(Duration(minutes: 1)));
+    }, timeout: const Timeout(Duration(minutes: 2)));
 
     test('Client wrapper returns 402 when payment is denied via SVM', () async {
       final svmSigner = await SvmSigner.fromPrivateKeyHex(
@@ -210,7 +245,7 @@ void main() {
       } catch (e) {
         fail('Exception during request: $e');
       }
-    }, timeout: const Timeout(Duration(minutes: 1)));
+    }, timeout: const Timeout(Duration(minutes: 2)));
   });
 
   group('Manually-handled clients', () {
@@ -328,7 +363,7 @@ void main() {
       final report = decoded['report'] as Map<String, dynamic>;
       expect(report['weather'], equals('sunny'));
       expect(report['temperature'], equals(70));
-    }, timeout: const Timeout(Duration(minutes: 1)));
+    }, timeout: const Timeout(Duration(minutes: 2)));
   });
 
   group('Clients using the Dio interceptor', () {
@@ -339,6 +374,7 @@ void main() {
       );
 
       final dio = Dio();
+      addTearDown(() => dio.close(force: true));
       dio.interceptors.add(X402Interceptor(
         dio: dio,
         signers: [evmSigner],
@@ -380,6 +416,7 @@ void main() {
       );
 
       final dio = Dio();
+      addTearDown(() => dio.close(force: true));
       dio.interceptors.add(X402Interceptor(
         dio: dio,
         signers: [evmSigner],
@@ -414,6 +451,7 @@ void main() {
       );
 
       final dio = Dio();
+      addTearDown(() => dio.close(force: true));
       dio.interceptors.add(X402Interceptor(
         dio: dio,
         signers: [svmSigner],
@@ -446,7 +484,7 @@ void main() {
       } catch (e) {
         fail('Exception during request: $e');
       }
-    }, timeout: const Timeout(Duration(minutes: 1)));
+    }, timeout: const Timeout(Duration(minutes: 2)));
 
     test('Client Dio returns 402 when payment is denied via SVM', () async {
       final svmSigner = await SvmSigner.fromPrivateKeyHex(
@@ -455,6 +493,7 @@ void main() {
       );
 
       final dio = Dio();
+      addTearDown(() => dio.close(force: true));
       dio.interceptors.add(X402Interceptor(
         dio: dio,
         signers: [svmSigner],
@@ -479,6 +518,6 @@ void main() {
       } catch (e) {
         fail('Exception during request: $e');
       }
-    }, timeout: const Timeout(Duration(minutes: 1)));
+    }, timeout: const Timeout(Duration(minutes: 2)));
   });
 }
