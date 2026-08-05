@@ -12,7 +12,7 @@ import 'package:x402/x402.dart';
 import 'package:x402_shelf/x402_shelf.dart';
 
 void main() {
-  final env = DotEnv(includePlatformEnvironment: true)..load();
+  final env = DotEnv(includePlatformEnvironment: true, quiet: true)..load();
 
   Future<void> ensureNodeAvailable() async {
     final node = await Process.run('node', ['--version']);

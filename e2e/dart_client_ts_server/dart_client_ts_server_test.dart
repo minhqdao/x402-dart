@@ -23,7 +23,7 @@ void main() {
     }
   }
 
-  final env = DotEnv(includePlatformEnvironment: true)..load();
+  final env = DotEnv(includePlatformEnvironment: true, quiet: true)..load();
 
   final evmAddress = env['EVM_ADDRESS'];
   if (evmAddress == null || evmAddress.isEmpty) {
