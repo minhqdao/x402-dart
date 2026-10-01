@@ -21,7 +21,7 @@ workspace:
   - e2e
 
 dev_dependencies:
-  lint: ^2.8.0
+  lint: ^2.14.0
   melos: ^8.6.0
 
 melos:

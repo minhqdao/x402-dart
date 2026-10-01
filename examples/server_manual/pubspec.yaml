@@ -12,4 +12,4 @@ dependencies:
   x402:
 
 dev_dependencies:
-  lint: ^2.8.0
+  lint: ^2.14.0

@@ -22,4 +22,4 @@ dependencies:
   x402_svm: ^0.3.0
 
 dev_dependencies:
-  lint: ^2.8.0
+  lint: ^2.14.0

@@ -14,4 +14,4 @@ dependencies:
   x402_dio:
 
 dev_dependencies:
-  lint: ^2.8.0
+  lint: ^2.14.0
