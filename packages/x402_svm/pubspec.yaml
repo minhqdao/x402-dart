@@ -19,10 +19,10 @@ resolution: workspace
 dependencies:
   convert: ^3.1.2
   http: ^1.6.0
-  solana: ^0.32.0
+  solana: ^0.32.0+1
   x402_core: ^0.3.0
 
 dev_dependencies:
-  lint: ^2.8.0
+  lint: ^2.14.0
   mocktail: ^1.0.5
-  test: ^1.31.2
+  test: ^1.32.0

@@ -52,7 +52,7 @@ Middleware x402PaymentMiddleware(
         request.requestedUri.path,
       );
 
-      if (matched == null) return innerHandler(request);
+      if (matched == null) return await innerHandler(request);
 
       final (pattern, config) = matched;
 
