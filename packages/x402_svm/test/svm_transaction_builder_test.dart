@@ -32,7 +32,8 @@ void main() {
     });
 
     group('Instruction Order Tests', () {
-      test('instructions should be in correct order: Limit, Price, Transfer',
+      test(
+          'instructions should be in correct order: Limit, Price, Transfer, Memo',
           () async {
         // Arrange
         const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
@@ -84,13 +85,14 @@ void main() {
             SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
 
         // Assert
-        expect(decoded.instructions.length, equals(3),
-            reason: 'Should have exactly 3 instructions');
+        expect(decoded.instructions.length, equals(4),
+            reason: 'Should have exactly 4 instructions');
 
         // Check instruction order by program IDs and discriminators
         final ix0 = decoded.instructions[0];
         final ix1 = decoded.instructions[1];
         final ix2 = decoded.instructions[2];
+        final ix3 = decoded.instructions[3];
 
         // Instruction 0: SetComputeUnitLimit
         expect(
@@ -130,9 +132,75 @@ void main() {
           reason:
               'Third instruction should be TransferChecked (discriminator 12)',
         );
+
+        // Instruction 3: Memo
+        expect(
+          decoded.accountKeys[ix3.programIdIndex],
+          equals(MemoProgram.id),
+          reason: 'Fourth instruction should be Memo program',
+        );
+        expect(ix3.data.toList(), isNotEmpty,
+            reason: 'Memo instruction should contain memo bytes');
       });
 
-      test('compute unit limit should be 200000', () async {
+      test('memo should be unique across transactions (prevents replays)',
+          () async {
+        const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+        const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
+        const testFeePayer = '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC';
+        final amount = BigInt.from(1000000);
+
+        _setupMocks(mockRpcClient, testMintAddress);
+
+        final tx1 = await SvmTransactionBuilder.createTransferTransaction(
+          signer: testSigner,
+          recipient: testRecipient,
+          amount: amount,
+          tokenMint: testMintAddress,
+          feePayer: testFeePayer,
+          solanaClient: mockClient,
+        );
+        final tx2 = await SvmTransactionBuilder.createTransferTransaction(
+          signer: testSigner,
+          recipient: testRecipient,
+          amount: amount,
+          tokenMint: testMintAddress,
+          feePayer: testFeePayer,
+          solanaClient: mockClient,
+        );
+
+        expect(tx1.transaction, isNot(equals(tx2.transaction)),
+            reason:
+                'Consecutive transactions must differ (random memo) even with same blockhash');
+      });
+
+      test('should use provided memo when specified', () async {
+        const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+        const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
+        const testFeePayer = '7vN9772SUn3mbev6pCxyY6SAsbC4TAt796vXvUAm67fC';
+        final amount = BigInt.from(1000000);
+
+        _setupMocks(mockRpcClient, testMintAddress);
+
+        const customMemo = 'seller-provided-memo';
+        final encodedTx = await SvmTransactionBuilder.createTransferTransaction(
+          signer: testSigner,
+          recipient: testRecipient,
+          amount: amount,
+          tokenMint: testMintAddress,
+          feePayer: testFeePayer,
+          solanaClient: mockClient,
+          memo: customMemo,
+        );
+
+        final decoded =
+            SvmTransactionBuilder.decodeTransaction(encodedTx.transaction);
+        final memoIx = decoded.instructions.last;
+        expect(
+            decoded.accountKeys[memoIx.programIdIndex], equals(MemoProgram.id));
+      });
+
+      test('compute unit limit should be 20000', () async {
         // Arrange - same setup as above
         const testMintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
         const testRecipient = 'CmGgLQL36Y9ubtTsy2zmE46TAxwCBm66onZmPPhUWNqv';
@@ -160,8 +228,8 @@ void main() {
         final limitBytes = limitIx.data.toList().sublist(1, 5);
         final limit = _readU32LE(limitBytes);
 
-        expect(limit, equals(200000),
-            reason: 'Compute unit limit should be exactly 200000');
+        expect(limit, equals(20000),
+            reason: 'Compute unit limit should be exactly 20000');
       });
 
       test('compute unit price should be 1 microlamport', () async {

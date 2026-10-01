@@ -1,3 +1,7 @@
+## Unreleased
+
+- Match `@x402/svm`: 20k compute limit and always append a memo (seller memo or random) so repeated payments stay unique.
+
 ## 0.3.0
 
 - **Breaking Change**: Introduced `SolanaCluster` and `SolanaNetwork` (CAIP-2 compliant) for identifying Solana networks.

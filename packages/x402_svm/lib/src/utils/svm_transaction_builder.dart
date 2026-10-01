@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:solana/dto.dart' show BinaryAccountData, Encoding;
 import 'package:solana/encoder.dart';
@@ -13,16 +14,23 @@ import 'package:x402_svm/src/models/exact_svm_payload.dart';
 class SvmTransactionBuilder {
   const SvmTransactionBuilder._();
 
-  static const _defaultComputeUnitLimit = 200_000;
+  static const _defaultComputeUnitLimit = 20_000;
   static const _defaultComputeUnitPriceMicrolamports = 1;
+  static const _maxMemoBytes = 256;
   static final _maxU64 = (BigInt.one << 64) - BigInt.one;
 
   /// Creates a signed Solana transaction for an SPL Token transfer.
   ///
   /// This method constructs a transaction containing:
-  /// 1. A compute unit limit instruction (fixed at 200,000).
+  /// 1. A compute unit limit instruction (fixed at 20,000, matching the
+  ///    TypeScript `@x402/svm` reference implementation).
   /// 2. A compute unit price instruction (fixed at 1 microlamport).
   /// 3. A `transferChecked` instruction for the SPL Token transfer.
+  /// 4. A memo instruction. If [memo] is provided (e.g. from
+  ///    `paymentRequirements.extra['memo']`), it is used as-is. Otherwise a
+  ///    random 16-byte hex string is generated. The memo guarantees every
+  ///    transaction is unique even when the blockhash has not changed,
+  ///    preventing duplicate-signature rejections on repeated payments.
   ///
   /// The transaction is partially signed by the [signer] (the authority).
   /// If the [feePayer] is different from the [signer], a placeholder signature
@@ -35,6 +43,8 @@ class SvmTransactionBuilder {
   /// - [tokenMint]: The public address (Base58) of the SPL Token mint.
   /// - [feePayer]: The public address (Base58) of the account paying for transaction fees.
   /// - [solanaClient]: The Solana client used to fetch account info and blockhashes.
+  /// - [memo]: Optional memo string (max 256 bytes). A random one is generated
+  ///   when omitted.
   ///
   /// Returns an [ExactSvmPayload] containing the base64-encoded wire transaction.
   ///
@@ -46,6 +56,7 @@ class SvmTransactionBuilder {
     required String tokenMint,
     required String feePayer,
     required SolanaClient solanaClient,
+    String? memo,
   }) async {
     // Parse public keys
     final signerPublicKey = await signer.extractPublicKey();
@@ -107,6 +118,11 @@ class SvmTransactionBuilder {
       amount: amount.toInt(),
       decimals: decimals,
     ));
+
+    // 4. Memo instruction (matches @x402/svm reference implementation).
+    // Ensures transaction uniqueness across repeated payments sharing the
+    // same blockhash.
+    instructions.add(_memoInstruction(memo ?? _generateRandomMemo()));
 
     // Create message with feePayer
     final message = Message(instructions: instructions);
@@ -180,6 +196,34 @@ class SvmTransactionBuilder {
     );
   }
 
+  /// Creates a memo instruction for the SPL Memo program.
+  ///
+  /// Matches the `@x402/svm` reference implementation which always appends a
+  /// memo (seller-provided or random) to exact-scheme transactions.
+  static Instruction _memoInstruction(String memo) {
+    final memoBytes = utf8.encode(memo);
+    if (memoBytes.length > _maxMemoBytes) {
+      throw ArgumentError.value(
+        memo,
+        'memo',
+        'Memo exceeds maximum $_maxMemoBytes bytes',
+      );
+    }
+    return Instruction(
+      programId: MemoProgram.id,
+      accounts: const [],
+      data: ByteArray(memoBytes),
+    );
+  }
+
+  /// Generates a random 16-byte hex string (32 chars), matching the
+  /// `@x402/svm` reference implementation's default memo.
+  static String _generateRandomMemo() {
+    final random = Random.secure();
+    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+    return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+  }
+
   /// Derives the Associated Token Account (ATA) address for a given [mint] and [owner].
   static Future<Ed25519HDPublicKey> getAssociatedTokenAddress({
     required Ed25519HDPublicKey mint,
@@ -210,21 +254,22 @@ class SvmTransactionBuilder {
   /// Verifies that a decoded transaction matches the expected structure for the "exact" scheme.
   ///
   /// Validation checks:
-  /// 1. Transaction must have exactly 3 instructions.
-  /// 2. The last instruction must be a Token Program transfer.
+  /// 1. Transaction must have exactly 4 instructions.
+  /// 2. The transfer instruction must be a Token Program transfer.
   /// 3. The transfer amount must match [expectedAmount].
   /// 4. The token mint must match [tokenMint].
   /// 5. The destination ATA must be derived correctly from [expectedRecipient] and [tokenMint].
+  /// 6. The last instruction must be a Memo program instruction.
   static Future<bool> verifyTransactionStructure({
     required DecodedTransaction decoded,
     required String expectedRecipient,
     required BigInt expectedAmount,
     required String tokenMint,
   }) async {
-    // Exactly 3 instructions: ComputePrice + ComputeLimit + TransferChecked
-    if (decoded.instructions.length != 3) return false;
+    // Exactly 4 instructions: ComputeLimit + ComputePrice + TransferChecked + Memo
+    if (decoded.instructions.length != 4) return false;
 
-    final ix = decoded.instructions.last;
+    final ix = decoded.instructions[2];
 
     // 1. Program ID must be Token Program
     final programId = decoded.accountKeys[ix.programIdIndex];
@@ -257,6 +302,11 @@ class SvmTransactionBuilder {
     );
 
     if (destination != expectedATA.toBase58()) return false;
+
+    // 6. Last instruction must be Memo program
+    final memoIx = decoded.instructions.last;
+    final memoProgramId = decoded.accountKeys[memoIx.programIdIndex];
+    if (memoProgramId != MemoProgram.id) return false;
 
     return true;
   }

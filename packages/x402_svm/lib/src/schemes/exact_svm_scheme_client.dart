@@ -59,6 +59,11 @@ class ExactSvmSchemeClient implements SchemeClient {
           'feePayer is required in paymentRequirements.extra for SVM transactions');
     }
 
+    // Extract optional seller memo (matches @x402/svm reference implementation).
+    // When absent, the transaction builder generates a random memo to guarantee
+    // uniqueness.
+    final memo = requirement.extra['memo'] as String?;
+
     // Build transfer transaction
     final encodedTransaction =
         await SvmTransactionBuilder.createTransferTransaction(
@@ -68,6 +73,7 @@ class ExactSvmSchemeClient implements SchemeClient {
       tokenMint: requirement.asset,
       feePayer: feePayer,
       solanaClient: _solanaClient,
+      memo: memo,
     );
 
     // Create payment payload

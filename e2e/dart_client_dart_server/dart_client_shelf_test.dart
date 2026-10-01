@@ -11,6 +11,16 @@ import 'package:test/test.dart';
 import 'package:x402/x402.dart';
 import 'package:x402_shelf/x402_shelf.dart';
 
+/// Thrown for transient payment failures (e.g. 500 settlement failures from
+/// Solana 429 Too Many Requests). Only this error plus network [Exception]s
+/// is retried; `TestFailure` propagates immediately.
+class TransientPaymentFailure implements Exception {
+  final String message;
+  TransientPaymentFailure(this.message);
+  @override
+  String toString() => 'TransientPaymentFailure: $message';
+}
+
 void main() {
   final env = DotEnv(includePlatformEnvironment: true, quiet: true)..load();
 
@@ -87,34 +97,65 @@ void main() {
 
   tearDownAll(() async => await server.close(force: true));
 
+  Future<void> retryPayment(
+    Future<void> Function() attempt, {
+    int maxAttempts = 3,
+  }) async {
+    for (var i = 0; i < maxAttempts; i++) {
+      try {
+        await attempt();
+        return;
+      } on TransientPaymentFailure catch (e) {
+        stdout.writeln(
+            'Transient payment failure (attempt ${i + 1}/$maxAttempts): $e');
+        if (i == maxAttempts - 1) {
+          fail('Payment still failing after $maxAttempts attempts: $e');
+        }
+        await Future.delayed(Duration(seconds: 5 * (i + 1)));
+      } on Exception catch (e) {
+        stdout.writeln(
+            'Transient network error (attempt ${i + 1}/$maxAttempts): $e');
+        if (i == maxAttempts - 1) rethrow;
+        await Future.delayed(Duration(seconds: 5 * (i + 1)));
+      }
+    }
+  }
+
   test('Pays on EVM and accesses Shelf server premium content', () async {
-    final evmSigner = EvmSigner.fromPrivateKeyHex(
-      privateKeyHex: evmPrivateKey,
-      chainId: 84532,
-    );
+    await retryPayment(() async {
+      final evmSigner = EvmSigner.fromPrivateKeyHex(
+        privateKeyHex: evmPrivateKey,
+        chainId: 84532,
+      );
 
-    final client = X402Client(
-      signers: [evmSigner],
-      retryDelay: const Duration(seconds: 1),
-    );
+      final client = X402Client(
+        signers: [evmSigner],
+        retryDelay: const Duration(seconds: 1),
+      );
 
-    addTearDown(() => client.close());
+      try {
+        final response = await client.get(uri);
 
-    final response = await client.get(uri);
+        if (response.statusCode != 200) {
+          throw TransientPaymentFailure(
+            'shelf EVM: ${response.statusCode} body=${response.body}',
+          );
+        }
 
-    expect(response.statusCode, equals(200),
-        reason: 'Should return 200 OK after successful payment');
+        // Verify SettleResponse header
+        final settleHeader = response.headers[kPaymentResponseHeader];
+        expect(settleHeader, isNotNull,
+            reason: 'Should return x402-payment-response header');
+        final settleResponse = SettleResponse.fromHeader(settleHeader!);
+        expect(settleResponse.success, isTrue);
+        expect(settleResponse.transaction, isNotEmpty);
 
-    // Verify SettleResponse header
-    final settleHeader = response.headers[kPaymentResponseHeader];
-    expect(settleHeader, isNotNull,
-        reason: 'Should return x402-payment-response header');
-    final settleResponse = SettleResponse.fromHeader(settleHeader!);
-    expect(settleResponse.success, isTrue);
-    expect(settleResponse.transaction, isNotEmpty);
-
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-    expect(body['data'], equals('Shelf Premium Content'));
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        expect(body['data'], equals('Shelf Premium Content'));
+      } finally {
+        client.close();
+      }
+    });
   });
 
   test('Client returns 402 when EVM payment is denied', () async {
@@ -137,34 +178,40 @@ void main() {
   });
 
   test('Pays on SVM and accesses Shelf server premium content', () async {
-    final svmSigner = await SvmSigner.fromPrivateKeyHex(
-      privateKeyHex: svmPrivateKey,
-      cluster: SolanaCluster.devnet,
-    );
+    await retryPayment(() async {
+      final svmSigner = await SvmSigner.fromPrivateKeyHex(
+        privateKeyHex: svmPrivateKey,
+        cluster: SolanaCluster.devnet,
+      );
 
-    final client = X402Client(
-      signers: [svmSigner],
-      retryDelay: const Duration(seconds: 1),
-    );
+      final client = X402Client(
+        signers: [svmSigner],
+        retryDelay: const Duration(seconds: 1),
+      );
 
-    addTearDown(() => client.close());
+      try {
+        final response = await client.get(uri);
 
-    final uri = Uri.parse('$serverUrl/premium');
-    final response = await client.get(uri);
+        if (response.statusCode != 200) {
+          throw TransientPaymentFailure(
+            'shelf SVM: ${response.statusCode} body=${response.body}',
+          );
+        }
 
-    expect(response.statusCode, equals(200),
-        reason: 'Should return 200 OK after successful SVM payment');
+        // Verify SettleResponse header
+        final settleHeader = response.headers[kPaymentResponseHeader];
+        expect(settleHeader, isNotNull,
+            reason: 'Should return x402-payment-response header');
+        final settleResponse = SettleResponse.fromHeader(settleHeader!);
+        expect(settleResponse.success, isTrue);
+        expect(settleResponse.transaction, isNotEmpty);
 
-    // Verify SettleResponse header
-    final settleHeader = response.headers[kPaymentResponseHeader];
-    expect(settleHeader, isNotNull,
-        reason: 'Should return x402-payment-response header');
-    final settleResponse = SettleResponse.fromHeader(settleHeader!);
-    expect(settleResponse.success, isTrue);
-    expect(settleResponse.transaction, isNotEmpty);
-
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-    expect(body['data'], equals('Shelf Premium Content'));
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        expect(body['data'], equals('Shelf Premium Content'));
+      } finally {
+        client.close();
+      }
+    });
   }, timeout: const Timeout(Duration(minutes: 2)));
 
   test('Client returns 402 when SVM payment is denied', () async {

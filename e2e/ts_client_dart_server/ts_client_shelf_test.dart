@@ -95,17 +95,48 @@ void main() {
 
   tearDownAll(() async => await server.close(force: true));
 
+  Future<ProcessResult> runTsClientWithRetry(
+    List<String> args,
+    Map<String, String> env, {
+    int maxAttempts = 3,
+  }) async {
+    ProcessResult? lastResult;
+    for (var i = 0; i < maxAttempts; i++) {
+      final result = await Process.run(
+        'npm',
+        args,
+        environment: env,
+      ).timeout(const Duration(seconds: 90));
+      if (result.exitCode == 0 &&
+          (result.stdout as String).contains('TS Client Reward')) {
+        if (i > 0) {
+          stdout
+              .writeln('TS client succeeded on attempt ${i + 1}/$maxAttempts');
+        }
+        return result;
+      }
+      lastResult = result;
+      stdout.writeln(
+        'TS client transient failure (attempt ${i + 1}/$maxAttempts): '
+        'exit=${result.exitCode} stdout=${result.stdout} stderr=${result.stderr}',
+      );
+      if (i < maxAttempts - 1) {
+        await Future.delayed(Duration(seconds: 5 * (i + 1)));
+      }
+    }
+    return lastResult!;
+  }
+
   test('TS client pays on EVM and accesses premium content', () async {
     // Execute TS client
-    final result = await Process.run(
-      'npm',
+    final result = await runTsClientWithRetry(
       ['run', 'ts-client-evm'],
-      environment: {
+      {
         ...Platform.environment,
         'EVM_PRIVATE_KEY': evmPrivateKeyPayer,
         'RESOURCE_SERVER_URL': serverUrl,
       },
-    ).timeout(const Duration(seconds: 90));
+    );
 
     if (result.exitCode != 0) {
       fail(
@@ -117,15 +148,14 @@ void main() {
 
   test('TS client pays on SVM and accesses premium content', () async {
     // Execute TS client
-    final result = await Process.run(
-      'npm',
+    final result = await runTsClientWithRetry(
       ['run', 'ts-client-svm'],
-      environment: {
+      {
         ...Platform.environment,
         'SVM_PRIVATE_KEY': svmPrivateKeyPayer,
         'RESOURCE_SERVER_URL': serverUrl,
       },
-    ).timeout(const Duration(seconds: 90));
+    );
 
     if (result.exitCode != 0) {
       fail(
