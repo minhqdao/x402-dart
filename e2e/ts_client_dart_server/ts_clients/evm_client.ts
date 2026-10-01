@@ -7,7 +7,7 @@ import { createPublicClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
 
-config();
+config({ quiet: true });
 
 const evmPrivateKey = process.env.EVM_PRIVATE_KEY as `0x${string}`;
 const baseURL = process.env.RESOURCE_SERVER_URL;

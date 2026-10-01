@@ -5,7 +5,7 @@ import { ExactSvmScheme, toClientSvmSigner } from "@x402/svm";
 
 import { createKeyPairSignerFromPrivateKeyBytes } from "@solana/kit";
 
-config();
+config({ quiet: true });
 
 const svmPrivateKey = process.env.SVM_PRIVATE_KEY;
 const baseURL = process.env.RESOURCE_SERVER_URL;

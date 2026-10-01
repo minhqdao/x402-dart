@@ -5,7 +5,7 @@ import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { ExactSvmScheme } from "@x402/svm/exact/server";
 
-config();
+config({ quiet: true });
 
 const evmAddress = process.env.EVM_ADDRESS as `0x${string}`;
 const svmAddress = process.env.SVM_ADDRESS;
